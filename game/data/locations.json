@@ -1,0 +1,50 @@
+{
+  "London": {
+    "description": "Foggy streets conceal ancient secrets",
+    "connections": ["Paris", "Rome"],
+    "has_gate": false,
+    "clues": 1
+  },
+  "Paris": {
+    "description": "The city of lights casts long shadows",
+    "connections": ["London", "Istanbul"],
+    "has_gate": false,
+    "clues": 0
+  },
+  "Rome": {
+    "description": "The eternal city hides eternal horrors",
+    "connections": ["London", "Istanbul"],
+    "has_gate": false,
+    "clues": 0
+  },
+  "Istanbul": {
+    "description": "Where East meets West, and worlds collide",
+    "connections": ["Paris", "Rome", "Shanghai"],
+    "has_gate": false,
+    "clues": 2
+  },
+  "Shanghai": {
+    "description": "Ancient traditions clash with cosmic threats",
+    "connections": ["Istanbul", "Tokyo"],
+    "has_gate": false,
+    "clues": 0
+  },
+  "Tokyo": {
+    "description": "Modern metropolis with hidden occult dangers",
+    "connections": ["Shanghai", "San Francisco"],
+    "has_gate": false,
+    "clues": 0
+  },
+  "San Francisco": {
+    "description": "The Golden Gate to other dimensions",
+    "connections": ["Tokyo", "Arkham"],
+    "has_gate": false,
+    "clues": 1
+  },
+  "Arkham": {
+    "description": "Small town with a dark history",
+    "connections": ["San Francisco", "London"],
+    "has_gate": false,
+    "clues": 0
+  }
+}
