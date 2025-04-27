@@ -13,6 +13,7 @@ class GameState:
         self.max_doom = 15
         self.mysteries_solved = 0
         self.current_phase = "Action"
+        self.defeated_investigators = []  # List to track defeated investigators
 
         self.locations = {}
         self.investigator = {}
@@ -65,6 +66,7 @@ class GameState:
                 data.get("train_paths", []),
                 data.get("ship_paths", []),
                 data.get("real_world_location"),
+                data.get("continent"),
             )
 
     def reset_action_phase(self):

@@ -308,3 +308,36 @@ Good luck, investigator. The fate of the world is in your hands.
         )
         self.rule(style="bright_yellow")
         self.input("\n[bold cyan]Press Enter to return to the main menu...[/]")
+
+    def show_choose_encounter(self, available_decks, current_location):
+        """Display encounter deck options for the current location"""
+        self.clear_screen()
+
+        self.print(Align.center("[bold magenta]CHOOSE ENCOUNTER[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        self.print(f"Current Location: [bold]{current_location}[/bold]")
+
+        # Display available encounter decks
+        self.print("\n[bold]Available Encounter Decks:[/bold]")
+        for i, (deck_name, description) in enumerate(available_decks, 1):
+            self.print(
+                f"[green]{i}.[/green] {deck_name} - [italic]{description}[/italic]"
+            )
+
+        # Get user choice
+        choice = self.input(
+            f"\n[bold cyan]Choose an encounter deck[/] [yellow](1-{len(available_decks)})[/]: "
+        )
+
+        try:
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(available_decks):
+                selected_deck = available_decks[choice_idx][0]
+                return selected_deck
+            else:
+                self.show_message("Invalid choice. Defaulting to General encounters.")
+                return "General"
+        except ValueError:
+            self.show_message("Invalid choice. Defaulting to General encounters.")
+            return "General"
