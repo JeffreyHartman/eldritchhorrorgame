@@ -59,10 +59,13 @@ Good luck, investigator. The fate of the world is in your hands.
     def show_action_phase(self, state):
         self.clear_screen()
         # TODO: replace wtih location art
-        action_fig = Figlet(font="slant")
-        ascii_title = action_fig.renderText("ACTION PHASE")
-        # end todo
+        location_fig = Figlet(font="slant")
+        location_name = state.current_location
+        ascii_title = location_fig.renderText(location_name)
+        location_desc = state.locations[state.current_location].description        
         self.print(Align.center(f"[bold magenta]{ascii_title}[/]"), highlight=False)
+        self.print(Align.center(f"[italic cyan]{location_desc}[/]"))
+        
         self.rule(style="bright_yellow")
         self.print(f"Current Location: [bold]{state.current_location}[/bold]")
         self.print(f"Current Phase: [bold]{state.current_phase}[/bold]")

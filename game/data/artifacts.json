@@ -1,0 +1,32 @@
+{
+  "Glass of Mortlan": {
+    "name": "Glass of Mortlan",
+    "expansion": "CORE",
+    "traits": ["ITEM", "MAGICAL"],
+    "components": [
+      {
+        "type": "test_modifier",
+        "applies_to_tests": ["spell"],
+        "success_manipulation_id": "glass_of_mortlan_success"
+      },
+      {
+        "type": "passive",
+        "effect_id": "glass_of_mortlan_sanity"
+      }
+    ]
+  },
+  "Ttka Halot": {
+    "name": "Ttka Halot",
+    "expansion": "CORE",
+    "traits": ["ITEM", "TOME"],
+    "components": [
+      {
+        "type": "action",
+        "action_id": "ttka_halot_monster_damage",
+        "name": "Ttka Halot Action",
+        "test_type": "will",
+        "test_difficulty": 2
+      }
+    ]
+  }
+}
