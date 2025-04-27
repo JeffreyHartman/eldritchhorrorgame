@@ -4,13 +4,48 @@ from rich.panel import Panel
 from rich.align import Align
 from pyfiglet import Figlet
 import os
+from game.ui.map_display import MapDisplay
 
 
 class UIManager:
-    def __init__(self, grahpic_height=12, screen_width=80):
+    def __init__(self, graphic_height=12, screen_width=80):
         self.console = Console()
         self.console_methods = [f for f in dir(self.console) if not f.startswith("__")]
         self.fig = Figlet(font="banner")
+        self.map_display = MapDisplay(screen_width)
+
+    # Add a new method to show the map
+    def show_map(self, state):
+        """Display the game map with multiple view options"""
+        while True:
+            self.clear_screen()
+            self.print(Align.center("[bold magenta]WORLD MAP[/bold magenta]"))
+            self.rule(style="bright_yellow")
+
+            # Show map options
+            self.print("[bold]Map View Options:[/bold]")
+            self.print("1. Region-based Map (organized by continent)")
+            self.print("2. Connection Diagram (shows travel routes)")
+            self.print("3. Return to previous screen")
+
+            choice = self.input("\n[bold cyan]Select map view[/] [yellow](1-3)[/]: ")
+
+            if choice == "1":
+                self.clear_screen()
+                self.print(Align.center("[bold magenta]REGION MAP[/bold magenta]"))
+                self.rule(style="bright_yellow")
+                self.map_display.display_world_map(state)
+                self.input("\n[bold cyan]Press Enter to return to map menu...[/]")
+            elif choice == "2":
+                self.clear_screen()
+                self.print(
+                    Align.center("[bold magenta]CONNECTION DIAGRAM[/bold magenta]")
+                )
+                self.rule(style="bright_yellow")
+                self.map_display.display_connection_diagram(state)
+                self.input("\n[bold cyan]Press Enter to return to map menu...[/]")
+            elif choice == "3":
+                break
 
     def __getattr__(self, name):
         # any attr not found on me, delegate to console
@@ -143,10 +178,12 @@ Good luck, investigator. The fate of the world is in your hands.
             self.print("5. Acquire Assets")
             self.print("6. Perform a Component Action")
 
+            self.print("\nOther Options:")
+            self.print("7. View Map")
             self.print("9. End Turn (Advance to Encounter Phase)")
 
             choice = self.input(
-                "\n[bold cyan]Enter your choice[/] [yellow](1-6, 9)[/]: "
+                "\n[bold cyan]Enter your choice[/] [yellow](1-7, 9)[/]: "
             )
             return choice
         else:

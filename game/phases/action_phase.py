@@ -21,6 +21,8 @@ class ActionPhase(GamePhase):
                 self.acquire_assets_action()
             elif choice == "6":
                 self.perform_component_action()
+            elif choice == "7":
+                self.ui.show_map(self.state)
             elif choice == "9":
                 break
 
