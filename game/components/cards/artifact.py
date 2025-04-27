@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Callable, Any
+from typing import Dict, List, Optional, Callable, Any
 from game.components.cards.base_card import Card, CardType, CardSize, Expansion
 
 

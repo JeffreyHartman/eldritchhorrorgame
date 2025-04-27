@@ -82,34 +82,55 @@ Good luck, investigator. The fate of the world is in your hands.
 
     def show_action_phase(self, state):
         self.clear_screen()
-        # TODO: replace wtih location art
-        location_fig = Figlet(font="slant")
+        # Get location info
         location_name = state.investigator.current_location
+        location = state.locations[location_name]
+        real_location = location.real_world_location
+        location_desc = location.description
+
+        # Create ASCII art title - use just the primary location name
+        location_fig = Figlet(font="slant")
         ascii_title = location_fig.renderText(location_name)
-        location_desc = state.locations[state.investigator.current_location].description
+
         self.print(Align.center(f"[bold magenta]{ascii_title}[/]"), highlight=False)
+
+        # For Space X locations, show real world location as a subtitle
+        if location_name.startswith("Space ") and real_location:
+            self.print(Align.center(f"[bold blue]{real_location}[/bold blue]"))
+
         self.print(Align.center(f"[italic cyan]{location_desc}[/]"))
 
         self.rule(style="bright_yellow")
-        self.print(
-            f"Current Location: [bold]{state.investigator.current_location}[/bold]"
-        )
-        self.print(f"Current Phase: [bold]{state.current_phase}[/bold]")
 
-        if state.locations[state.investigator.current_location].has_gate:
+        # Display current location with real world location for Space X locations
+        if location_name.startswith("Space ") and real_location:
+            self.print(
+                f"Current Location: [bold]{location_name}[/bold] ([italic]{real_location}[/italic])"
+            )
+        else:
+            self.print(f"Current Location: [bold]{location_name}[/bold]")
+
+        self.print(f"Current Phase: [bold]{state.current_phase}[/bold]")
+        self.print(
+            f"Actions Remaining: [bold green]{state.investigator.actions}[/bold green]"
+        )
+
+        if location.has_gate:
             self.print("[red]WARNING: There is an open Gate here![/]")
 
-        if state.locations[state.investigator.current_location].clues > 0:
-            self.print(
-                f"[yellow]There are {state.locations[state.investigator.current_location].clues} clues to be found here.[/]"
-            )
+        if location.clues > 0:
+            self.print(f"[yellow]There are {location.clues} clues to be found here.[/]")
 
         # Display investigator status
         self.print(
             f"\nHealth: {state.investigator.health}/{state.investigator.max_health} | "
             + f"Sanity: {state.investigator.sanity}/{state.investigator.max_sanity} | "
-            + f"Clue Tokens: {state.investigator.clue_tokens} | "
-            + f"Tickets: {state.investigator.tickets}"
+            + f"Clue Tokens: {state.investigator.clue_tokens}"
+        )
+
+        # Display tickets
+        self.print(
+            f"Train Tickets: {state.investigator.train_tickets} | Ship Tickets: {state.investigator.ship_tickets}"
         )
 
         # Display available actions
@@ -125,7 +146,7 @@ Good luck, investigator. The fate of the world is in your hands.
             self.print("9. End Turn (Advance to Encounter Phase)")
 
             choice = self.input(
-                "\n[bold cyan]Enter your choice[/] [yellow](1-4, 9)[/]: "
+                "\n[bold cyan]Enter your choice[/] [yellow](1-6, 9)[/]: "
             )
             return choice
         else:
@@ -143,7 +164,17 @@ Good luck, investigator. The fate of the world is in your hands.
 
         self.print("\nConnected locations:")
         for i, location in enumerate(connections, 1):
-            self.print(f"[green]{i}.[/green] {location}")
+            # Only show real world location for Space X locations
+            if location.startswith("Space "):
+                real_location = state.locations[location].real_world_location
+                if real_location:
+                    self.print(
+                        f"[green]{i}.[/green] {location} ([italic]{real_location}[/italic])"
+                    )
+                else:
+                    self.print(f"[green]{i}.[/green] {location}")
+            else:
+                self.print(f"[green]{i}.[/green] {location}")
 
         self.print("[green]0. Cancel[/green]")
 
@@ -151,6 +182,57 @@ Good luck, investigator. The fate of the world is in your hands.
             f"\n[bold cyan]Enter your choice[/] [yellow](0-{len(connections)})[/]: "
         )
         return choice
+
+    def show_ticket_travel_menu(self, state, ticket_type, destinations):
+        """Display travel options for ticket-based travel"""
+        self.clear_screen()
+
+        self.print(
+            f"\n[bold]Travel by {ticket_type.capitalize()} from {state.investigator.current_location}[/bold]"
+        )
+        self.rule(style="bright_yellow")
+
+        self.print(f"\nAvailable {ticket_type} destinations:")
+        for i, location in enumerate(destinations, 1):
+            # Only show real world location for Space X locations
+            if location.startswith("Space "):
+                real_location = state.locations[location].real_world_location
+                if real_location:
+                    self.print(
+                        f"[green]{i}.[/green] {location} ([italic]{real_location}[/italic])"
+                    )
+                else:
+                    self.print(f"[green]{i}.[/green] {location}")
+            else:
+                self.print(f"[green]{i}.[/green] {location}")
+
+        self.print("[green]0. Cancel[/green]")
+
+        choice = self.input(
+            f"\n[bold cyan]Enter your choice[/] [yellow](0-{len(destinations)})[/]: "
+        )
+        return choice
+
+    def show_ticket_choice(self):
+        """Display ticket type choice menu"""
+        self.clear_screen()
+
+        self.print("\n[bold]Choose Ticket Type[/bold]")
+        self.rule(style="bright_yellow")
+
+        self.print("\nAvailable ticket types:")
+        self.print("[green]1.[/green] Train Ticket")
+        self.print("[green]2.[/green] Ship Ticket")
+
+        choice = self.input("\n[bold cyan]Enter your choice[/] [yellow](1-2)[/]: ")
+
+        if choice == "1":
+            return "train"
+        elif choice == "2":
+            return "ship"
+        else:
+            self.show_message("Invalid choice. Defaulting to train ticket.")
+            return "train"
 
     def show_victory_screen(self):
         self.clear_screen()

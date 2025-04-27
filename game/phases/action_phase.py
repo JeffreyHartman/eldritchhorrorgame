@@ -38,9 +38,8 @@ class ActionPhase(GamePhase):
 
         try:
             choice_idx = int(choice) - 1
-            connections = self.state.locations[
-                self.state.investigator.current_location
-            ].connections
+            current_location = self.state.investigator.current_location
+            connections = self.state.locations[current_location].connections
 
             if 0 <= choice_idx < len(connections):
                 destination = connections[choice_idx]
@@ -57,14 +56,55 @@ class ActionPhase(GamePhase):
                     self.ui.show_message("No actions remaining.")
                     return
 
-                # Offer to use travel tickets for additional movement if available
-                if self.state.investigator.tickets > 0:
-                    use_ticket = self.ui.ask_yes_no(
-                        f"You have {self.state.investigator.tickets} travel tickets. Use one to travel further?"
+                # Check for additional travel options with tickets
+                current_location = self.state.investigator.current_location
+                location = self.state.locations[current_location]
+
+                # Check for train connections
+                train_paths = location.train_paths
+                if train_paths and self.state.investigator.train_tickets > 0:
+                    use_train = self.ui.ask_yes_no(
+                        f"You have {self.state.investigator.train_tickets} train tickets. Use one to travel by train?"
                     )
-                    if use_ticket:
-                        self.state.investigator.tickets -= 1
-                        self.travel_action(ticket_used=True)
+                    if use_train:
+                        train_destination = self.ui.show_ticket_travel_menu(
+                            self.state, "train", train_paths
+                        )
+                        if train_destination and train_destination != "0":
+                            self.state.investigator.train_tickets -= 1
+                            self.state.investigator.current_location = train_paths[
+                                int(train_destination) - 1
+                            ]
+                            self.ui.show_message(
+                                f"Traveling by train to {self.state.investigator.current_location}..."
+                            )
+
+                            # Recursively offer more travel options from the new location
+                            self.travel_action(ticket_used=True)
+                            return
+
+                # Check for ship connections
+                ship_paths = location.ship_paths
+                if ship_paths and self.state.investigator.ship_tickets > 0:
+                    use_ship = self.ui.ask_yes_no(
+                        f"You have {self.state.investigator.ship_tickets} ship tickets. Use one to travel by ship?"
+                    )
+                    if use_ship:
+                        ship_destination = self.ui.show_ticket_travel_menu(
+                            self.state, "ship", ship_paths
+                        )
+                        if ship_destination and ship_destination != "0":
+                            self.state.investigator.ship_tickets -= 1
+                            self.state.investigator.current_location = ship_paths[
+                                int(ship_destination) - 1
+                            ]
+                            self.ui.show_message(
+                                f"Traveling by ship to {self.state.investigator.current_location}..."
+                            )
+
+                            # Recursively offer more travel options from the new location
+                            self.travel_action(ticket_used=True)
+                            return
             else:
                 self.ui.show_message("Invalid location choice.")
         except ValueError:
@@ -98,8 +138,17 @@ class ActionPhase(GamePhase):
 
     def prepare_for_travel_action(self):
         if self.state.use_action():
-            self.state.investigator.tickets += 1
-            self.ui.show_message("You prepare for travel and gain a ticket.")
+            ticket_type = self.ui.show_ticket_choice()
+            if ticket_type == "train":
+                self.state.investigator.train_tickets += 1
+                self.ui.show_message("You prepare for travel and gain a train ticket.")
+            elif ticket_type == "ship":
+                self.state.investigator.ship_tickets += 1
+                self.ui.show_message("You prepare for travel and gain a ship ticket.")
+            else:
+                # Invalid choice, default to train ticket
+                self.state.investigator.train_tickets += 1
+                self.ui.show_message("You prepare for travel and gain a train ticket.")
         else:
             self.ui.show_message("Err: No actions remaining.")
 

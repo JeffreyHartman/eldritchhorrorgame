@@ -1,0 +1,456 @@
+{
+  "Space 1": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["San Francisco", "Space 19", "Space 4"],
+    "ship_paths": ["San Francisco", "Space 19"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Anchorage, Alaska, USA",
+    "expansion": "CORE",
+    "description": "Space 1- Map -- Type -World MapCityConnectionsSan FranciscoSpace 4Space 19GateNoneStarting LocationRex MurphyTommy MuldoonReal World LocationAnchorage, Alaska, USA"
+  },
+  "Space 2": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["San Francisco", "Tokyo"],
+    "ship_paths": ["San Francisco", "Tokyo"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Northeast of Hawaii, USA",
+    "expansion": "CORE",
+    "description": "Space 2- Map -- Type -World MapSeaConnectionsSan FranciscoTokyoGateNoneReal World LocationNortheast of Hawaii, USA"
+  },
+  "Space 3": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Buenos Aires", "Sydney"],
+    "ship_paths": ["Buenos Aires", "Sydney"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "real_world_location": "Oceanic pole of inacessibility",
+    "expansion": "CORE",
+    "description": "Space 3- Map -- Type -World MapSeaConnectionsBuenos AiresSydneyGateblueReal World LocationOceanic pole of inacessibility"
+  },
+  "Space 4": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Space 1", "Space 5"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Fort Providence, Canada",
+    "expansion": "CORE",
+    "description": "Space 4- Map -- Type -World MapWildernessConnectionsSpace 1Space 5GateNoneReal World LocationFort Providence, Canada"
+  },
+  "Space 5": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Arkham", "San Francisco", "Space 4"],
+    "ship_paths": [],
+    "train_paths": ["Arkham", "San Francisco"],
+    "gate_type": "NONE",
+    "real_world_location": "The American Midwest",
+    "expansion": "CORE",
+    "description": "Space 5- Map -- Type -World MapCityConnectionsArkhamSan FranciscoSpace 4GateNoneStarting LocationFinn EdwardsJacqueline FineReal World LocationThe American Midwest"
+  },
+  "Space 6": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Arkham", "San Francisco", "Space 7"],
+    "ship_paths": [],
+    "train_paths": ["Arkham", "San Francisco", "Space 7"],
+    "gate_type": "NONE",
+    "real_world_location": "Dallas, Texas, USA",
+    "expansion": "CORE",
+    "description": "Space 6- Map -- Type -World MapCityConnectionsArkhamSan FranciscoSpace 7GateNoneStarting LocationHank SamsonJim CulverReal World LocationDallas, Texas, USA"
+  },
+  "Space 7": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Buenos Aires",
+      "San Francisco",
+      "Space 6",
+      "Space 8",
+      "The Amazon"
+    ],
+    "ship_paths": ["Buenos Aires", "San Francisco", "Space 8"],
+    "train_paths": ["Space 6"],
+    "gate_type": "NONE",
+    "real_world_location": "Panama City, Panama",
+    "expansion": "CORE",
+    "description": "Space 7- Map -- Type -World MapCityConnectionsBuenos AiresSan FranciscoThe AmazonSpace 6Space 8GateNoneStarting LocationDiana StanleyTony MorganReal World LocationPanama City, Panama"
+  },
+  "Space 8": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Arkham", "Buenos Aires", "Space 10", "Space 7"],
+    "ship_paths": ["Arkham", "Buenos Aires", "Space 10", "Space 7"],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "The Bermuda Triangle",
+    "expansion": "CORE",
+    "description": "Space 8- Map -- Type -World MapSeaConnectionsArkhamBuenos AiresSpace 7Space 10GateredStarting LocationJenny BarnesReal World LocationThe Bermuda Triangle"
+  },
+  "Space 9": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Arkham"],
+    "ship_paths": ["Arkham"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Disko Island, Greenland",
+    "expansion": "CORE",
+    "description": "Space 9- Map -- Type -World MapWildernessConnectionsArkhamGateNoneReal World LocationDisko Island, Greenland"
+  },
+  "Space 10": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": [
+      "Rome",
+      "Space 15",
+      "Space 8",
+      "The Pyramids",
+      "The Sahara Desert"
+    ],
+    "ship_paths": ["Rome", "Space 15", "Space 8"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Dakar, Senegal",
+    "expansion": "CORE",
+    "description": "Space 10- Map -- Type -World MapWildernessConnectionsRomeThe PyramidsSpace 8Space 15The Sahara DesertGateNoneReal World LocationDakar, Senegal"
+  },
+  "Space 11": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Buenos Aires", "Space 15"],
+    "ship_paths": ["Buenos Aires", "Space 15"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Tristan de Cunha",
+    "expansion": "CORE",
+    "description": "Space 11- Map -- Type -World MapSeaConnectionsBuenos AiresSpace 15GateNoneReal World LocationTristan de Cunha"
+  },
+  "Space 12": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Antarctica", "Buenos Aires"],
+    "ship_paths": ["Antarctica", "Buenos Aires"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "South Georgia and the Sandwich Islands",
+    "expansion": "CORE",
+    "description": "Space 12- Map -- Type -World MapSeaConnectionsAntarcticaBuenos AiresGateNoneStarting LocationNoneReal World LocationSouth Georgia and the Sandwich Islands"
+  },
+  "Space 13": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["London"],
+    "ship_paths": ["London"],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Franz Josef Land, Arkhangelsk Oblast, Russia",
+    "expansion": "CORE",
+    "description": "Space 13- Map -- Type -World MapSeaConnectionsLondonGateredReal World LocationFranz Josef Land, Arkhangelsk Oblast, Russia"
+  },
+  "Space 14": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Rome", "Space 16"],
+    "ship_paths": [],
+    "train_paths": ["Rome", "Space 16"],
+    "gate_type": "NONE",
+    "real_world_location": "Oulu, Finland",
+    "expansion": "CORE",
+    "description": "Space 14- Map -- Type -World MapCityConnectionsRomeSpace 16GateNoneStarting Location\"Ashcan\" PeteMark HarriganReal World LocationOulu, Finland"
+  },
+  "Space 15": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Space 10",
+      "Space 11",
+      "Space 17",
+      "Space 18",
+      "The Heart of Africa"
+    ],
+    "ship_paths": ["Space 10", "Space 11", "Space 17", "Space 18"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Cape Town, South Africa",
+    "expansion": "CORE",
+    "description": "Space 15- Map -- Type -World MapCityConnectionsThe Heart of AfricaSpace 10Space 11Space 17Space 18GateNoneStarting LocationAkachi OnyeleSister MaryReal World LocationCape Town, South Africa"
+  },
+  "Space 16": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Istanbul", "Space 14", "Tunguska"],
+    "ship_paths": [],
+    "train_paths": ["Istanbul", "Space 14", "Tunguska"],
+    "gate_type": "NONE",
+    "real_world_location": "Krasnoyarsk, Russia",
+    "expansion": "CORE",
+    "description": "Space 16- Map -- Type -World MapCityConnectionsIstanbulTunguskaSpace 14GateNoneStarting LocationTrish ScarboroughWendy AdamsReal World LocationKrasnoyarsk, Russia"
+  },
+  "Space 17": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Istanbul",
+      "Shanghai",
+      "Space 15",
+      "Space 20",
+      "The Himalayas"
+    ],
+    "ship_paths": ["Space 15", "Space 20"],
+    "train_paths": ["Istanbul", "Shanghai"],
+    "gate_type": "NONE",
+    "real_world_location": "Bombay (now Mumbai), India",
+    "expansion": "CORE",
+    "description": "Space 17- Map -- Type -World MapCityConnectionsIstanbulThe HimalayasShanghaiSpace 15Space 20CairoGateNoneStarting LocationGeorge BarnabyVincent LeeReal World LocationBombay (now Mumbai), India"
+  },
+  "Space 18": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Space 15", "Sydney"],
+    "ship_paths": ["Space 15", "Sydney"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Port aux Francais, French Southern and Antarctic Lands",
+    "expansion": "CORE",
+    "description": "Space 18- Map -- Type -World MapSeaConnectionsSydneySpace 15GateNoneReal World LocationPort aux Francais, French Southern and Antarctic Lands"
+  },
+  "Space 19": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Shanghai", "Space 1", "Tokyo", "Tunguska"],
+    "ship_paths": ["Space 1", "Tokyo"],
+    "train_paths": ["Shanghai", "Tunguska"],
+    "gate_type": "NONE",
+    "real_world_location": "Beringovsky, Russia",
+    "expansion": "CORE",
+    "description": "Space 19- Map -- Type -World MapWildernessConnectionsShanghaiTokyoTunguskaSpace 1GateNoneReal World LocationBeringovsky, Russia"
+  },
+  "Space 20": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Shanghai", "Space 17", "Sydney", "Tokyo"],
+    "ship_paths": ["Shanghai", "Space 17", "Sydney", "Tokyo"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Makassar, Indonesia",
+    "expansion": "CORE",
+    "description": "Space 20- Map -- Type -World MapCityConnectionsShanghaiSydneyTokyoSpace 17GateNoneStarting LocationDarrell SimmonsMarie LambeauReal World LocationMakassar, Indonesia"
+  },
+  "Space 21": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Sydney"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Uluru, Northern Territories, Australia",
+    "expansion": "CORE",
+    "description": "Space 21- Map -- Type -World MapWildernessConnectionsSydneyGateNoneReal World LocationUluru, Northern Territories, Australia"
+  },
+  "The Pyramids": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Rome", "Space 10", "Istanbul", "The Heart of Africa"],
+    "ship_paths": ["Rome"],
+    "train_paths": ["Istanbul"],
+    "gate_type": "BLUE",
+    "real_world_location": "Giza, Egypt",
+    "expansion": "CORE",
+    "description": "The Pyramids- Map -- Type -World MapWildernessConnectionsRomeSpace 10GateNoneReal World LocationGiza, Egypt"
+  },
+  "London": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Arkham", "Rome", "Space 13"],
+    "ship_paths": ["Arkham", "Rome", "Space 13"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "real_world_location": "London, England, UK",
+    "hint": "Spawn Clue Tokens",
+    "expansion": "CORE",
+    "description": "London- Map -- Type -World MapCityConnectionsArkhamRomeSpace 13TextSpawnClueTokensGateblueStarting LocationAgnes BakerBob JenkinsCarson SinclairMichael McGlenReal World LocationLondon, England, UK"
+  },
+  "Rome": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Istanbul",
+      "London",
+      "Space 10",
+      "Space 14",
+      "The Pyramids"
+    ],
+    "ship_paths": ["London", "Space 10", "The Pyramids"],
+    "train_paths": ["Istanbul", "Space 14"],
+    "gate_type": "RED",
+    "hint": "Improve Will",
+    "real_world_location": "Rome, Italy",
+    "expansion": "CORE",
+    "description": "Rome- Map -- Type -World MapCityConnectionsIstanbulLondonThe PyramidsSpace 10Space 14TextImproveGateredStarting LocationCarolyn FernFather MateoZoey SamarasReal World LocationRome, Italy"
+  },
+  "Istanbul": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Rome", "Space 16", "Space 17", "The Pyramids"],
+    "ship_paths": [],
+    "train_paths": ["Rome", "Space 16", "Space 17", "The Pyramids"],
+    "gate_type": "GREEN",
+    "hint": "Improve Influence",
+    "real_world_location": "Istanbul, Turkey",
+    "expansion": "CORE",
+    "description": "Istanbul- Map -- Type -World MapCityConnectionsRomeThe PyramidsSpace 16Space 17TextImproveGategreenStarting LocationAmanda SharpeDaisy WalkerPreston FairmontReal World LocationIstanbul, Turkey"
+  },
+  "The Heart of Africa": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Space 15", "The Pyramids"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Lake Tanganyika, Congo",
+    "expansion": "CORE",
+    "description": "The Heart of Africa- Map -- Type -World MapWildernessConnectionsThe PyramidsSpace 15The Nile RiverGateredStarting LocationUrsula DownsReal World LocationLake Tanganyika, Congo"
+  },
+  "Arkham": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["London", "Space 5", "Space 6", "Space 8", "Space 9"],
+    "ship_paths": ["London", "Space 8", "Space 9"],
+    "train_paths": ["Space 5", "Space 6"],
+    "gate_type": "RED",
+    "hint": "Gain Incantation Spells",
+    "real_world_location": "Wenham, Massachusetts, USA",
+    "expansion": "CORE",
+    "description": "Arkham- Map -- Type -World MapCityConnectionsLondonSpace 5Space 6Space 8Space 9TextGainIncantationSpellsGateredStarting LocationGloria GoldbergHarvey WaltersNorman WithersWilson RichardsReal World LocationWenham, Massachusetts, USA"
+  },
+  "Buenos Aires": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Space 11",
+      "Space 12",
+      "Space 3",
+      "Space 7",
+      "Space 8",
+      "The Amazon"
+    ],
+    "ship_paths": ["Space 11", "Space 12", "Space 3", "Space 7", "Space 8"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "hint": "Gain Ritual Spells",
+    "real_world_location": "Buenos Aires, Argentina",
+    "expansion": "CORE",
+    "description": "Buenos Aires- Map -- Type -World MapCityConnectionsThe AmazonSpace 3Space 7Space 8Space 11Space 12TextGainRitualSpellsGateblueStarting LocationCalvin WrightKate WinthropLeo Anderson\"Skids\" O'TooleReal World LocationBuenos Aires, Argentina"
+  },
+  "San Francisco": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Space 1", "Space 2", "Space 5", "Space 6"],
+    "ship_paths": ["Space 1", "Space 2"],
+    "train_paths": ["Space 5", "Space 6"],
+    "gate_type": "GREEN",
+    "hint": "Improve Observation",
+    "real_world_location": "San Francisco, CA, USA",
+    "expansion": "CORE",
+    "description": "San Francisco- Map -- Type -World MapCityConnectionsSpace 1Space 2Space 5Space 6TextImproveGategreenStarting LocationCharlie KaneDaniela ReyesJoe DiamondRoland BanksReal World LocationSan Francisco, CA, USA"
+  },
+  "Shanghai": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Space 17",
+      "Space 19",
+      "Space 20",
+      "The Himalayas",
+      "Tokyo"
+    ],
+    "ship_paths": ["Space 20", "Tokyo"],
+    "train_paths": ["Space 17", "Space 19"],
+    "gate_type": "RED",
+    "hint": "Improve Lore",
+    "real_world_location": "Shanghai, China",
+    "expansion": "CORE",
+    "description": "Shanghai- Map -- Type -World MapCityConnectionsThe HimalayasTokyoSpace 17Space 19Space 20TextImproveGateredStarting LocationLily ChenMandy ThompsonRita YoungReal World LocationShanghai, China"
+  },
+  "Tokyo": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Shanghai", "Space 19", "Space 2", "Space 20"],
+    "ship_paths": ["Shanghai", "Space 19", "Space 2", "Space 20"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "hint": "Defeat Monsters",
+    "real_world_location": "Tokyo, Japan",
+    "expansion": "CORE",
+    "description": "Tokyo- Map -- Type -World MapCityConnectionsShanghaiSpace 2Space 19Space 20TextDefeatMonstersGateblueStarting LocationAgatha CraneDexter DrakeLola HayesMinh Thi PhanReal World LocationTokyo, Japan"
+  },
+  "Sydney": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Antarctica",
+      "Space 18",
+      "Space 20",
+      "Space 21",
+      "Space 3"
+    ],
+    "ship_paths": ["Antarctica", "Space 18", "Space 20", "Space 3"],
+    "train_paths": [],
+    "gate_type": "RED",
+    "hint": "Improve Strength",
+    "real_world_location": "Sydney, Australia",
+    "expansion": "CORE",
+    "description": "Sydney- Map -- Type -World MapCityConnectionsAntarcticaSpace 3Space 18Space 20Space 21TextImproveGateredStarting LocationPatrice HathawaySefina RousseauSilas MarshWilliam YorickReal World LocationSydney, Australia"
+  },
+  "The Amazon": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Buenos Aires", "Space 7"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Amazon River, Brazil",
+    "expansion": "CORE",
+    "description": "The Amazon- Map -- Type -World MapWildernessConnectionsBuenos AiresSpace 7GateredReal World LocationAmazon River, Brazil"
+  },
+  "The Himalayas": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Shanghai", "Space 17"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Mount Kailash, Tibet, China",
+    "expansion": "CORE",
+    "description": "The Himalayas- Map -- Type -World MapWildernessConnectionsShanghaiSpace 17GateredReal World LocationMount Kailash, Tibet, China"
+  },
+  "Tunguska": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Space 16", "Space 19"],
+    "ship_paths": [],
+    "train_paths": ["Space 16", "Space 19"],
+    "gate_type": "GREEN",
+    "real_world_location": "Podkamennaya Tunguska River, Krasnoyarsk Krai, Russia",
+    "expansion": "CORE",
+    "description": "Tunguska- Map -- Type -World MapWildernessConnectionsSpace 16Space 19GategreenReal World LocationPodkamennaya Tunguska River, Krasnoyarsk Krai, Russia"
+  },
+  "Antartica": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Space 12", "Syndney"],
+    "ship_paths": ["Space 12", "Syndney"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "real_world_location": "Antarctica",
+    "expansion": "CORE",
+    "description": "Antarctica- Map -- Type -World MapWildernessConnectionsSpace 12Space 18GateNoneReal World LocationAntarctica"
+  }
+}

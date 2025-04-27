@@ -1,5 +1,5 @@
 import json
-from game.components.location import Location
+from game.components.location import Location, LocationType
 from game.components.investigator import Investigator
 
 
@@ -39,7 +39,8 @@ class GameState:
             },
             items=[],
             clue_tokens=2,
-            tickets=0,
+            train_tickets=0,
+            ship_tickets=0,
             is_delayed=False,
             actions=2,
             current_location="London",
@@ -52,12 +53,18 @@ class GameState:
 
         self.locations = {}
         for name, data in location_data.items():
+            location_type = LocationType[data.get("location_type", "CITY")]
             self.locations[name] = Location(
                 name,
                 data["description"],
                 data["connections"],
-                data["has_gate"],
-                data["clues"],
+                False,
+                0,
+                [],  # Empty monsters list initially
+                location_type,
+                data.get("train_paths", []),
+                data.get("ship_paths", []),
+                data.get("real_world_location"),
             )
 
     def reset_action_phase(self):

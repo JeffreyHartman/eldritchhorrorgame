@@ -1,50 +1,456 @@
 {
-  "London": {
-    "description": "Foggy streets conceal ancient secrets",
-    "connections": ["Paris", "Rome"],
-    "has_gate": false,
-    "clues": 1
+  "Space 1": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["San Francisco", "Space 19", "Space 4"],
+    "ship_paths": ["San Francisco", "Space 19"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Anchorage, Alaska, USA",
+    "expansion": "CORE",
+    "description": "The frozen frontier where civilization meets wilderness"
   },
-  "Paris": {
-    "description": "The city of lights casts long shadows",
-    "connections": ["London", "Istanbul"],
-    "has_gate": false,
-    "clues": 0
+  "Space 2": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["San Francisco", "Tokyo"],
+    "ship_paths": ["San Francisco", "Tokyo"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Northeast of Hawaii, USA",
+    "expansion": "CORE",
+    "description": "Vast waters where ancient things lurk beneath the waves"
+  },
+  "Space 3": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Buenos Aires", "Sydney"],
+    "ship_paths": ["Buenos Aires", "Sydney"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "real_world_location": "Oceanic pole of inacessibility",
+    "expansion": "CORE",
+    "description": "Endless ocean stretching toward the frozen south"
+  },
+  "Space 4": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Space 1", "Space 5"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Fort Providence, Canada",
+    "expansion": "CORE",
+    "description": "Barren tundra where the northern lights dance with cosmic entities"
+  },
+  "Space 5": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Arkham", "San Francisco", "Space 4"],
+    "ship_paths": [],
+    "train_paths": ["Arkham", "San Francisco"],
+    "gate_type": "NONE",
+    "real_world_location": "The American Midwest",
+    "expansion": "CORE",
+    "description": "Rolling plains where strange lights are often spotted in the night sky"
+  },
+  "Space 6": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Arkham", "San Francisco", "Space 7"],
+    "ship_paths": [],
+    "train_paths": ["Arkham", "San Francisco", "Space 7"],
+    "gate_type": "NONE",
+    "real_world_location": "Dallas, Texas, USA",
+    "expansion": "CORE",
+    "description": "Desolate mountains hiding entrances to forgotten caverns"
+  },
+  "Space 7": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Buenos Aires",
+      "San Francisco",
+      "Space 6",
+      "Space 8",
+      "The Amazon"
+    ],
+    "ship_paths": ["Buenos Aires", "San Francisco", "Space 8"],
+    "train_paths": ["Space 6"],
+    "gate_type": "NONE",
+    "real_world_location": "Panama City, Panama",
+    "expansion": "CORE",
+    "description": "Windswept grasslands where ancient stone circles stand in silent vigil"
+  },
+  "Space 8": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Arkham", "Buenos Aires", "Space 10", "Space 7"],
+    "ship_paths": ["Arkham", "Buenos Aires", "Space 10", "Space 7"],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "The Bermuda Triangle",
+    "expansion": "CORE",
+    "description": "Treacherous waters where ships vanish without a trace"
+  },
+  "Space 9": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Arkham"],
+    "ship_paths": ["Arkham"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Disko Island, Greenland",
+    "expansion": "CORE",
+    "description": "Fog-shrouded waters where phantom ships are said to sail"
+  },
+  "Space 10": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": [
+      "Rome",
+      "Space 15",
+      "Space 8",
+      "The Pyramids",
+      "The Sahara Desert"
+    ],
+    "ship_paths": ["Rome", "Space 15", "Space 8"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Dakar, Senegal",
+    "expansion": "CORE",
+    "description": "Azure waters hiding sunken cities of impossible architecture"
+  },
+  "Space 11": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Buenos Aires", "Space 15"],
+    "ship_paths": ["Buenos Aires", "Space 15"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Tristan de Cunha",
+    "expansion": "CORE",
+    "description": "Stormy seas where sailors report hearing unearthly singing"
+  },
+  "Space 12": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Antarctica", "Buenos Aires"],
+    "ship_paths": ["Antarctica", "Buenos Aires"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "South Georgia and the Sandwich Islands",
+    "expansion": "CORE",
+    "description": "Frigid waters at the edge of the world"
+  },
+  "Space 13": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["London"],
+    "ship_paths": ["London"],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Franz Josef Land, Arkhangelsk Oblast, Russia",
+    "expansion": "CORE",
+    "description": "Churning waters where compasses spin wildly and time seems to slow"
+  },
+  "Space 14": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Rome", "Space 16"],
+    "ship_paths": [],
+    "train_paths": ["Rome", "Space 16"],
+    "gate_type": "NONE",
+    "real_world_location": "Oulu, Finland",
+    "expansion": "CORE",
+    "description": "Sun-baked lands where ancient tombs lie half-buried in the sand"
+  },
+  "Space 15": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Space 10",
+      "Space 11",
+      "Space 17",
+      "Space 18",
+      "The Heart of Africa"
+    ],
+    "ship_paths": ["Space 10", "Space 11", "Space 17", "Space 18"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Cape Town, South Africa",
+    "expansion": "CORE",
+    "description": "Arid plains where nomads tell tales of cities that appear only at night"
+  },
+  "Space 16": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Istanbul", "Space 14", "Tunguska"],
+    "ship_paths": [],
+    "train_paths": ["Istanbul", "Space 14", "Tunguska"],
+    "gate_type": "NONE",
+    "real_world_location": "Krasnoyarsk, Russia",
+    "expansion": "CORE",
+    "description": "Endless steppes where strange monoliths rise from the earth"
+  },
+  "Space 17": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Istanbul",
+      "Shanghai",
+      "Space 15",
+      "Space 20",
+      "The Himalayas"
+    ],
+    "ship_paths": ["Space 15", "Space 20"],
+    "train_paths": ["Istanbul", "Shanghai"],
+    "gate_type": "NONE",
+    "real_world_location": "Bombay (now Mumbai), India",
+    "expansion": "CORE",
+    "description": "Bustling port where East meets West and secrets are traded like spices"
+  },
+  "Space 18": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Space 15", "Sydney"],
+    "ship_paths": ["Space 15", "Sydney"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Port aux Francais, French Southern and Antarctic Lands",
+    "expansion": "CORE",
+    "description": "Tropical waters teeming with life both known and unknown"
+  },
+  "Space 19": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Shanghai", "Space 1", "Tokyo", "Tunguska"],
+    "ship_paths": ["Space 1", "Tokyo"],
+    "train_paths": ["Shanghai", "Tunguska"],
+    "gate_type": "NONE",
+    "real_world_location": "Beringovsky, Russia",
+    "expansion": "CORE",
+    "description": "Frozen wasteland where the aurora reveals glimpses of other worlds"
+  },
+  "Space 20": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Shanghai", "Space 17", "Sydney", "Tokyo"],
+    "ship_paths": ["Shanghai", "Space 17", "Sydney", "Tokyo"],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Makassar, Indonesia",
+    "expansion": "CORE",
+    "description": "Island-dotted seas where ancient temples rise from jungle-covered peaks"
+  },
+  "Space 21": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Sydney"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "NONE",
+    "real_world_location": "Uluru, Northern Territories, Australia",
+    "expansion": "CORE",
+    "description": "Sacred land where the Dreamtime and reality blur together"
+  },
+  "The Pyramids": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Rome", "Space 10", "Istanbul", "The Heart of Africa"],
+    "ship_paths": ["Rome"],
+    "train_paths": ["Istanbul"],
+    "gate_type": "BLUE",
+    "real_world_location": "Giza, Egypt",
+    "expansion": "CORE",
+    "description": "Ancient monuments to forgotten gods who still demand tribute"
+  },
+  "London": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Arkham", "Rome", "Space 13"],
+    "ship_paths": ["Arkham", "Rome", "Space 13"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "real_world_location": "London, England, UK",
+    "hint": "Spawn Clue Tokens",
+    "expansion": "CORE",
+    "description": "Fog-shrouded streets conceal occult societies and eldritch knowledge"
   },
   "Rome": {
-    "description": "The eternal city hides eternal horrors",
-    "connections": ["London", "Istanbul"],
-    "has_gate": false,
-    "clues": 0
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Istanbul",
+      "London",
+      "Space 10",
+      "Space 14",
+      "The Pyramids"
+    ],
+    "ship_paths": ["London", "Space 10", "The Pyramids"],
+    "train_paths": ["Istanbul", "Space 14"],
+    "gate_type": "RED",
+    "hint": "Improve Will",
+    "real_world_location": "Rome, Italy",
+    "expansion": "CORE",
+    "description": "Eternal city built upon layers of history and hidden catacombs"
   },
   "Istanbul": {
-    "description": "Where East meets West, and worlds collide",
-    "connections": ["Paris", "Rome", "Shanghai"],
-    "has_gate": false,
-    "clues": 2
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Rome", "Space 16", "Space 17", "The Pyramids"],
+    "ship_paths": [],
+    "train_paths": ["Rome", "Space 16", "Space 17", "The Pyramids"],
+    "gate_type": "GREEN",
+    "hint": "Improve Influence",
+    "real_world_location": "Istanbul, Turkey",
+    "expansion": "CORE",
+    "description": "Where East meets West, and the veil between worlds grows thin"
   },
-  "Shanghai": {
-    "description": "Ancient traditions clash with cosmic threats",
-    "connections": ["Istanbul", "Tokyo"],
-    "has_gate": false,
-    "clues": 0
-  },
-  "Tokyo": {
-    "description": "Modern metropolis with hidden occult dangers",
-    "connections": ["Shanghai", "San Francisco"],
-    "has_gate": false,
-    "clues": 0
-  },
-  "San Francisco": {
-    "description": "The Golden Gate to other dimensions",
-    "connections": ["Tokyo", "Arkham"],
-    "has_gate": false,
-    "clues": 1
+  "The Heart of Africa": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Space 15", "The Pyramids"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Lake Tanganyika, Congo",
+    "expansion": "CORE",
+    "description": "Primordial jungle where time itself seems to flow differently"
   },
   "Arkham": {
-    "description": "Small town with a dark history",
-    "connections": ["San Francisco", "London"],
-    "has_gate": false,
-    "clues": 0
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["London", "Space 5", "Space 6", "Space 8", "Space 9"],
+    "ship_paths": ["London", "Space 8", "Space 9"],
+    "train_paths": ["Space 5", "Space 6"],
+    "gate_type": "RED",
+    "hint": "Gain Incantation Spells",
+    "real_world_location": "Wenham, Massachusetts, USA",
+    "expansion": "CORE",
+    "description": "A seemingly quaint town with an unspeakable legacy"
+  },
+  "Buenos Aires": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Space 11",
+      "Space 12",
+      "Space 3",
+      "Space 7",
+      "Space 8",
+      "The Amazon"
+    ],
+    "ship_paths": ["Space 11", "Space 12", "Space 3", "Space 7", "Space 8"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "hint": "Gain Ritual Spells",
+    "real_world_location": "Buenos Aires, Argentina",
+    "expansion": "CORE",
+    "description": "Elegant boulevards mask doorways to dimensions beyond"
+  },
+  "San Francisco": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Space 1", "Space 2", "Space 5", "Space 6"],
+    "ship_paths": ["Space 1", "Space 2"],
+    "train_paths": ["Space 5", "Space 6"],
+    "gate_type": "GREEN",
+    "hint": "Improve Observation",
+    "real_world_location": "San Francisco, CA, USA",
+    "expansion": "CORE",
+    "description": "Hills and fog hide cults that worship what lies beneath the bay"
+  },
+  "Shanghai": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Space 17",
+      "Space 19",
+      "Space 20",
+      "The Himalayas",
+      "Tokyo"
+    ],
+    "ship_paths": ["Space 20", "Tokyo"],
+    "train_paths": ["Space 17", "Space 19"],
+    "gate_type": "RED",
+    "hint": "Improve Lore",
+    "real_world_location": "Shanghai, China",
+    "expansion": "CORE",
+    "description": "Ancient wisdom and modern ambition create a nexus of mystical energy"
+  },
+  "Tokyo": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": ["Shanghai", "Space 19", "Space 2", "Space 20"],
+    "ship_paths": ["Shanghai", "Space 19", "Space 2", "Space 20"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "hint": "Defeat Monsters",
+    "real_world_location": "Tokyo, Japan",
+    "expansion": "CORE",
+    "description": "Neon lights and ancient shrines, where old gods adapt to new worship"
+  },
+  "Sydney": {
+    "map": "WORLD_MAP",
+    "location_type": "CITY",
+    "connections": [
+      "Antarctica",
+      "Space 18",
+      "Space 20",
+      "Space 21",
+      "Space 3"
+    ],
+    "ship_paths": ["Antarctica", "Space 18", "Space 20", "Space 3"],
+    "train_paths": [],
+    "gate_type": "RED",
+    "hint": "Improve Strength",
+    "real_world_location": "Sydney, Australia",
+    "expansion": "CORE",
+    "description": "The youngest ancient city, built on land that never forgets"
+  },
+  "The Amazon": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Buenos Aires", "Space 7"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Amazon River, Brazil",
+    "expansion": "CORE",
+    "description": "Verdant labyrinth hiding civilizations that predate humanity"
+  },
+  "The Himalayas": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Shanghai", "Space 17"],
+    "ship_paths": [],
+    "train_paths": [],
+    "gate_type": "RED",
+    "real_world_location": "Mount Kailash, Tibet, China",
+    "expansion": "CORE",
+    "description": "Towering peaks where thin air brings visions of cosmic truth"
+  },
+  "Tunguska": {
+    "map": "WORLD_MAP",
+    "location_type": "WILDERNESS",
+    "connections": ["Space 16", "Space 19"],
+    "ship_paths": [],
+    "train_paths": ["Space 16", "Space 19"],
+    "gate_type": "GREEN",
+    "real_world_location": "Podkamennaya Tunguska River, Krasnoyarsk Krai, Russia",
+    "expansion": "CORE",
+    "description": "Scarred land where something fell—or perhaps emerged—from the sky"
+  },
+  "Antartica": {
+    "map": "WORLD_MAP",
+    "location_type": "SEA",
+    "connections": ["Space 12", "Syndney"],
+    "ship_paths": ["Space 12", "Syndney"],
+    "train_paths": [],
+    "gate_type": "BLUE",
+    "real_world_location": "Antarctica",
+    "expansion": "CORE",
+    "description": "Frozen wasteland concealing mountains that should not be"
   }
 }
