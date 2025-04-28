@@ -4,7 +4,7 @@ from typing import Dict, Any, Optional
 
 class EncounterComponent(ABC):
     @abstractmethod
-    def process(self, state, investigator) -> Dict[str, Any]:
+    def process(self, state, investigator, ui=None) -> Dict[str, Any]:
         """
         Process this component's effect during an encounter
 

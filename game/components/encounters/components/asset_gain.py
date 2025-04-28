@@ -7,8 +7,8 @@ class AssetGainComponent(EncounterComponent):
         self,
         asset_type: str,
         count: int = 1,
-        source: str = None,
-        options: List[str] = None,
+        source: Optional[str] = None,
+        options: Optional[List[str]] = None,
     ):
         self.asset_type = asset_type
         self.count = count

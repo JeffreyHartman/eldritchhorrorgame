@@ -75,6 +75,11 @@ class EncounterFactory:
         """Create an encounter from JSON data"""
         try:
             encounter_id = data.get("id")
+            if encounter_id is None:
+                error_msg = f"Encounter missing required 'id' field: {data}"
+                self.logger.error(error_msg)
+                raise ValueError(error_msg)
+
             title = data.get("title", "Unnamed Encounter")
             encounter_type = data.get("encounter_type")
             subtype = data.get("subtype")
@@ -124,6 +129,10 @@ class EncounterFactory:
         """Create a skill test component from JSON data"""
         skill = data.get("skill")
         modifier = data.get("modifier", 0)
+        if skill is None:
+            error_msg = f"Skill test component missing required 'skill' field: {data}"
+            self.logger.error(error_msg)
+            raise ValueError(error_msg)
 
         # Create success components
         success_components = []
@@ -155,6 +164,11 @@ class EncounterFactory:
         source = data.get("source")
         options = data.get("options", [])
 
+        if asset_type is None or source is None:
+            error_msg = f"Asset gain component missing required field: {data}"
+            self.logger.error(error_msg)
+            raise ValueError(error_msg)
+
         return AssetGainComponent(asset_type, count, source, options)
 
     def _create_condition_gain_component(
@@ -162,6 +176,14 @@ class EncounterFactory:
     ) -> ConditionGainComponent:
         """Create a condition gain component from JSON data"""
         condition = data.get("condition")
+
+        if condition is None:
+            error_msg = (
+                f"Condition gain component missing required 'condition' field: {data}"
+            )
+            self.logger.error(error_msg)
+            raise ValueError(error_msg)
+
         return ConditionGainComponent(condition)
 
     def create_encounter(

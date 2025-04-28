@@ -1,12 +1,14 @@
+from typing import List
+from game.components.encounters.components.encounter_component import EncounterComponent
 from game.components.location import LocationType
 
 
 class Encounter:
-    def __init__(self, id: int, text: str, location_type: LocationType):
-        self.id = id
+    def __init__(self, encounter_id: int, text: str, location_type: LocationType):
+        self.id = encounter_id
         self.text = text
         self.location_type = location_type
-        self.components = []
+        self.components: List[EncounterComponent] = []
 
     def add_component(self, component):
         self.components.append(component)
