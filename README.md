@@ -24,6 +24,8 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
     - [ ] Acquire assets action
     - [ ] Perform component action
 - [ ] Implement encouter phase
+    - [x] Resolve encounters
+    - [ ] Handle defeated investigators
 - [ ] Implement mythos phase
 
 ### Game Components
@@ -36,7 +38,7 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
 - [ ] Monsters
 - [ ] Ancient Ones
 - [ ] Conditions
-- [ ] Encounter Decks
+- [/] Encounter Decks
 - [ ] Spells
 - [ ] Mysteries
 - [ ] Mythos deck
@@ -55,7 +57,7 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
 
 - [x] Location movement mechanics
 - [ ] Game setup
-- [ ] Skill tests
+- [x] Skill tests
 - [ ] Combat system
 - [ ] Spell casting
 - [ ] Item usage
