@@ -2,9 +2,12 @@
 
 from game.components.location import Location
 from game.phases.base_phase import GamePhase
+from game.enums import GamePhase as GamePhaseEnum, EncounterType
 
 
 class EncounterPhase(GamePhase):
+    """Handles the Encounter phase of the game."""
+
     def execute(self):
         # if there are monsters at the location, they must be encountred
         location_name = self.state.investigator.current_location
@@ -21,11 +24,11 @@ class EncounterPhase(GamePhase):
         else:
             self.choose_encounter()
 
-        self.state.current_phase = "Mythos"
+        self.state.current_phase = GamePhaseEnum.MYTHOS
 
     def resolve_monster_encounters(self):
+        """Resolve encounters with monsters at the current location."""
         self.ui.show_message("Encountering monsters not implemented yet....")
-        pass
 
     def get_available_encounter_decks(self):
         """Determine which encounter decks are available at the current location"""
@@ -117,7 +120,9 @@ class EncounterPhase(GamePhase):
         """Resolve an encounter from the general encounter deck"""
         self.ui.show_message("Drawing from the General encounter deck...")
 
-        encounter = self.state.encounter_factory.create_encounter("general")
+        encounter = self.state.encounter_factory.create_encounter(
+            EncounterType.GENERAL.value
+        )
         if not encounter:
             self.ui.show_message("Error! No encounters found.")
             return

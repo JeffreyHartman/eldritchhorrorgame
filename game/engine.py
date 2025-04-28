@@ -4,6 +4,7 @@ Handles core game logic and main game loop.
 """
 
 from game.game_state import GameState
+from game.enums import GamePhase
 
 
 class GameEngine:
@@ -42,9 +43,9 @@ class GameEngine:
         from game.phases.mythos_phase import MythosPhase
 
         phases = {
-            "Action": ActionPhase(self, self.state, self.ui),
-            "Encounter": EncounterPhase(self, self.state, self.ui),
-            "Mythos": MythosPhase(self, self.state, self.ui),
+            GamePhase.ACTION: ActionPhase(self, self.state, self.ui),
+            GamePhase.ENCOUNTER: EncounterPhase(self, self.state, self.ui),
+            GamePhase.MYTHOS: MythosPhase(self, self.state, self.ui),
         }
 
         while (

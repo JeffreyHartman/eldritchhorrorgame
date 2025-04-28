@@ -2,9 +2,10 @@ from rich.console import Console
 from rich.rule import Rule
 from rich.panel import Panel
 from rich.align import Align
-from pyfiglet import Figlet
+from pyfiglet import Figlet  # type: ignore
 import os
 from game.ui.map_display import MapDisplay
+from game.enums import GamePhase, TicketType
 
 
 class UIManager:
@@ -145,7 +146,7 @@ Good luck, investigator. The fate of the world is in your hands.
         else:
             self.print(f"Current Location: [bold]{location_name}[/bold]")
 
-        self.print(f"Current Phase: [bold]{state.current_phase}[/bold]")
+        self.print(f"Current Phase: [bold]{state.current_phase.value}[/bold]")
         self.print(
             f"Actions Remaining: [bold green]{state.investigator.actions}[/bold green]"
         )
@@ -258,18 +259,18 @@ Good luck, investigator. The fate of the world is in your hands.
         self.rule(style="bright_yellow")
 
         self.print("\nAvailable ticket types:")
-        self.print("[green]1.[/green] Train Ticket")
-        self.print("[green]2.[/green] Ship Ticket")
+        self.print(f"[green]1.[/green] {TicketType.TRAIN.value.capitalize()} Ticket")
+        self.print(f"[green]2.[/green] {TicketType.SHIP.value.capitalize()} Ticket")
 
         choice = self.input("\n[bold cyan]Enter your choice[/] [yellow](1-2)[/]: ")
 
         if choice == "1":
-            return "train"
+            return TicketType.TRAIN.value
         elif choice == "2":
-            return "ship"
+            return TicketType.SHIP.value
         else:
             self.show_message("Invalid choice. Defaulting to train ticket.")
-            return "train"
+            return TicketType.TRAIN.value
 
     def show_victory_screen(self):
         self.clear_screen()
@@ -344,35 +345,35 @@ Good luck, investigator. The fate of the world is in your hands.
 
     def show_choice(self, prompt, options, allow_cancel=True):
         """Display a list of options and return the user's choice.
-        
+
         Args:
             prompt: The question or prompt to display
             options: List of options to choose from
             allow_cancel: Whether to allow canceling (defaults to True)
-            
+
         Returns:
             The selected option or None if canceled
         """
         self.clear_screen()
         self.print(f"\n[bold]{prompt}[/bold]")
         self.rule(style="bright_yellow")
-        
+
         # Display options
         for i, option in enumerate(options, 1):
             self.print(f"[green]{i}.[/green] {option}")
-        
+
         # Add cancel option if allowed
         if allow_cancel:
             self.print(f"[green]0.[/green] Cancel")
-        
+
         # Get user choice
         max_choice = len(options)
         min_choice = 0 if allow_cancel else 1
-        
+
         choice = self.input(
             f"\n[bold cyan]Enter your choice[/] [yellow]({min_choice}-{max_choice})[/]: "
         )
-        
+
         try:
             choice_idx = int(choice)
             if min_choice <= choice_idx <= max_choice:

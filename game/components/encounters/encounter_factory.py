@@ -11,6 +11,7 @@ from game.components.encounters.components.skill_test import SkillTestComponent
 from game.components.encounters.components.asset_gain import AssetGainComponent
 from game.components.encounters.components.condition_gain import ConditionGainComponent
 from game.components.location import LocationType
+from game.enums import EncounterType, EncounterSubType, AssetType
 
 
 class EncounterFactory:
@@ -86,12 +87,12 @@ class EncounterFactory:
 
             # Determine location type for general encounters
             location_type = LocationType.NONE
-            if encounter_type == "general":
-                if subtype == "city":
+            if encounter_type == EncounterType.GENERAL.value:
+                if subtype == EncounterSubType.CITY.value:
                     location_type = LocationType.CITY
-                elif subtype == "wilderness":
+                elif subtype == EncounterSubType.WILDERNESS.value:
                     location_type = LocationType.WILDERNESS
-                elif subtype == "sea":
+                elif subtype == EncounterSubType.SEA.value:
                     location_type = LocationType.SEA
 
             # Create the encounter
@@ -169,7 +170,15 @@ class EncounterFactory:
             self.logger.error(error_msg)
             raise ValueError(error_msg)
 
-        return AssetGainComponent(asset_type, count, source, options)
+        # Convert string asset type to enum if needed
+        asset_type_value = asset_type
+        try:
+            asset_type_value = AssetType(asset_type).value
+        except ValueError:
+            # If not a valid enum value, keep the original string
+            pass
+
+        return AssetGainComponent(asset_type_value, count, source, options)
 
     def _create_condition_gain_component(
         self, data: Dict[str, Any]
@@ -221,14 +230,14 @@ class EncounterFactory:
     def load_all_encounter_types(self):
         """Load all encounter types"""
         encounter_types = [
-            "general",  # City, wilderness, sea encounters
-            "america",  # America continent encounters
-            "europe",  # Europe continent encounters
-            "asia",  # Asia continent encounters
-            "research",  # Research encounters (subtypes by Ancient One)
-            "other_world",  # Other world encounters (no subtypes)
-            "expedition",  # Expedition encounters (subtypes by location)
-            "special",  # Special encounters (subtypes by Ancient One)
+            EncounterType.GENERAL.value,  # City, wilderness, sea encounters
+            EncounterType.AMERICA.value,  # America continent encounters
+            EncounterType.EUROPE.value,  # Europe continent encounters
+            EncounterType.ASIA.value,  # Asia continent encounters
+            EncounterType.RESEARCH.value,  # Research encounters (subtypes by Ancient One)
+            EncounterType.OTHER_WORLD.value,  # Other world encounters (no subtypes)
+            EncounterType.EXPEDITION.value,  # Expedition encounters (subtypes by location)
+            EncounterType.SPECIAL.value,  # Special encounters (subtypes by Ancient One)
         ]
 
         for encounter_type in encounter_types:

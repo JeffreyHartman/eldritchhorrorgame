@@ -2,6 +2,7 @@ import json
 from game.components.location import Location, LocationType
 from game.components.investigator import Investigator
 from game.components.encounters.encounter_factory import EncounterFactory
+from game.enums import GamePhase
 
 
 class GameState:
@@ -13,7 +14,7 @@ class GameState:
         self.doom_track = 0
         self.max_doom = 15
         self.mysteries_solved = 0
-        self.current_phase = "Action"
+        self.current_phase = GamePhase.ACTION
         self.defeated_investigators = []
         self.encounter_factory = EncounterFactory()
         self.encounter_factory.load_all_encounter_types()
@@ -22,9 +23,10 @@ class GameState:
         self.investigator = {}
 
     def reset_game(self):
+        """Reset the game state to starting values."""
         self.doom_track = 0
         self.mysteries_solved = 0
-        self.current_phase = "Action"
+        self.current_phase = GamePhase.ACTION
 
         self.load_locations()
         # TODO: test investigator, replace with character selection
@@ -73,7 +75,8 @@ class GameState:
             )
 
     def reset_action_phase(self):
-        self.current_phase = "Action"
+        """Reset to the action phase and restore actions."""
+        self.current_phase = GamePhase.ACTION
         self.investigator.actions = 2
 
     def use_action(self):
@@ -84,4 +87,5 @@ class GameState:
         return False
 
     def has_actions_left(self):
+        """Check if the investigator has actions remaining."""
         return self.investigator.actions > 0

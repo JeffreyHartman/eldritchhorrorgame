@@ -1,9 +1,12 @@
 """Action phase implementation"""
 
 from game.phases.base_phase import GamePhase
+from game.enums import GamePhase as GamePhaseEnum, TicketType
 
 
 class ActionPhase(GamePhase):
+    """Handles the Action phase of the game."""
+
     def execute(self):
         self.state.reset_action_phase()
         while self.state.has_actions_left():
@@ -29,7 +32,7 @@ class ActionPhase(GamePhase):
         # Show final location view before advancing to the next phase
         self.ui.show_action_phase(self.state)
 
-        self.state.current_phase = "Encounter"
+        self.state.current_phase = GamePhaseEnum.ENCOUNTER
         self.ui.show_message("Advancing to Encounter Phase...")
 
     def travel_action(self, ticket_used=False):
@@ -78,10 +81,10 @@ class ActionPhase(GamePhase):
             )
             if use_train:
                 train_destination = self.ui.show_ticket_travel_menu(
-                    self.state, "train", train_paths
+                    self.state, TicketType.TRAIN.value, train_paths
                 )
                 if train_destination and train_destination != "0":
-                    if self.state.investigator.use_ticket("train", 1):
+                    if self.state.investigator.use_ticket(TicketType.TRAIN.value, 1):
                         self.state.investigator.current_location = train_paths[
                             int(train_destination) - 1
                         ]
@@ -100,10 +103,10 @@ class ActionPhase(GamePhase):
             )
             if use_ship:
                 ship_destination = self.ui.show_ticket_travel_menu(
-                    self.state, "ship", ship_paths
+                    self.state, TicketType.SHIP.value, ship_paths
                 )
                 if ship_destination and ship_destination != "0":
-                    if self.state.investigator.use_ticket("ship", 1):
+                    if self.state.investigator.use_ticket(TicketType.SHIP.value, 1):
                         self.state.investigator.current_location = ship_paths[
                             int(ship_destination) - 1
                         ]
@@ -115,6 +118,7 @@ class ActionPhase(GamePhase):
                         return
 
     def rest_action(self):
+        """Rest to recover health and sanity."""
         current_location = self.state.investigator.current_location
         location = self.state.locations[current_location]
 
@@ -122,38 +126,39 @@ class ActionPhase(GamePhase):
         if location.monsters:
             self.ui.show_message("You cannot rest while monsters are present!")
             return
+
+        if self.state.use_action():
+            self.state.investigator.heal(1)
+            self.state.investigator.restore_sanity(1)
+            self.ui.show_message("You rest and recover...")
         else:
-            if self.state.use_action():
-                self.state.investigator.heal(1)
-                self.state.investigator.restore_sanity(1)
-                self.ui.show_message("You rest and recover...")
-            else:
-                self.ui.show_message("Err: No actions remaining.")
+            self.ui.show_message("Err: No actions remaining.")
 
     def trade_action(self):
+        """Trade items with another investigator."""
         self.ui.show_message("Trade action not implemented yet.")
-        pass
 
     def prepare_for_travel_action(self):
+        """Prepare for travel by acquiring a ticket."""
         if self.state.use_action():
             ticket_type = self.ui.show_ticket_choice()
-            if ticket_type == "train":
-                self.state.investigator.add_ticket("train", 1)
+            if ticket_type == TicketType.TRAIN.value:
+                self.state.investigator.add_ticket(TicketType.TRAIN.value, 1)
                 self.ui.show_message("You prepare for travel and gain a train ticket.")
-            elif ticket_type == "ship":
-                self.state.investigator.add_ticket("ship", 1)
+            elif ticket_type == TicketType.SHIP.value:
+                self.state.investigator.add_ticket(TicketType.SHIP.value, 1)
                 self.ui.show_message("You prepare for travel and gain a ship ticket.")
             else:
                 # Invalid choice, default to train ticket
-                self.state.investigator.add_ticket("train", 1)
+                self.state.investigator.add_ticket(TicketType.TRAIN.value, 1)
                 self.ui.show_message("You prepare for travel and gain a train ticket.")
         else:
             self.ui.show_message("Err: No actions remaining.")
 
     def acquire_assets_action(self):
+        """Acquire assets from the market."""
         self.ui.show_message("Acquire assets action not implemented yet.")
-        pass
 
     def perform_component_action(self):
+        """Perform an action from a component card."""
         self.ui.show_message("Perform component action not implemented yet.")
-        pass
