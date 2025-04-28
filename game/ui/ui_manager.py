@@ -341,3 +341,47 @@ Good luck, investigator. The fate of the world is in your hands.
         except ValueError:
             self.show_message("Invalid choice. Defaulting to General encounters.")
             return "General"
+
+    def show_choice(self, prompt, options, allow_cancel=True):
+        """Display a list of options and return the user's choice.
+        
+        Args:
+            prompt: The question or prompt to display
+            options: List of options to choose from
+            allow_cancel: Whether to allow canceling (defaults to True)
+            
+        Returns:
+            The selected option or None if canceled
+        """
+        self.clear_screen()
+        self.print(f"\n[bold]{prompt}[/bold]")
+        self.rule(style="bright_yellow")
+        
+        # Display options
+        for i, option in enumerate(options, 1):
+            self.print(f"[green]{i}.[/green] {option}")
+        
+        # Add cancel option if allowed
+        if allow_cancel:
+            self.print(f"[green]0.[/green] Cancel")
+        
+        # Get user choice
+        max_choice = len(options)
+        min_choice = 0 if allow_cancel else 1
+        
+        choice = self.input(
+            f"\n[bold cyan]Enter your choice[/] [yellow]({min_choice}-{max_choice})[/]: "
+        )
+        
+        try:
+            choice_idx = int(choice)
+            if min_choice <= choice_idx <= max_choice:
+                if choice_idx == 0:
+                    return None  # Canceled
+                return options[choice_idx - 1]
+            else:
+                self.show_message("Invalid choice.")
+                return self.show_choice(prompt, options, allow_cancel)
+        except ValueError:
+            self.show_message("Invalid input. Please enter a number.")
+            return self.show_choice(prompt, options, allow_cancel)

@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "title": "Theft",
+    "encounter_type": "general",
+    "subtype": "city",
+    "components": [
+      {
+        "type": "narrative",
+        "text": "You make sure no one is watching before sneaking out of the shop with your stolen goods..."
+      },
+      {
+        "type": "skill_test",
+        "skill": "observation",
+        "modifier": 0,
+        "success_components": [
+          {
+            "type": "narrative",
+            "text": "You successfully steal the item without being noticed."
+          },
+          {
+            "type": "asset_gain",
+            "asset_type": "item",
+            "count": 1,
+            "source": "choice",
+            "options": ["reserve", "random"]
+          }
+        ],
+        "failure_components": [
+          {
+            "type": "narrative",
+            "text": "You are caught in the act of theft and arrested!"
+          },
+          {
+            "type": "condition_gain",
+            "condition": "detained"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List
 
 
@@ -31,6 +32,7 @@ class Investigator:
         self.is_delayed = is_delayed
         self.actions = (actions,)
         self.current_location = current_location
+        self.conditions: List[str] = []
 
     def heal(self, amount: int = 1):
         self.health = min(self.health + amount, self.max_health)
@@ -75,3 +77,21 @@ class Investigator:
                 self.ship_tickets -= amount
                 return True
         return False
+
+    def perform_skill_test(self, skill: str, modifier: int = 0):
+        skill_value = self.skills.get(skill, 0)
+        skill_value += modifier
+        successes = 0
+        rolls = []
+
+        for _ in range(skill_value):
+            roll = random.randint(1, 6)
+            rolls.append(roll)
+            if roll >= 5:  # 5-6 is a success
+                successes += 1
+
+        return successes >= 1, rolls
+
+    def add_condition(self, condition: str):
+        self.conditions.append(condition)
+        return self.conditions

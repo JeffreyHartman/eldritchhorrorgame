@@ -1,6 +1,7 @@
 import json
 from game.components.location import Location, LocationType
 from game.components.investigator import Investigator
+from game.components.encounters.encounter_factory import EncounterFactory
 
 
 class GameState:
@@ -13,7 +14,9 @@ class GameState:
         self.max_doom = 15
         self.mysteries_solved = 0
         self.current_phase = "Action"
-        self.defeated_investigators = []  # List to track defeated investigators
+        self.defeated_investigators = []
+        self.encounter_factory = EncounterFactory()
+        self.encounter_factory.load_all_encounter_types()
 
         self.locations = {}
         self.investigator = {}

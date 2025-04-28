@@ -116,7 +116,14 @@ class EncounterPhase(GamePhase):
     def resolve_general_encounter(self):
         """Resolve an encounter from the general encounter deck"""
         self.ui.show_message("Drawing from the General encounter deck...")
-        # Placeholder for actual encounter resolution
+
+        encounter = self.state.encounter_factory.create_encounter("general")
+        if not encounter:
+            self.ui.show_message("Error! No encounters found.")
+            return
+
+        encounter.resolve(self.state, self.state.investigator, self.ui)
+
         self.ui.show_message("General encounter resolved.")
 
     def resolve_continent_encounter(self, continent):
