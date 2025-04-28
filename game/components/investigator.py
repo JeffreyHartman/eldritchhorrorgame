@@ -30,7 +30,7 @@ class Investigator:
         self.train_tickets = train_tickets
         self.ship_tickets = ship_tickets
         self.is_delayed = is_delayed
-        self.actions = (actions,)
+        self.actions = actions
         self.current_location = current_location
         self.conditions: List[str] = []
 
