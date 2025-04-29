@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "expansion": "CORE",
+    "name": "Akachi Onyele",
+    "occupation": "The Shaman",
+    "role": "Gate Closer",
+    "max_health": 5,
+    "max_sanity": 7,
+    "skills": {
+      "lore": 3,
+      "influence": 2,
+      "observation": 2,
+      "strength": 2,
+      "will": 4
+    },
+    "starting_location": "Space 15",
+    "starting_spells": ["Mists of Relah"],
+    "starting_clues": 1,
+    "personal_story": {
+      "name": "Guardian of the Veil",
+      "text": "The spirits are restless. Something evil stirs, and gaining the favor of your ancestors may be the only way to stop what is coming.",
+      "personal_mission_component": {
+        "id": "akachi_guardian_veil"
+      }
+    }
+  }
+]
