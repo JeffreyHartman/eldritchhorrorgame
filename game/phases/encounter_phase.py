@@ -1,6 +1,6 @@
 """Encounter phase implementation"""
 
-from game.components.location import Location
+from game.entities.location import Location
 from game.phases.base_phase import GamePhase
 from game.enums import GamePhase as GamePhaseEnum, EncounterType
 
@@ -49,7 +49,7 @@ class EncounterPhase(GamePhase):
             )
 
         # Special encounter types based on location properties
-        if location.clues > 0:
+        if location.has_clue:
             available_decks.append(
                 ("Research", "Academic and investigative encounters")
             )

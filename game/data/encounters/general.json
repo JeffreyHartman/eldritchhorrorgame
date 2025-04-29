@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "expansion": "CORE",
     "title": "Theft",
     "encounter_type": "general",
     "subtype": "city",
@@ -34,6 +35,44 @@
           {
             "type": "condition_gain",
             "condition": "detained"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "expansion": "CORE",
+    "title": "Corruption in the Force",
+    "encounter_type": "general",
+    "subtype": "city",
+    "components": [
+      {
+        "type": "narrative",
+        "text": "Corrupt members of the police force pressure you for a bribe. You speak to some people you know to take care of the problem..."
+      },
+      {
+        "type": "skill_test",
+        "skill": "influence",
+        "modifier": 0,
+        "success_components": [
+          {
+            "type": "narrative",
+            "text": "The police are apologetic and share their leads with you."
+          },
+          {
+            "type": "spawn_clue",
+            "count": 1
+          }
+        ],
+        "failure_components": [
+          {
+            "type": "narrative",
+            "text": "Your contacts are not helpful. You are are indebted to the police. They'll be back for payment."
+          },
+          {
+            "type": "condition_gain",
+            "condition": "debt"
           }
         ]
       }

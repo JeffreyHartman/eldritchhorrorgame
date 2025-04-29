@@ -4,13 +4,13 @@ import random
 import logging
 from typing import Dict, List, Optional, Any
 
-from game.components.encounters.encounter import Encounter
-from game.components.encounters.components.narrative import NarrativeComponent
-from game.components.encounters.components.skill_test import SkillTestComponent
+from game.entities.cards.encounter import Encounter
+from game.entities.components.narrative import NarrativeComponent
+from game.entities.components.skill_test import SkillTestComponent
 
-from game.components.encounters.components.asset_gain import AssetGainComponent
-from game.components.encounters.components.condition_gain import ConditionGainComponent
-from game.components.location import LocationType
+from game.entities.components.asset_gain import AssetGainComponent
+from game.entities.components.condition_gain import ConditionGainComponent
+from game.entities.location import LocationType
 from game.enums import EncounterType, EncounterSubType, AssetType
 
 

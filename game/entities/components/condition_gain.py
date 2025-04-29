@@ -1,5 +1,5 @@
-from game.components.encounters.components.encounter_component import EncounterComponent
-from game.components.investigator import Investigator
+from game.entities.base.component import EncounterComponent
+from game.entities.investigator import Investigator
 
 
 class ConditionGainComponent(EncounterComponent):

@@ -1,7 +1,7 @@
 import json
-from game.components.location import Location, LocationType
-from game.components.investigator import Investigator
-from game.components.encounters.encounter_factory import EncounterFactory
+from game.entities.location import Location, LocationType
+from game.entities.investigator import Investigator
+from game.factories.encounter_factory import EncounterFactory
 from game.enums import GamePhase
 
 
@@ -61,17 +61,14 @@ class GameState:
         for name, data in location_data.items():
             location_type = LocationType[data.get("location_type", "CITY")]
             self.locations[name] = Location(
-                name,
-                data["description"],
-                data["connections"],
-                False,
-                0,
-                [],  # Empty monsters list initially
-                location_type,
-                data.get("train_paths", []),
-                data.get("ship_paths", []),
-                data.get("real_world_location"),
-                data.get("continent"),
+                name=name,
+                description=data["description"],
+                connections=data["connections"],
+                location_type=location_type,
+                train_paths=data.get("train_paths"),
+                ship_paths=data.get("ship_paths"),
+                real_world_location=data.get("real_world_location"),
+                continent=data.get("continent"),
             )
 
     def reset_action_phase(self):

@@ -1,6 +1,6 @@
 from typing import List
-from game.components.encounters.components.encounter_component import EncounterComponent
-from game.components.location import LocationType
+from game.entities.base.component import EncounterComponent
+from game.entities.location import LocationType
 
 
 class Encounter:

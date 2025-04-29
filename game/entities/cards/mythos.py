@@ -1,5 +1,5 @@
 from enum import Enum
-from game.components.cards.base_card import Card, CardType, CardSize, Expansion
+from game.entities.base.card import Card, CardType, CardSize, Expansion
 
 
 class MythosTrait(Enum):

@@ -1,4 +1,4 @@
-from game.components.encounters.components.encounter_component import EncounterComponent
+from game.entities.base.component import EncounterComponent
 
 
 class NarrativeComponent(EncounterComponent):

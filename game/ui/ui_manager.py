@@ -6,6 +6,7 @@ from pyfiglet import Figlet  # type: ignore
 import os
 from game.ui.map_display import MapDisplay
 from game.enums import GamePhase, TicketType
+from game.entities.location import Location
 
 
 class UIManager:
@@ -120,7 +121,7 @@ Good luck, investigator. The fate of the world is in your hands.
         self.clear_screen()
         # Get location info
         location_name = state.investigator.current_location
-        location = state.locations[location_name]
+        location: Location = state.locations[location_name]
         real_location = location.real_world_location
         location_desc = location.description
 
@@ -154,8 +155,8 @@ Good luck, investigator. The fate of the world is in your hands.
         if location.has_gate:
             self.print("[red]WARNING: There is an open Gate here![/]")
 
-        if location.clues > 0:
-            self.print(f"[yellow]There are {location.clues} clues to be found here.[/]")
+        if location.has_clue:
+            self.print(f"[yellow]There is a clue to be found here.[/]")
 
         # Display investigator status
         self.print(

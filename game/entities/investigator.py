@@ -1,42 +1,31 @@
 import random
+from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
 from game.enums import TicketType
 
 
+@dataclass
 class Investigator:
     """Represents a player character in the game."""
 
-    def __init__(
-        self,
-        name: str,
-        health: int,
-        max_health: int,
-        sanity: int,
-        max_sanity: int,
-        skills: Dict[str, int],
-        items: List[str],
-        clue_tokens: int,
-        train_tickets: int,
-        ship_tickets: int,
-        is_delayed: bool = False,
-        actions: int = 2,
-        current_location: str = "London",
-    ):
-        self.name = name
-        self.health = health
-        self.max_health = max_health
-        self.sanity = sanity
-        self.max_sanity = max_sanity
-        self.skills = skills
-        self.items = items
-        self.clue_tokens = clue_tokens
-        self.train_tickets = train_tickets
-        self.ship_tickets = ship_tickets
-        self.is_delayed = is_delayed
-        self.actions = actions
-        self.current_location = current_location
-        self.conditions: List[str] = []
+    # Required parameters
+    name: str
+    health: int
+    max_health: int
+    sanity: int
+    max_sanity: int
+    skills: Dict[str, int]
+
+    # Optional parameters with defaults
+    items: List[str] = field(default_factory=list)
+    clue_tokens: int = 0
+    train_tickets: int = 0
+    ship_tickets: int = 0
+    current_location: str = "London"
+    actions: int = 2
+    is_delayed: bool = False
+    conditions: List[str] = field(default_factory=list)
 
     def heal(self, amount: int = 1) -> int:
         """Heal the investigator's health.

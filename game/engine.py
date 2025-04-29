@@ -5,6 +5,9 @@ Handles core game logic and main game loop.
 
 from game.game_state import GameState
 from game.enums import GamePhase
+from game.phases.action_phase import ActionPhase
+from game.phases.encounter_phase import EncounterPhase
+from game.phases.mythos_phase import MythosPhase
 
 
 class GameEngine:
@@ -38,9 +41,6 @@ class GameEngine:
 
     def game_loop(self):
         """Main game loop."""
-        from game.phases.action_phase import ActionPhase
-        from game.phases.encounter_phase import EncounterPhase
-        from game.phases.mythos_phase import MythosPhase
 
         phases = {
             GamePhase.ACTION: ActionPhase(self, self.state, self.ui),

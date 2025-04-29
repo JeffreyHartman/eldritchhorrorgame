@@ -1,5 +1,5 @@
-from game.components.cards.card_components import *
-from game.components.cards.effects import artifact_effects
+from game.entities.cards.card_components import *
+from game.entities.cards.effects import artifact_effects
 
 
 def create_component(component_data):

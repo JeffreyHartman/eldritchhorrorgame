@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import Dict, List, Optional, Callable, Any
-from game.components.cards.base_card import Card, CardType, CardSize, Expansion
+from game.entities.base.card import Card, CardType, CardSize, Expansion
 
 
+# TODO: untested and incomplete, probably garbage code
 class ArtifactTrait(Enum):
     ITEM = 1
     TOME = 2
@@ -30,7 +31,7 @@ class ArtifactCard(Card):
 
     def _build_components(self, component_data):
         """Build card components from data"""
-        from game.components.cards.component_registry import create_component
+        from game.entities.cards.component_registry import create_component
 
         for comp_data in component_data:
             component = create_component(comp_data)

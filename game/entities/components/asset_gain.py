@@ -1,5 +1,5 @@
 from typing import List, Optional
-from game.components.encounters.components.encounter_component import EncounterComponent
+from game.entities.base.component import EncounterComponent
 
 
 class AssetGainComponent(EncounterComponent):
