@@ -21,7 +21,9 @@
       "name": "Guardian of the Veil",
       "text": "The spirits are restless. Something evil stirs, and gaining the favor of your ancestors may be the only way to stop what is coming.",
       "personal_mission_component": {
-        "id": "akachi_guardian_veil"
+        "id": "akachi_guardian_veil",
+        "text1": "When you close a Gate during an Other World Encounter, place that Gate on this card. Then, if there are 3 Gates on this card, discard this card and gain The Earth Speaks Reward.",
+        "text2": "When Doom Doom advances to 6 or lower, discard this card and gain The Earth's Anger Consequence"
       }
     }
   }

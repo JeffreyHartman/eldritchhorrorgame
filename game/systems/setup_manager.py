@@ -39,13 +39,13 @@ class SetupManager:
         # 4. resolve other starting effects
 
     def _choose_investigators(self) -> List[int]:
-        pass
+        return []
 
     def _setup_investigators(self, investigator_ids: List[int]) -> None:
         pass
 
     def _choose_ancient_one(self) -> int:
-        pass
+        return 0
 
     def _setup_ancient_one(self, ancient_one_id: int) -> None:
         pass
