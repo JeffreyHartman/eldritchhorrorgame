@@ -1,4 +1,6 @@
-class SpawnClueComponent:
+from game.entities.base.component import EncounterComponent
+
+class SpawnClueComponent(EncounterComponent):
     def __init__(self, count: int = 1):
         self.count = count
 

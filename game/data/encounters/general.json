@@ -77,5 +77,52 @@
         ]
       }
     ]
+  },
+  {
+    "id": 3,
+    "expansion": "CORE",
+    "title": "Shop Robbery",
+    "encounter_type": "general",
+    "subtype": "city",
+    "components": [
+      {
+        "type": "narrative",
+        "text": "The shop is robbed while you are browsing! You attempt to fend off the thieves..."
+      },
+      {
+        "type": "skill_test",
+        "skill": "strength",
+        "modifier": 0,
+        "success_components": [
+          {
+            "type": "narrative",
+            "text": "The store owner is very grateful and offers you a reward."
+          },
+          {
+            "type": "asset_gain",
+            "asset_type": "item",
+            "count": 1,
+            "source": "choice",
+            "options": ["reserve", "random"]
+          }
+        ],
+        "failure_components": [
+          {
+            "type": "narrative",
+            "text": "The thieves overpower you!"
+          },
+          {
+            "type": "change_health",
+            "amount": -1
+          },
+          {
+            "type": "discard",
+            "count": 1,
+            "asset_type": "item",
+            "optional": false
+          }
+        ]
+      }
+    ]
   }
 ]

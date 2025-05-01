@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 from game.entities.base.component import EncounterComponent
 from game.entities.investigator import Investigator
 
@@ -16,18 +16,35 @@ class SkillTestComponent(EncounterComponent):
         self.success_components = success_components
         self.failure_components = failure_components
 
-    def process(self, state, investigator: Investigator, ui=None):
-        ui.show_message(f"Test {self.skill} ({self.modifier})")
-
+    def process(self, state, investigator: Investigator, ui=None) -> Dict[str, Any]:
+        # Create result with all necessary information for UI rendering
+        result = {
+            "type": "skill_test",
+            "skill": self.skill,
+            "modifier": self.modifier,
+            "messages": [f"Test {self.skill} ({self.modifier})"]
+        }
+        
+        # Perform the skill test
         success, rolls = investigator.perform_skill_test(self.skill, self.modifier)
-        ui.show_message(f"Rolls: {rolls}")
+        
+        # Add results to the result dictionary
+        result["success"] = success
+        result["rolls"] = rolls
+        result["messages"].append(f"Rolls: {rolls}")
+        result["messages"].append("Success!" if success else "Failure!")
+        
+        # Process appropriate components based on success/failure
+        component_results = []
         if success:
-            ui.show_message("Success!")
             for component in self.success_components:
-                component.process(state, investigator, ui)
+                component_result = component.process(state, investigator, ui)
+                component_results.append(component_result)
+            result["component_results"] = component_results
         else:
-            ui.show_message("Failure!")
             for component in self.failure_components:
-                component.process(state, investigator, ui)
-
-        return {"type": "skill_test", "skill": self.skill, "success": success}
+                component_result = component.process(state, investigator, ui)
+                component_results.append(component_result)
+            result["component_results"] = component_results
+        
+        return result

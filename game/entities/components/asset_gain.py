@@ -25,26 +25,22 @@ class AssetGainComponent(EncounterComponent):
             "gained_assets": [],
         }
 
-        if self.source == "choice" and self.options:
-            # Let player choose from options
+        if self.source == "choice" and self.options and ui:
             choice = ui.show_choice(
                 f"Choose {self.count} {self.asset_type}(s):", self.options
             )
+            result["choice"] = choice
+            
             if choice == "reserve":
-                # Draw from reserve
-                raise NotImplementedError
+                result["choice_type"] = "reserve"
             elif choice == "random":
-                # Draw random assets
-                raise NotImplementedError
+                result["choice_type"] = "random"
         elif self.source == "reserve":
-            # Draw directly from reserve
-            raise NotImplementedError
+            result["source_type"] = "reserve"
         elif self.source == "random":
-            # Draw random assets
-            raise NotImplementedError
+            result["source_type"] = "random"
 
-        # Add assets to investigator
-        for asset in result["gained_assets"]:
-            investigator.items.append(asset)
-
+        # Add assets to investigator - this would be handled by the phase controller
+        # based on the result information
+        
         return result

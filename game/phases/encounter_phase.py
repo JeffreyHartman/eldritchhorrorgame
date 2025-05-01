@@ -127,14 +127,25 @@ class EncounterPhase(GamePhase):
             self.ui.show_message("Error! No encounters found.")
             return
 
-        encounter.resolve(self.state, self.state.investigator, self.ui)
+        # Use the new resolve_encounter helper method
+        self.resolve_encounter(encounter, self.state.investigator)
 
         self.ui.show_message("General encounter resolved.")
 
     def resolve_continent_encounter(self, continent):
         """Resolve an encounter from a continent-specific deck"""
         self.ui.show_message(f"Drawing from the {continent} encounter deck...")
-        # Placeholder for actual encounter resolution
+        
+        encounter = self.state.encounter_factory.create_encounter(
+            continent.lower()  # Convert "America" to "america", etc.
+        )
+        if not encounter:
+            self.ui.show_message(f"Error! No {continent} encounters found.")
+            return
+        
+        # Use the new resolve_encounter helper method
+        self.resolve_encounter(encounter, self.state.investigator)
+        
         self.ui.show_message(f"{continent} encounter resolved.")
 
     def resolve_research_encounter(self):
@@ -168,3 +179,49 @@ class EncounterPhase(GamePhase):
         )
         # Placeholder for actual encounter resolution
         self.ui.show_message(f"Encounter with {investigator_name} resolved.")
+
+    def resolve_encounter(self, encounter, investigator):
+        """Process all components of an encounter"""
+        # Process all components
+        results = []
+        for component in encounter.components:
+            result = component.process(self.state, investigator)
+            results.append(result)
+            
+            # Handle UI updates based on component results
+            self.handle_component_ui(result, investigator)
+            
+            # Check if we need to abort processing further components
+            if isinstance(result, dict) and result.get("abort", False):
+                break
+        
+        return results
+
+    def handle_component_ui(self, result, investigator):
+        """Update UI based on component results"""
+        if not isinstance(result, dict):
+            return
+        
+        if result.get("type") == "skill_test":
+            # Display all messages from the skill test
+            for message in result.get("messages", []):
+                self.ui.show_message(message)
+                
+        elif result.get("type") == "change_health":
+            # Display health change message
+            if result.get("healed"):
+                self.ui.show_message(f"{investigator.name} gained {result['amount']} Health.")
+            elif result.get("damaged"):
+                self.ui.show_message(f"{investigator.name} lost {abs(result['amount'])} Health.")
+        
+        elif result.get("type") == "narrative":
+            # Display narrative text
+            self.ui.show_message(result.get("text", ""))
+        
+        elif result.get("type") == "asset_gain":
+            # Display asset gain message
+            self.ui.show_message(f"{investigator.name} gained {result.get('count', 1)} {result.get('asset_type', 'asset')}.")
+        
+        elif result.get("type") == "condition_gain":
+            # Display condition gain message
+            self.ui.show_message(f"{investigator.name} gained the {result.get('condition', 'condition')} condition.")
