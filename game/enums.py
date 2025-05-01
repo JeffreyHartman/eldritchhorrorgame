@@ -3,7 +3,7 @@ Enum definitions for Eldritch Pursuit game.
 This module contains all enum classes used throughout the game.
 """
 
-from enum import Enum, auto
+from enum import Enum
 
 
 class GamePhase(Enum):
@@ -46,3 +46,24 @@ class AssetType(Enum):
     ARTIFACT = "artifact"
     CONDITION = "condition"
     CLUE = "clue"
+    TRINKET = "trinket"
+    TASK = "task"
+    SERVICE = "service"
+
+
+class AssetTrait(Enum):
+    """Asset primary trait enum"""
+    ITEM = "item"
+    TRINKET = "trinket"
+    TASK = "task"
+    SERVICE = "service"
+    ALLY = "ally"
+
+
+class AssetSecondaryTrait(Enum):
+    """Asset secondary trait enum"""
+    MAGICAL = "magical"
+    RELIC = "relic"
+    TOME = "tome"
+    WEAPON = "weapon"
+    TEAMWORK = "teamwork"

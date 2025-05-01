@@ -1,0 +1,101 @@
+[
+  {
+    "id": "arcane_tome",
+    "name": "Arcane Tome",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 2,
+    "primary_trait": "item",
+    "secondary_traits": ["tome", "magical"],
+    "effects": {
+      "passive": {
+        "type": "skill_bonus",
+        "description": "Gain +1 to Lore tests.",
+        "skill": "lore",
+        "bonus": 1
+      },
+      "action": {
+        "type": "action",
+        "description": "Test Lore (-1). If you pass, gain 1 Spell asset.",
+        "test": "lore",
+        "modifier": -1,
+        "success_effect": {
+          "type": "gain_asset",
+          "asset_type": "spell",
+          "count": 1,
+          "source": "random"
+        }
+      },
+      "discard": null
+    },
+    "skill_bonus": {
+      "lore": 1
+    },
+    "reroll": false,
+    "additional_dice": 0,
+    "flavor_text": "The pages seem to shift and change when you're not looking directly at them."
+  },
+  {
+    "id": "ancient_relic",
+    "name": "Ancient Relic",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 4,
+    "primary_trait": "item",
+    "secondary_traits": ["relic", "magical"],
+    "effects": {
+      "passive": null,
+      "action": {
+        "type": "action",
+        "description": "Test Will (-2). If you pass, gain 2 Clue tokens.",
+        "test": "will",
+        "modifier": -2,
+        "success_effect": {
+          "type": "gain_clues",
+          "count": 2
+        }
+      },
+      "discard": {
+        "type": "discard_effect",
+        "description": "Discard to reroll all dice in a test.",
+        "effect": {
+          "type": "reroll_all"
+        }
+      }
+    },
+    "skill_bonus": null,
+    "reroll": true,
+    "additional_dice": 0,
+    "flavor_text": "The symbols carved into its surface seem to shift and change as you watch."
+  },
+  {
+    "id": "expedition_supplies",
+    "name": "Expedition Supplies",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 2,
+    "primary_trait": "item",
+    "secondary_traits": [],
+    "effects": {
+      "passive": {
+        "type": "travel_discount",
+        "description": "Reduce the cost of train and ship tickets by 1 (minimum 0).",
+        "discount": 1
+      },
+      "action": null,
+      "discard": {
+        "type": "discard_effect",
+        "description": "Discard to recover 2 Health and 2 Sanity.",
+        "effect": {
+          "type": "recover",
+          "health": 2,
+          "sanity": 2
+        }
+      }
+    },
+    "skill_bonus": null,
+    "reroll": false,
+    "additional_dice": 0,
+    "flavor_text": "Everything you need for a long journey into the unknown."
+  }
+]

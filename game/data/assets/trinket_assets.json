@@ -1,0 +1,51 @@
+[
+  {
+    "id": "derringer",
+    "name": ".18 Derringer",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 1,
+    "primary_trait": "trinket",
+    "secondary_traits": ["weapon"],
+    "effects": {
+      "passive": {
+        "type": "result_manipulation",
+        "description": "You may add 1 to the result of 1 die when resolving a test during a Combat Encounter.",
+        "applies_to": "combat",
+        "bonus": 1,
+        "dice_affected": 1
+      },
+      "action": null,
+      "discard": null
+    },
+    "skill_bonus": null,
+    "reroll": false,
+    "additional_dice": 0,
+    "flavor_text": "Small but effective when it counts."
+  },
+  {
+    "id": "lucky_coin",
+    "name": "Lucky Coin",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 1,
+    "primary_trait": "trinket",
+    "secondary_traits": [],
+    "effects": {
+      "passive": null,
+      "action": null,
+      "discard": {
+        "type": "discard_effect",
+        "description": "Discard to reroll 1 die in any test.",
+        "effect": {
+          "type": "reroll_dice",
+          "count": 1
+        }
+      }
+    },
+    "skill_bonus": null,
+    "reroll": true,
+    "additional_dice": 0,
+    "flavor_text": "Heads I win, tails you lose."
+  }
+]

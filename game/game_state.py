@@ -2,6 +2,8 @@ import json
 from game.entities.location import Location, LocationType
 from game.entities.investigator import Investigator
 from game.factories.encounter_factory import EncounterFactory
+from game.factories.asset_factory import AssetFactory
+from game.entities.cards.asset_deck import AssetDeck
 from game.enums import GamePhase
 
 
@@ -16,8 +18,16 @@ class GameState:
         self.mysteries_solved = 0
         self.current_phase = GamePhase.ACTION
         self.defeated_investigators = []
+
+        # Initialize factories
         self.encounter_factory = EncounterFactory()
         self.encounter_factory.load_all_encounter_types()
+
+        self.asset_factory = AssetFactory()
+        self.asset_factory.load_all_assets()
+
+        # Initialize asset deck
+        self.asset_deck = None  # Will be initialized in reset_game
 
         self.locations = {}
         self.investigator = {}
@@ -27,6 +37,9 @@ class GameState:
         self.doom_track = 0
         self.mysteries_solved = 0
         self.current_phase = GamePhase.ACTION
+
+        # Initialize asset deck
+        self._setup_asset_deck()
 
         self.load_locations()
         # TODO: test investigator, replace with character selection
@@ -51,6 +64,20 @@ class GameState:
             actions=2,
             current_location="London",
         )
+
+    def _setup_asset_deck(self):
+        """Set up the asset deck with all available assets."""
+        # Create a list of all assets
+        all_assets = list(self.asset_factory.assets.values())
+
+        # Create the asset deck
+        self.asset_deck = AssetDeck(all_assets)
+
+        # Shuffle the deck
+        self.asset_deck.shuffle()
+
+        # Set up the reserve
+        self.asset_deck.setup_reserve(4)
 
     def load_locations(self):
         """Load location data from JSON file."""

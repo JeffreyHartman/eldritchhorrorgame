@@ -1,0 +1,68 @@
+[
+  {
+    "id": "hired_muscle",
+    "name": "Hired Muscle",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 3,
+    "primary_trait": "ally",
+    "secondary_traits": ["teamwork"],
+    "effects": {
+      "passive": {
+        "type": "skill_bonus",
+        "description": "Gain +2 to Strength tests.",
+        "skill": "strength",
+        "bonus": 2
+      },
+      "action": null,
+      "discard": {
+        "type": "discard_effect",
+        "description": "Discard to defeat a monster with health 3 or less at your location.",
+        "effect": {
+          "type": "defeat_monster",
+          "max_health": 3
+        }
+      }
+    },
+    "skill_bonus": {
+      "strength": 2
+    },
+    "reroll": false,
+    "additional_dice": 0,
+    "flavor_text": "They don't ask questions as long as the money's good."
+  },
+  {
+    "id": "professor_armitage",
+    "name": "Professor Armitage",
+    "type": "asset",
+    "expansion": "CORE",
+    "cost": 4,
+    "primary_trait": "ally",
+    "secondary_traits": [],
+    "effects": {
+      "passive": {
+        "type": "skill_bonus",
+        "description": "Gain +2 to Lore tests.",
+        "skill": "lore",
+        "bonus": 2
+      },
+      "action": {
+        "type": "action",
+        "description": "Test Lore (-1). If you pass, gain 1 Clue token.",
+        "test": "lore",
+        "modifier": -1,
+        "success_effect": {
+          "type": "gain_clues",
+          "count": 1
+        }
+      },
+      "discard": null
+    },
+    "skill_bonus": {
+      "lore": 2
+    },
+    "reroll": false,
+    "additional_dice": 0,
+    "flavor_text": "His knowledge of the arcane is unmatched in academic circles."
+  }
+]
