@@ -3,8 +3,11 @@ from game.entities.location import Location, LocationType
 from game.entities.investigator import Investigator
 from game.factories.encounter_factory import EncounterFactory
 from game.factories.asset_factory import AssetFactory
+from game.factories.condition_factory import ConditionFactory
 from game.entities.cards.asset_deck import AssetDeck
-from game.enums import GamePhase
+from game.entities.cards.condition_deck import ConditionDeck
+from game.entities.cards.encounter_deck import EncounterDeck
+from game.enums import GamePhase, EncounterType
 
 
 class GameState:
@@ -26,8 +29,13 @@ class GameState:
         self.asset_factory = AssetFactory()
         self.asset_factory.load_all_assets()
 
-        # Initialize asset deck
-        self.asset_deck = None  # Will be initialized in reset_game
+        self.condition_factory = ConditionFactory()
+        self.condition_factory.load_all_conditions()
+
+        # Initialize decks (will be fully set up in reset_game)
+        self.asset_deck = None
+        self.condition_deck = None
+        self.encounter_decks = {}  # Dict of encounter_type -> EncounterDeck
 
         self.locations = {}
         self.investigator = {}
@@ -38,8 +46,10 @@ class GameState:
         self.mysteries_solved = 0
         self.current_phase = GamePhase.ACTION
 
-        # Initialize asset deck
+        # Initialize all decks
         self._setup_asset_deck()
+        self._setup_condition_deck()
+        self._setup_encounter_decks()
 
         self.load_locations()
         # TODO: test investigator, replace with character selection
@@ -113,3 +123,134 @@ class GameState:
     def has_actions_left(self):
         """Check if the investigator has actions remaining."""
         return self.investigator.actions > 0
+
+    def _setup_condition_deck(self):
+        """Set up the condition deck with all available conditions."""
+        # Create a list of all conditions
+        all_conditions = list(self.condition_factory.conditions.values())
+
+        # Create the condition deck
+        self.condition_deck = ConditionDeck(all_conditions)
+
+        # Shuffle the deck
+        self.condition_deck.shuffle()
+
+    def _setup_encounter_decks(self):
+        """Set up encounter decks for each encounter type."""
+        # Clear existing decks
+        self.encounter_decks = {}
+
+        # Create a deck for each encounter type
+        for encounter_type in EncounterType:
+            encounter_type_str = encounter_type.value
+
+            # Get all encounters of this type from the factory
+            encounters = []
+            if encounter_type_str in self.encounter_factory.encounters:
+                encounters = self.encounter_factory.encounters[encounter_type_str]
+
+            # Create and shuffle the deck
+            deck = EncounterDeck(encounters, f"{encounter_type_str.capitalize()} Encounters")
+            deck.shuffle()
+
+            # Store in the dictionary
+            self.encounter_decks[encounter_type_str] = deck
+
+    def draw_encounter(self, encounter_type: str, subtype: str = None):
+        """
+        Draw an encounter from the specified deck.
+
+        Args:
+            encounter_type: Type of encounter (general, research, etc.)
+            subtype: Optional subtype for filtering (city, wilderness, etc.)
+
+        Returns:
+            An encounter card, or None if the deck is empty
+        """
+        # Get the appropriate deck
+        deck = self.encounter_decks.get(encounter_type)
+        if not deck:
+            return None
+
+        # If subtype is specified, try to draw a matching encounter
+        if subtype:
+            from game.entities.location import LocationType
+            try:
+                location_type = LocationType[subtype.upper()]
+                return deck.draw_by_location_type(location_type)
+            except (KeyError, ValueError):
+                # Invalid location type, fall back to random draw
+                pass
+
+        # Draw a random encounter
+        return deck.draw()
+
+    def draw_condition(self, trait: str = None, condition_id: str = None):
+        """
+        Draw a condition from the condition deck.
+
+        Args:
+            trait: Optional trait to filter by (e.g., "madness")
+            condition_id: Optional specific condition ID to draw
+
+        Returns:
+            A condition card, or None if the deck is empty or no matching condition found
+        """
+        if not self.condition_deck:
+            return None
+
+        if condition_id:
+            # Draw a specific condition by ID
+            return self.condition_deck.draw_by_id(condition_id)
+        elif trait:
+            # Draw a condition with a specific trait
+            return self.condition_deck.draw_by_trait(trait)
+        else:
+            # Draw from the bottom of the deck
+            return self.condition_deck.draw()
+
+    def search_condition(self, trait: str = None, condition_id: str = None):
+        """
+        Search for a condition in the deck without removing it.
+
+        Args:
+            trait: Optional trait to filter by (e.g., "madness")
+            condition_id: Optional specific condition ID to search for
+
+        Returns:
+            A tuple of (condition, index) if found, or (None, -1) if not found
+        """
+        if not self.condition_deck:
+            return None, -1
+
+        if condition_id:
+            # Search for a specific condition by ID
+            return self.condition_deck.search_by_id(condition_id)
+        elif trait:
+            # Search for a condition with a specific trait
+            return self.condition_deck.search_by_trait(trait)
+
+        return None, -1
+
+    def recycle_conditions(self, trait: str = None, condition_id: str = None):
+        """
+        Recycle conditions from the discard pile back into the deck.
+
+        Args:
+            trait: Optional trait to filter by (e.g., "madness")
+            condition_id: Optional specific condition ID to recycle
+
+        Returns:
+            True if any conditions were recycled, False otherwise
+        """
+        if not self.condition_deck:
+            return False
+
+        if condition_id:
+            # Recycle conditions with a specific ID
+            return self.condition_deck.recycle_discarded_conditions_by_id(condition_id)
+        elif trait:
+            # Recycle conditions with a specific trait
+            return self.condition_deck.recycle_discarded_conditions_by_trait(trait)
+
+        return False

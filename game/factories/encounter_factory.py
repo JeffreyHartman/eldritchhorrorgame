@@ -201,6 +201,9 @@ class EncounterFactory:
         """
         Create an encounter of the specified type and subtype
 
+        NOTE: This method is deprecated and will be removed in a future version.
+        Use GameState.draw_encounter() instead, which properly handles deck management.
+
         Args:
             encounter_type: The type of encounter (general, research, other_world, etc.)
             subtype: Optional subtype (city, wilderness, sea, ancient_one_name, expedition_location)
@@ -226,6 +229,22 @@ class EncounterFactory:
         # For encounter types that don't use subtypes (like other_world)
         # or if we couldn't find a matching subtype
         return random.choice(self.encounters[encounter_type])
+
+    def get_all_encounters_by_type(self, encounter_type: str) -> List[Encounter]:
+        """
+        Get all encounters of a specific type.
+
+        Args:
+            encounter_type: The type of encounter (general, research, other_world, etc.)
+
+        Returns:
+            List of all encounters of the specified type
+        """
+        # Check if we need to load this encounter type
+        if encounter_type not in self.loaded_types:
+            self._load_encounters(encounter_type)
+
+        return self.encounters.get(encounter_type, [])
 
     def load_all_encounter_types(self):
         """Load all encounter types"""

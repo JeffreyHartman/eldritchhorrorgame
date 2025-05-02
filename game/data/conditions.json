@@ -1,0 +1,35 @@
+[
+  {
+    "id": "amnesia",
+    "type": "condition",
+    "expansion": "CORE",
+    "traits": ["madness"],
+    "effect": "true",
+    "action": "false",
+    "reckoning": "true",
+    "variants": 6,
+    "front": {
+      "title": "Amnesia",
+      "text": "You have lost your memory."
+    },
+    "backs": [
+      {
+        "variant_id": 1,
+        "title": "Forgotten Crimes ",
+        "components": [
+          {
+            "type": "narrative",
+            "text": "You don't want to believe it's true, but the evidence is irrefutable. At some point that you no longer recall, you went on a crime spree. Now you must accompany the police."
+          },
+          {
+            "type": "condition_gain",
+            "condition": "detained"
+          },
+          {
+            "type": "discard_self"
+          }
+        ]
+      }
+    ]
+  }
+]

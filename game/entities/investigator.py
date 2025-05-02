@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from game.entities.cards.asset import Asset
 from game.enums import TicketType
@@ -164,14 +164,56 @@ class Investigator:
 
         return successes >= 1, rolls
 
-    def add_condition(self, condition: str) -> List[str]:
+    def add_condition(self, condition: str, variant_index: Optional[int] = None) -> List[str]:
         """Add a condition to the investigator.
 
         Args:
-            condition: The condition to add
+            condition: The condition ID to add
+            variant_index: Optional index of the back variant to use if the condition is flipped
 
         Returns:
             The updated list of conditions
         """
+        # TODO: Enhance this method to:
+        # 1. Handle condition objects, not just strings
+        # 3. Process condition effects when added
+        # 4. Add abilities from conditions
+
+        # Check if the investigator already has this condition
+        if condition in self.conditions and variant_index is None:
+            # Already has this condition, don't add it again
+            return self.conditions
+
+        # Add the condition ID to the list
         self.conditions.append(condition)
+
+        # TODO: If we have the condition object, we could flip it here
+        # if variant_index is not None:
+        #     condition_obj.flip(variant_index)
+
         return self.conditions
+
+    def has_condition(self, condition_id: str) -> bool:
+        """Check if the investigator has a specific condition.
+
+        Args:
+            condition_id: The ID of the condition to check for
+
+        Returns:
+            True if the investigator has the condition, False otherwise
+        """
+        return condition_id in self.conditions
+
+    def remove_condition(self, condition_id: str) -> bool:
+        """Remove a condition from the investigator.
+
+        Args:
+            condition_id: The ID of the condition to remove
+
+        Returns:
+            True if the condition was removed, False if it wasn't found
+        """
+        if condition_id in self.conditions:
+            self.conditions.remove(condition_id)
+            return True
+        return False
