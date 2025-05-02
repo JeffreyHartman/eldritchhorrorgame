@@ -17,29 +17,36 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
 - [x] Main menu and basic UI
 - [x] Win/loss conditions\
 - [ ] Implement action phase
-    - [x] Travel between locations
-    - [x] Rest action
-    - [ ] Trade action
-    - [x] Prepare for travel action
-    - [ ] Acquire assets action
-    - [ ] Perform component action
+  - [x] Travel between locations
+  - [x] Rest action
+  - [ ] Trade action
+  - [x] Prepare for travel action
+  - [ ] Acquire assets action
+  - [ ] Perform component action
 - [ ] Implement encouter phase
-    - [x] Resolve encounters
-    - [ ] Handle defeated investigators
+  - [x] Resolve encounters
+  - [ ] Handle defeated investigators
 - [ ] Implement mythos phase
 
 ### Game Components
 
 - [x] Location system with connections
 - [x] Train and ship ticket system
-- [ ] Artifacts
-- [ ] Items
+- [ ] Investigators
+  - [x] Investigator class
+  - [ ] Multiple investigators
+  - [ ] Investigator selection
+- [ ] Assets
+  - [ ] Asset system
+  - [ ] Allies
+  - [ ] Artifacts
+  - [ ] Items
+  - [ ] Spells
 - [ ] Gates
 - [ ] Monsters
 - [ ] Ancient Ones
 - [ ] Conditions
 - [/] Encounter Decks
-- [ ] Spells
 - [ ] Mysteries
 - [ ] Mythos deck
 - [ ] Clues
@@ -76,5 +83,3 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
 1. Clone the repository
 2. Install requirements: `pip install -r requirements.txt`
 3. Run the game: `python main.py`
-
-

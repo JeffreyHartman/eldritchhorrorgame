@@ -34,7 +34,7 @@ class AssetGainComponent(EncounterComponent):
             asset = state.asset_factory.get_asset(self.specific_asset_id)
             if asset:
                 result["gained_assets"].append(asset.id)
-                # The actual adding to investigator will be handled by the phase controller
+                investigator.add_asset(asset)
             return result
 
         # If we're choosing from options
@@ -54,6 +54,7 @@ class AssetGainComponent(EncounterComponent):
                         asset = state.asset_deck.take_from_reserve(index)
                         if asset:
                             result["gained_assets"].append(asset.id)
+                            investigator.add_asset(asset)
 
                 result["choice_type"] = "reserve"
             elif choice == "random":
@@ -63,6 +64,7 @@ class AssetGainComponent(EncounterComponent):
                         asset = state.asset_deck.draw()
                         if asset:
                             result["gained_assets"].append(asset.id)
+                            investigator.add_asset(asset)
 
                 result["choice_type"] = "random"
         elif self.source == "reserve":
@@ -75,6 +77,7 @@ class AssetGainComponent(EncounterComponent):
                     asset = state.asset_deck.take_from_reserve(index)
                     if asset:
                         result["gained_assets"].append(asset.id)
+                        investigator.add_asset(asset)
 
             result["source_type"] = "reserve"
         elif self.source == "random":
@@ -84,8 +87,8 @@ class AssetGainComponent(EncounterComponent):
                     asset = state.asset_deck.draw()
                     if asset:
                         result["gained_assets"].append(asset.id)
+                        investigator.add_asset(asset)
 
             result["source_type"] = "random"
 
-        # The actual adding to investigator will be handled by the phase controller
         return result

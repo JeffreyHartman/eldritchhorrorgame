@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
+from game.entities.cards.asset import Asset
 from game.enums import TicketType
 
 
@@ -26,6 +27,7 @@ class Investigator:
     actions: int = 2
     is_delayed: bool = False
     conditions: List[str] = field(default_factory=list)
+    assets: List[Asset] = field(default_factory=list)
 
     def heal(self, amount: int = 1) -> int:
         """Heal the investigator's health.
