@@ -1,0 +1,151 @@
+[
+  {
+    "id": 1,
+    "expansion": "CORE",
+    "name": "Akachi Onyele",
+    "occupation": "The Shaman",
+    "role": "Gate Closer",
+    "max_health": 5,
+    "max_sanity": 7,
+    "skills": {
+      "lore": 3,
+      "influence": 2,
+      "observation": 2,
+      "strength": 2,
+      "will": 4
+    },
+    "starting_location": "Space 15",
+    "starting_spells": ["Mists of Relah"],
+    "starting_clues": 1,
+    "abilities": [
+      {
+        "type": "action",
+        "text": "Action: Look at the top 2 Gates in the Gate stack. Put 1 Gate on the top of the Gate stack, and the other on the bottom.",
+        "components": [
+          {
+            "type": "custom_action",
+            "action_id": "akachi_gate_action"
+          }
+        ]
+      },
+      {
+        "type": "passive",
+        "text": "When you close a Gate during an Other World Encounter, you may move to any space containing a Clue Clue or a Gate.",
+        "components": [
+          {
+            "type": "custom_action",
+            "action_id": "akachi_gate_closure"
+          }
+        ]
+      }
+    ],
+    "quote": "I will journey to the lands beyond. I do not fear them.",
+    "bio": "As a young girl in Nigeria, Akachi stayed apart from other children, preferring the company of imaginary friends. Her elders feared madness, but the village dibia believed that she had been chosen by the gods. The wise old man taught her how to travel between worlds and how to marshal spirits. Now, she has become a wise leader herself, traveling across Africa and teaching others to protect themselves. She's recently arrived in Cape Town and from here, she will track down the dark forces that threaten humanity.",
+    "defeated_encounters": [
+      {
+        "type": "injury",
+        "text": "By the time you find Akachi, she's slipped into a coma. Doctors aren't certain if she will recover. Gain all of her possessions. The hospital staff has grown very fond of her, and you try to convince them to tell you what she said to them while she was conscious.",
+        "components": [
+          {
+            "type": "skill_test",
+            "skill": "influence",
+            "modifier": 0,
+            "success_components": [
+              {
+                "type": "narrative",
+                "text": "You hear many stories from the hospital staff."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "failure_components": [
+              {
+                "type": "narrative",
+                "text": "You can't get anyone to share Akachi's story with you."
+              }
+            ]
+          },
+          {
+            "type": "discard_self"
+          }
+        ]
+      },
+      {
+        "type": "insanity",
+        "text": "Akachi's mind has left this world and she no longer has interest in material goods. Gain all of her possessions. An Odinani man gives you a bitter drink to help you reach her. After you drink it, you are assaulted by nightmarish visions, but you force yourself to keep searching for her. If you fail, you curl up in a corner until the drink wears off.",
+        "components": [
+          {
+            "type": "skill_test",
+            "skill": "will",
+            "modifier": 0,
+            "success_components": [
+              {
+                "type": "narrative",
+                "text": "You hear Akachi's voice sharing all she's learned."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "failure_components": [
+              {
+                "type": "narrative",
+                "text": "You curl up in a corner until the drink wears off."
+              }
+            ]
+          },
+          {
+            "type": "defeated_investigator_transfer_assets"
+          },
+          {
+            "type": "discard_self"
+          }
+        ]
+      }
+    ],
+    "personal_story": {
+      "name": "Guardian of the Veil",
+      "text": "The spirits are restless. Something evil stirs, and gaining the favor of your ancestors may be the only way to stop what is coming.",
+      "components": [
+        {
+          "type": "reward",
+          "text": "When you close a Gate during an Other World Encounter, place that Gate on this card. Then, if there are 3 Gates on this card, discard this card and gain The Earth Speaks Reward.",
+          "action_id": "akachi_personal_story_reward"
+        },
+        {
+          "type": "consequence",
+          "text": "When Doom advances to 6 or lower, discard this card and gain The Earth's Anger Consequence",
+          "action_id": "akachi_personal_story_consequence"
+        }
+      ],
+      "reward": {
+        "name": "Earth Speaks",
+        "text": "When you gain this card, improve Lore and Will.",
+        "components": [
+          {
+            "type": "improve_skills",
+            "skills": ["lore", "will"]
+          },
+          {
+            "type": "action",
+            "text": "Once per round, when Doom Doom advances, you may spend Clue 2 Clues to retreat Doom by 1.",
+            "action_id": "earth_speaks"
+          }
+        ]
+      },
+      "consequence": {
+        "name": "Earth's Anger",
+        "text": "When you perform an Acquire Assets Action, increase the value of each card in the reserve by 1.",
+        "components": [
+          {
+            "type": "custom_passive",
+            "effect_id": "earths_anger"
+          }
+        ]
+      }
+    }
+  }
+]

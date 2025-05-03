@@ -3,9 +3,9 @@ import os
 import logging
 import random
 from typing import Dict, List, Optional, Any
+from game.enums import Expansion
 
 from game.entities.cards.condition import Condition
-from game.entities.base.card import Expansion
 from game.entities.base.component import CardComponent
 
 
@@ -20,13 +20,15 @@ class ConditionFactory:
 
     def __init__(self):
         self.conditions: Dict[str, Condition] = {}  # Dict of condition_id -> Condition
-        self.conditions_by_trait: Dict[str, List[Condition]] = {}  # Dict of trait -> list of conditions
+        self.conditions_by_trait: Dict[str, List[Condition]] = (
+            {}
+        )  # Dict of trait -> list of conditions
         self.logger = logging.getLogger(__name__)
 
     def load_all_conditions(self) -> None:
         """Load all conditions from the data directory."""
         conditions_file = "game/data/conditions.json"
-        
+
         if os.path.exists(conditions_file):
             self.load_conditions_from_file(conditions_file)
         else:
@@ -79,7 +81,9 @@ class ConditionFactory:
 
                 self.logger.debug(f"Loaded condition: {condition_id}")
         except Exception as e:
-            self.logger.error(f"Error processing condition {condition_data.get('id')}: {str(e)}")
+            self.logger.error(
+                f"Error processing condition {condition_data.get('id')}: {str(e)}"
+            )
 
     def _create_condition(self, data: Dict[str, Any]) -> Optional[Condition]:
         """
@@ -100,24 +104,26 @@ class ConditionFactory:
             # Get basic condition properties
             traits = data.get("traits", [])
             expansion_str = data.get("expansion", "CORE")
-            
+
             # Convert expansion string to enum
             try:
                 expansion = Expansion[expansion_str]
             except KeyError:
-                self.logger.warning(f"Unknown expansion '{expansion_str}', defaulting to CORE")
+                self.logger.warning(
+                    f"Unknown expansion '{expansion_str}', defaulting to CORE"
+                )
                 expansion = Expansion.CORE
-            
+
             # Get condition flags
             effect = data.get("effect", "false").lower() == "true"
             action = data.get("action", "false").lower() == "true"
             reckoning = data.get("reckoning", "false").lower() == "true"
             variants = data.get("variants", 1)
-            
+
             # Get front and back data
             front = data.get("front", {})
             backs = data.get("backs", [])
-            
+
             # Create the condition
             condition = Condition(
                 condition_id=condition_id,
@@ -128,13 +134,13 @@ class ConditionFactory:
                 effect=effect,
                 action=action,
                 reckoning=reckoning,
-                variants=variants
+                variants=variants,
             )
-            
+
             # TODO: Process components for front and back sides
             # This would involve creating the appropriate CardComponent objects
             # and adding them to the condition sides
-            
+
             return condition
         except Exception as e:
             self.logger.error(f"Error creating condition {data.get('id')}: {str(e)}")
@@ -163,31 +169,31 @@ class ConditionFactory:
             List of conditions with the specified trait
         """
         return self.conditions_by_trait.get(trait, [])
-    
+
     def get_random_condition(self) -> Optional[Condition]:
         """
         Get a random condition from all available conditions.
-        
+
         Returns:
             A random condition, or None if no conditions are available
         """
         if not self.conditions:
             return None
-        
+
         return random.choice(list(self.conditions.values()))
-    
+
     def get_random_condition_by_trait(self, trait: str) -> Optional[Condition]:
         """
         Get a random condition with the specified trait.
-        
+
         Args:
             trait: Trait to filter by (e.g., "madness")
-            
+
         Returns:
             A random condition with the specified trait, or None if none are available
         """
         conditions = self.get_conditions_by_trait(trait)
         if not conditions:
             return None
-        
+
         return random.choice(conditions)

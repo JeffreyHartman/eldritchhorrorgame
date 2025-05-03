@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
-from game.entities.base.card import Card, CardType, CardSize, Expansion
-from game.enums import AssetTrait, AssetSecondaryTrait
+from game.entities.base.card import Card, CardType, CardSize
+from game.enums import AssetTrait, AssetSecondaryTrait, Expansion
 
 
 class Asset(Card):
@@ -15,12 +15,12 @@ class Asset(Card):
         name: str,
         cost: int,
         primary_trait: AssetTrait,
-        secondary_traits: List[AssetSecondaryTrait] = None,
-        effects: Dict[str, Any] = None,
-        skill_bonus: Dict[str, int] = None,
+        secondary_traits: List[AssetSecondaryTrait] | None = None,
+        effects: Dict[str, Any] | None = None,
+        skill_bonus: Dict[str, int] | None = None,
         reroll: bool = False,
         additional_dice: int = 0,
-        flavor_text: str = None,
+        flavor_text: str | None = None,
         expansion=Expansion.CORE,
     ):
         super().__init__(name, CardType.ASSET, CardSize.STANDARD, False, expansion)
@@ -79,7 +79,7 @@ class Asset(Card):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Asset':
+    def from_dict(cls, data: Dict[str, Any]) -> "Asset":
         """Create an asset from a dictionary representation."""
         # Convert string traits to enum values
         primary_trait = AssetTrait(data.get("primary_trait"))
@@ -96,9 +96,9 @@ class Asset(Card):
 
         # Create the asset
         return cls(
-            asset_id=data.get("id"),
-            name=data.get("name"),
-            cost=data.get("cost"),
+            asset_id=data.get("id", ""),
+            name=data.get("name", ""),
+            cost=data.get("cost", ""),
             primary_trait=primary_trait,
             secondary_traits=secondary_traits,
             effects=data.get("effects"),

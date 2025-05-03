@@ -1,0 +1,155 @@
+[
+  {
+    "id": 2,
+    "expansion": "CORE",
+    "name": "Charlie Kane",
+    "occupation": "The Politician",
+    "role": "Support",
+    "max_health": 4,
+    "max_sanity": 8,
+    "skills": {
+      "lore": 2,
+      "influence": 4,
+      "observation": 3,
+      "strength": 2,
+      "will": 2
+    },
+    "starting_location": "San Francisco",
+    "starting_spells": null,
+    "starting_assets": ["personal_assistant"],
+    "starting_clues": 0,
+    "abilities": [
+      {
+        "type": "action",
+        "text": "Another investigator of your choice may immediately perform 1 additional action.",
+        "components": [
+          {
+            "type": "custom_action",
+            "action_id": "charlie_additional_action"
+          }
+        ]
+      },
+      {
+        "type": "passive",
+        "text": "When you perform an Acquire Assets action, you may allow other investigators to gain any cards you purchase.",
+        "components": [
+          {
+            "type": "custom_action",
+            "action_id": "charlie_acquire_assets"
+          }
+        ]
+      }
+    ],
+    "quote": "It can be arranged. It's just a matter of acceptable terms.",
+    "bio": "When the press asks if Charlie is planning a run for national office, he smiles and says that he's focused on the important issues. The truth is that he would love to launch his campaign, but right now the most important issue is preventing the end of the world without causing a panic. To do this, he's been calling in favors across the country. Most recently, Charlie's stopped in San Francisco to visit Hearst Castle. With the help of his friends and his finances, Charlies believes he can fix this problem without sacrificing a single vote.",
+    "defeated_encounters": [
+      {
+        "type": "injury",
+        "text": "The nurse at the front desk hands you a parcel. Gain all of his possessions. \"Mr. Kane said to give you this package, but the doctor insists that no visitors be admitted.\" You try to convince her to make an exception for you",
+        "components": [
+          {
+            "type": "skill_test",
+            "skill": "influence",
+            "modifier": 0,
+            "success_components": [
+              {
+                "type": "narrative",
+                "text": "You find that Charlie's health is beyond recovery, but he's still in good spirits and you have a long talk."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "failure_components": [
+              {
+                "type": "narrative",
+                "text": "Charlie spends the rest of his days cut off from all human contact."
+              }
+            ]
+          },
+          {
+            "type": "defeated_investigator_transfer_assets"
+          },
+          {
+            "type": "discard_self"
+          }
+        ]
+      },
+      {
+        "type": "insanity",
+        "text": "The first thing Charlie does when you enter the restaurant is hand you all of his belongings. Gain all of his possessions. He offers you deals, promising to sell you Atlantis and introduce you to Caesar. You negotiate carefully with him ",
+        "components": [
+          {
+            "type": "skill_test",
+            "skill": "influence",
+            "modifier": null,
+            "success_components": [
+              {
+                "type": "narrative",
+                "text": "He tells you all he knows in exchange for your napkin ring and a salt shaker."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "failure_components": [
+              {
+                "type": "narrative",
+                "text": "Charlie gets angry and insists that you'll be sorry when he's President of the world."
+              }
+            ]
+          },
+          {
+            "type": "defeated_investigator_transfer_assets"
+          },
+          {
+            "type": "discard_self"
+          }
+        ]
+      }
+    ],
+    "personal_story": {
+      "name": "Citizen Kane",
+      "text": "You carefully negotiate with your contacts in order to ensure that all possible permutations of the future have been prepared for. After all, how will you run for office next year if the world has already ended?",
+      "components": [
+        {
+          "type": "reward",
+          "text": "When a Mystery is solved, discard this card and gain the Kane for Office Reward.",
+          "action_id": "charlie_personal_story_reward"
+        },
+        {
+          "type": "consequence",
+          "text": "When Doom advances to 6 or lower, discard this card and gain the Dark Times consequence.",
+          "action_id": "charlie_personal_story_consequence"
+        }
+      ],
+      "reward": {
+        "name": "Kane for Office",
+        "text": "When you gain this card, improve Influence and Will.",
+        "components": [
+          {
+            "type": "improve_skills",
+            "skills": ["influence", "will"]
+          },
+          {
+            "type": "action",
+            "text": "Once per round, when Doom advances, you may spend 2 Clues to retreat Doom by 1.",
+            "action_id": "kane_for_office"
+          }
+        ]
+      },
+      "consequence": {
+        "name": "Dark Times",
+        "text": "When you perform an Acquire Assets Action, increase the value of each card in the reserve by 1.",
+        "components": [
+          {
+            "type": "custom_passive",
+            "effect_id": "dark_times"
+          }
+        ]
+      }
+    }
+  }
+]

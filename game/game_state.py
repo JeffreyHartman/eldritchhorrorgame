@@ -1,12 +1,17 @@
 import json
+from typing import List, Optional, Dict, Any
 from game.entities.location import Location, LocationType
 from game.entities.investigator import Investigator
+from game.entities.player import Player
 from game.factories.encounter_factory import EncounterFactory
 from game.factories.asset_factory import AssetFactory
 from game.factories.condition_factory import ConditionFactory
+from game.factories.investigator_factory import InvestigatorFactory
 from game.entities.cards.asset_deck import AssetDeck
 from game.entities.cards.condition_deck import ConditionDeck
 from game.entities.cards.encounter_deck import EncounterDeck
+from game.systems.player_manager import PlayerManager
+from game.systems.investigator_selector import InvestigatorSelector
 from game.enums import GamePhase, EncounterType
 
 
@@ -32,19 +37,32 @@ class GameState:
         self.condition_factory = ConditionFactory()
         self.condition_factory.load_all_conditions()
 
+        self.investigator_factory = InvestigatorFactory()
+        self.investigator_factory.load_all_investigators()
+
+        # Initialize player management
+        self.player_manager = PlayerManager(self.investigator_factory)
+        self.investigator_selector = InvestigatorSelector(self.investigator_factory)
+
         # Initialize decks (will be fully set up in reset_game)
         self.asset_deck = None
         self.condition_deck = None
         self.encounter_decks = {}  # Dict of encounter_type -> EncounterDeck
 
         self.locations = {}
-        self.investigator = {}
+        self.players = []  # List of Player objects
 
-    def reset_game(self):
-        """Reset the game state to starting values."""
+    def reset_game(self, player_count: int = 1):
+        """
+        Reset the game state to starting values.
+
+        Args:
+            player_count: Number of players (1-8)
+        """
         self.doom_track = 0
         self.mysteries_solved = 0
         self.current_phase = GamePhase.ACTION
+        self.defeated_investigators = []
 
         # Initialize all decks
         self._setup_asset_deck()
@@ -52,28 +70,10 @@ class GameState:
         self._setup_encounter_decks()
 
         self.load_locations()
-        # TODO: test investigator, replace with character selection
-        self.investigator = Investigator(
-            name="Anna Blackwood",
-            health=4,
-            max_health=5,
-            sanity=5,
-            max_sanity=5,
-            skills={
-                "lore": 2,
-                "influence": 3,
-                "observation": 2,
-                "strength": 1,
-                "will": 3,
-            },
-            items=[],
-            clue_tokens=2,
-            train_tickets=0,
-            ship_tickets=0,
-            is_delayed=False,
-            actions=2,
-            current_location="London",
-        )
+
+        # Reset player management
+        self.players = []
+        self.investigator_selector.reset_selections()
 
     def _setup_asset_deck(self):
         """Set up the asset deck with all available assets."""
@@ -111,18 +111,25 @@ class GameState:
     def reset_action_phase(self):
         """Reset to the action phase and restore actions."""
         self.current_phase = GamePhase.ACTION
-        self.investigator.actions = 2
 
-    def use_action(self):
-        """Use an action, return True if actions remaining, False if no actions left"""
-        if self.investigator.actions > 0:
-            self.investigator.actions -= 1
-            return True
-        return False
+        # Reset actions for all players
+        current_player = self.player_manager.get_current_player()
+        if current_player and current_player.investigator:
+            current_player.investigator.actions = 2
 
-    def has_actions_left(self):
-        """Check if the investigator has actions remaining."""
-        return self.investigator.actions > 0
+    # Remove these methods as they're now handled directly in the action phase
+    # def use_action(self):
+    # def has_actions_left(self):
+    # def get_current_investigator(self):
+
+    def advance_to_next_player(self):
+        """
+        Advance to the next player's turn.
+
+        Returns:
+            The new current player, or None if there are no players
+        """
+        return self.player_manager.advance_turn()
 
     def _setup_condition_deck(self):
         """Set up the condition deck with all available conditions."""
@@ -150,13 +157,15 @@ class GameState:
                 encounters = self.encounter_factory.encounters[encounter_type_str]
 
             # Create and shuffle the deck
-            deck = EncounterDeck(encounters, f"{encounter_type_str.capitalize()} Encounters")
+            deck = EncounterDeck(
+                encounters, f"{encounter_type_str.capitalize()} Encounters"
+            )
             deck.shuffle()
 
             # Store in the dictionary
             self.encounter_decks[encounter_type_str] = deck
 
-    def draw_encounter(self, encounter_type: str, subtype: str = None):
+    def draw_encounter(self, encounter_type: str, subtype: Optional[str] = None):
         """
         Draw an encounter from the specified deck.
 
@@ -175,6 +184,7 @@ class GameState:
         # If subtype is specified, try to draw a matching encounter
         if subtype:
             from game.entities.location import LocationType
+
             try:
                 location_type = LocationType[subtype.upper()]
                 return deck.draw_by_location_type(location_type)
@@ -185,7 +195,9 @@ class GameState:
         # Draw a random encounter
         return deck.draw()
 
-    def draw_condition(self, trait: str = None, condition_id: str = None):
+    def draw_condition(
+        self, trait: Optional[str] = None, condition_id: Optional[str] = None
+    ):
         """
         Draw a condition from the condition deck.
 
@@ -209,7 +221,9 @@ class GameState:
             # Draw from the bottom of the deck
             return self.condition_deck.draw()
 
-    def search_condition(self, trait: str = None, condition_id: str = None):
+    def search_condition(
+        self, trait: Optional[str] = None, condition_id: Optional[str] = None
+    ):
         """
         Search for a condition in the deck without removing it.
 
@@ -232,7 +246,9 @@ class GameState:
 
         return None, -1
 
-    def recycle_conditions(self, trait: str = None, condition_id: str = None):
+    def recycle_conditions(
+        self, trait: Optional[str] = None, condition_id: Optional[str] = None
+    ):
         """
         Recycle conditions from the discard pile back into the deck.
 

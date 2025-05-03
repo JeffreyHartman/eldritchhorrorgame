@@ -1,12 +1,15 @@
 from typing import Dict, List, Optional, Any
-from game.entities.base.card import Card, CardType, Expansion
+from game.entities.base.card import Card, CardType
 from game.entities.base.component import CardComponent
+from game.enums import Expansion
 
 
 class ConditionSide:
     """Represents one side of a condition card."""
 
-    def __init__(self, title: str, text: str, components: Optional[List[CardComponent]] = None):
+    def __init__(
+        self, title: str, text: str, components: Optional[List[CardComponent]] = None
+    ):
         """Initialize a condition side.
 
         Args:
@@ -53,7 +56,7 @@ class Condition(Card):
         effect: bool = False,
         action: bool = False,
         reckoning: bool = False,
-        variants: int = 1
+        variants: int = 1,
     ):
         """Initialize a condition card.
 
@@ -73,7 +76,7 @@ class Condition(Card):
             type=CardType.CONDITION,
             size=None,  # Use default size
             double_sided=True,
-            expansion=expansion
+            expansion=expansion,
         )
 
         self.id = condition_id
@@ -85,8 +88,7 @@ class Condition(Card):
 
         # Create front side
         self.front = ConditionSide(
-            title=front.get("title", "Unknown Condition"),
-            text=front.get("text", "")
+            title=front.get("title", "Unknown Condition"), text=front.get("text", "")
         )
 
         # Create back variants
@@ -94,7 +96,7 @@ class Condition(Card):
         for back_data in backs:
             back = ConditionSide(
                 title=back_data.get("title", "Unknown Effect"),
-                text=back_data.get("text", "")
+                text=back_data.get("text", ""),
             )
             self.backs.append(back)
 
@@ -102,7 +104,7 @@ class Condition(Card):
         self.active_side = 0
 
         # Track which back variant is selected (if any)
-        self.selected_variant = None
+        self.selected_variant: Optional[int] = None
 
     @property
     def active_side_obj(self) -> ConditionSide:

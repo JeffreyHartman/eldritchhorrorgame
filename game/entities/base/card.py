@@ -1,4 +1,5 @@
 from enum import Enum
+from game.enums import Expansion
 
 
 class CardType(Enum):
@@ -12,18 +13,6 @@ class CardType(Enum):
     ARTIFACT = 8
     RESEARCH = 9
     SPECIAL = 10
-
-
-class Expansion(Enum):
-    CORE = 1
-    FORSAKEN_LORE = 2
-    MOUNTAINS_OF_MADNESS = 3
-    STRANGE_REMNANTS = 4
-    UNDER_THE_PYRAMIDS = 5
-    SIGNS_OF_CARCOSA = 6
-    THE_DREAMLANDS = 7
-    CITIES_IN_RUINS = 8
-    MASKS_OF_NYARLATHOTEP = 9
 
 
 class CardSize(Enum):

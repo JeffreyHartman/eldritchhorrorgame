@@ -3,14 +3,32 @@
 from game.entities.location import Location
 from game.phases.base_phase import GamePhase
 from game.enums import GamePhase as GamePhaseEnum, EncounterType
+from game.systems.player_manager import PlayerManager
+from game.entities.player import Player
 
 
 class EncounterPhase(GamePhase):
     """Handles the Encounter phase of the game."""
 
     def execute(self):
-        # if there are monsters at the location, they must be encountred
-        location_name = self.state.investigator.current_location
+        # Get player manager directly
+        player_manager: PlayerManager = self.state.player_manager
+
+        # Get current player and investigator
+        current_player = player_manager.get_current_player()
+        if not current_player or not current_player.investigator:
+            self.ui.show_message("Error: No current player or investigator found!")
+            self.state.current_phase = GamePhaseEnum.MYTHOS
+            return
+
+        # If we have multiple players, show the player turn transition
+        if len(self.state.players) > 1:
+            investigator_name = current_player.investigator.name
+            self.ui.show_message(f"{investigator_name}'s Encounter Phase")
+
+        # If there are monsters at the location, they must be encountered
+        current_investigator = current_player.investigator
+        location_name = current_investigator.current_location
         location: Location = self.state.locations[location_name]
         if location.monsters:
             self.resolve_monster_encounters()
@@ -24,7 +42,18 @@ class EncounterPhase(GamePhase):
         else:
             self.choose_encounter()
 
-        self.state.current_phase = GamePhaseEnum.MYTHOS
+        # If we have multiple players, advance to the next player
+        if len(self.state.players) > 1:
+            # If this is the last player, advance to Mythos phase
+            next_player = self.state.advance_to_next_player()
+            if next_player == player_manager.get_lead_investigator():
+                self.state.current_phase = GamePhaseEnum.MYTHOS
+            else:
+                # Stay in Encounter phase for the next player
+                pass
+        else:
+            # Single player, advance to Mythos phase
+            self.state.current_phase = GamePhaseEnum.MYTHOS
 
     def resolve_monster_encounters(self):
         """Resolve encounters with monsters at the current location."""
@@ -32,7 +61,16 @@ class EncounterPhase(GamePhase):
 
     def get_available_encounter_decks(self):
         """Determine which encounter decks are available at the current location"""
-        location_name = self.state.investigator.current_location
+        # Get current player and investigator
+        player_manager: PlayerManager = self.state.player_manager
+        current_player = player_manager.get_current_player()
+
+        if not current_player or not current_player.investigator:
+            self.ui.show_message("Error: No current player or investigator found!")
+            return []
+
+        current_investigator = current_player.investigator
+        location_name = current_investigator.current_location
         location = self.state.locations[location_name]
         available_decks = []
 
@@ -76,7 +114,7 @@ class EncounterPhase(GamePhase):
         defeated_investigators = [
             inv
             for inv in self.state.defeated_investigators
-            if inv.current_location == self.state.investigator.current_location
+            if inv.current_location == current_investigator.current_location
         ]
         for inv in defeated_investigators:
             available_decks.append(
@@ -90,9 +128,22 @@ class EncounterPhase(GamePhase):
 
     def choose_encounter(self):
         """Let the player choose which encounter deck to draw from"""
+        # Get current player and investigator
+        player_manager: PlayerManager = self.state.player_manager
+        current_player = player_manager.get_current_player()
+
+        if not current_player or not current_player.investigator:
+            self.ui.show_message("Error: No current player or investigator found!")
+            return
+
+        current_investigator = current_player.investigator
         available_decks = self.get_available_encounter_decks()
+        if not available_decks:
+            self.ui.show_message("No encounter decks available.")
+            return
+
         selected_deck = self.ui.show_choose_encounter(
-            available_decks, self.state.investigator.current_location
+            available_decks, current_investigator.current_location
         )
 
         # Handle the selected encounter deck
@@ -118,17 +169,25 @@ class EncounterPhase(GamePhase):
 
     def resolve_general_encounter(self):
         """Resolve an encounter from the general encounter deck"""
+        # Get current player and investigator
+        player_manager: PlayerManager = self.state.player_manager
+        current_player = player_manager.get_current_player()
+
+        if not current_player or not current_player.investigator:
+            self.ui.show_message("Error: No current player or investigator found!")
+            return
+
+        current_investigator = current_player.investigator
         self.ui.show_message("Drawing from the General encounter deck...")
 
         # Get the current location type to filter encounters
-        location_name = self.state.investigator.current_location
+        location_name = current_investigator.current_location
         location = self.state.locations[location_name]
         location_type_str = location.location_type.name.lower()
 
         # Draw from the encounter deck
         encounter = self.state.draw_encounter(
-            EncounterType.GENERAL.value,
-            location_type_str
+            EncounterType.GENERAL.value, location_type_str
         )
 
         if not encounter:
@@ -136,7 +195,7 @@ class EncounterPhase(GamePhase):
             return
 
         # Use the resolve_encounter helper method
-        self.resolve_encounter(encounter, self.state.investigator)
+        self.resolve_encounter(encounter, current_investigator)
 
         # After resolving, discard the encounter
         general_deck = self.state.encounter_decks.get(EncounterType.GENERAL.value)
@@ -147,6 +206,12 @@ class EncounterPhase(GamePhase):
 
     def resolve_continent_encounter(self, continent):
         """Resolve an encounter from a continent-specific deck"""
+        # Get current investigator
+        current_investigator = self.state.get_current_investigator()
+        if not current_investigator:
+            self.ui.show_message("Error: No current investigator found!")
+            return
+
         self.ui.show_message(f"Drawing from the {continent} encounter deck...")
 
         # Convert continent name to encounter type
@@ -160,7 +225,7 @@ class EncounterPhase(GamePhase):
             return
 
         # Use the resolve_encounter helper method
-        self.resolve_encounter(encounter, self.state.investigator)
+        self.resolve_encounter(encounter, current_investigator)
 
         # After resolving, discard the encounter
         continent_deck = self.state.encounter_decks.get(continent_type)
@@ -171,6 +236,12 @@ class EncounterPhase(GamePhase):
 
     def resolve_research_encounter(self):
         """Resolve a research encounter"""
+        # Get current investigator
+        current_investigator = self.state.get_current_investigator()
+        if not current_investigator:
+            self.ui.show_message("Error: No current investigator found!")
+            return
+
         self.ui.show_message("Drawing from the Research encounter deck...")
 
         # Draw from the research encounter deck
@@ -181,7 +252,7 @@ class EncounterPhase(GamePhase):
             return
 
         # Use the resolve_encounter helper method
-        self.resolve_encounter(encounter, self.state.investigator)
+        self.resolve_encounter(encounter, current_investigator)
 
         # After resolving, discard the encounter
         research_deck = self.state.encounter_decks.get(EncounterType.RESEARCH.value)
@@ -192,6 +263,12 @@ class EncounterPhase(GamePhase):
 
     def resolve_other_world_encounter(self):
         """Resolve an Other World encounter"""
+        # Get current investigator
+        current_investigator = self.state.get_current_investigator()
+        if not current_investigator:
+            self.ui.show_message("Error: No current investigator found!")
+            return
+
         self.ui.show_message("Drawing from the Other World encounter deck...")
 
         # Draw from the other world encounter deck
@@ -202,10 +279,12 @@ class EncounterPhase(GamePhase):
             return
 
         # Use the resolve_encounter helper method
-        self.resolve_encounter(encounter, self.state.investigator)
+        self.resolve_encounter(encounter, current_investigator)
 
         # After resolving, discard the encounter
-        other_world_deck = self.state.encounter_decks.get(EncounterType.OTHER_WORLD.value)
+        other_world_deck = self.state.encounter_decks.get(
+            EncounterType.OTHER_WORLD.value
+        )
         if other_world_deck:
             other_world_deck.discard(encounter)
 
@@ -213,6 +292,12 @@ class EncounterPhase(GamePhase):
 
     def resolve_expedition_encounter(self):
         """Resolve an expedition encounter"""
+        # Get current investigator
+        current_investigator = self.state.get_current_investigator()
+        if not current_investigator:
+            self.ui.show_message("Error: No current investigator found!")
+            return
+
         self.ui.show_message("Drawing from the Expedition encounter deck...")
 
         # Draw from the expedition encounter deck
@@ -223,7 +308,7 @@ class EncounterPhase(GamePhase):
             return
 
         # Use the resolve_encounter helper method
-        self.resolve_encounter(encounter, self.state.investigator)
+        self.resolve_encounter(encounter, current_investigator)
 
         # After resolving, discard the encounter
         expedition_deck = self.state.encounter_decks.get(EncounterType.EXPEDITION.value)
@@ -234,12 +319,24 @@ class EncounterPhase(GamePhase):
 
     def resolve_rumor_encounter(self, rumor_name):
         """Resolve a rumor-specific encounter"""
+        # Get current investigator
+        current_investigator = self.state.get_current_investigator()
+        if not current_investigator:
+            self.ui.show_message("Error: No current investigator found!")
+            return
+
         self.ui.show_message(f"Resolving the {rumor_name} rumor encounter...")
         # Placeholder for actual encounter resolution
         self.ui.show_message(f"Rumor encounter for {rumor_name} resolved.")
 
     def resolve_defeated_investigator_encounter(self, investigator_name):
         """Resolve an encounter with a defeated investigator"""
+        # Get current investigator
+        current_investigator = self.state.get_current_investigator()
+        if not current_investigator:
+            self.ui.show_message("Error: No current investigator found!")
+            return
+
         self.ui.show_message(
             f"Resolving encounter with defeated investigator {investigator_name}..."
         )
@@ -276,9 +373,13 @@ class EncounterPhase(GamePhase):
         elif result.get("type") == "change_health":
             # Display health change message
             if result.get("healed"):
-                self.ui.show_message(f"{investigator.name} gained {result['amount']} Health.")
+                self.ui.show_message(
+                    f"{investigator.name} gained {result['amount']} Health."
+                )
             elif result.get("damaged"):
-                self.ui.show_message(f"{investigator.name} lost {abs(result['amount'])} Health.")
+                self.ui.show_message(
+                    f"{investigator.name} lost {abs(result['amount'])} Health."
+                )
 
         elif result.get("type") == "narrative":
             # Display narrative text
@@ -286,8 +387,12 @@ class EncounterPhase(GamePhase):
 
         elif result.get("type") == "asset_gain":
             # Display asset gain message
-            self.ui.show_message(f"{investigator.name} gained {result.get('count', 1)} {result.get('asset_type', 'asset')}.")
+            count = result.get("count", 1)
+            asset_type = result.get("asset_type", "asset")
+            self.ui.show_message(f"{investigator.name} gained {count} {asset_type}.")
 
         elif result.get("type") == "condition_gain":
             # Display condition gain message
-            self.ui.show_message(f"{investigator.name} gained the {result.get('condition', 'condition')} condition.")
+            self.ui.show_message(
+                f"{investigator.name} gained the {result.get('condition', 'condition')} condition."
+            )

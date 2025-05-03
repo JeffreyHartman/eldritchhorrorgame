@@ -2,6 +2,7 @@ from rich.console import Console
 from rich.rule import Rule
 from rich.panel import Panel
 from rich.align import Align
+from rich.table import Table
 from pyfiglet import Figlet  # type: ignore
 import os
 from game.ui.map_display import MapDisplay
@@ -117,10 +118,190 @@ Good luck, investigator. The fate of the world is in your hands.
         self.print(panel)
         self.input("\n[bold cyan]Press Enter to return to the main menu...[/]")
 
+    def show_player_count_selection(self):
+        """Display player count selection menu."""
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]NEW GAME[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        self.print("\n[bold]Select Number of Players:[/bold]")
+        for i in range(1, 9):
+            self.print(f"[green]{i}.[/green] {i} Player{'s' if i > 1 else ''}")
+
+        while True:
+            choice = self.input("\n[bold cyan]Enter your choice[/] [yellow](1-8)[/]: ")
+            try:
+                player_count = int(choice)
+                if 1 <= player_count <= 8:
+                    return player_count
+                else:
+                    self.print(
+                        "[red]Invalid choice. Please enter a number between 1 and 8.[/red]"
+                    )
+            except ValueError:
+                self.print("[red]Invalid input. Please enter a number.[/red]")
+
+    def show_player_name_entry(self, player_number):
+        """
+        Prompt for a player's name.
+
+        Args:
+            player_number: The player number (1-based)
+
+        Returns:
+            The player's name
+        """
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]PLAYER SETUP[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        self.print(f"\n[bold]Player {player_number}[/bold]")
+
+        while True:
+            name = self.input("\n[bold cyan]Enter player name[/]: ")
+            if name.strip():
+                return name
+            else:
+                self.print("[red]Name cannot be empty. Please enter a name.[/red]")
+
+    def show_investigator_selection(self, available_investigators, player_name):
+        """
+        Display investigator selection menu.
+
+        Args:
+            available_investigators: Dict of investigator_id -> investigator data
+            player_name: Name of the player selecting an investigator
+
+        Returns:
+            The selected investigator ID, or None if canceled
+        """
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]INVESTIGATOR SELECTION[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        self.print(f"\n[bold]Player: {player_name}[/bold]")
+        self.print("\n[bold]Choose your investigator:[/bold]")
+
+        # Create a table for investigators
+        table = Table(show_header=True, header_style="bold")
+        table.add_column("#", style="dim")
+        table.add_column("Name", style="cyan")
+        table.add_column("Occupation", style="green")
+        table.add_column("Role", style="yellow")
+        table.add_column("Health", style="red")
+        table.add_column("Sanity", style="blue")
+
+        # Sort investigators by ID
+        sorted_investigators = sorted(
+            available_investigators.items(), key=lambda x: x[0]
+        )
+
+        # Add investigators to the table
+        for i, (investigator_id, data) in enumerate(sorted_investigators, 1):
+            table.add_row(
+                str(i),
+                data["name"],
+                data["occupation"],
+                data["role"],
+                str(data["max_health"]),
+                str(data["max_sanity"]),
+            )
+
+        self.print(table)
+
+        # Get user choice
+        while True:
+            choice = self.input(
+                f"\n[bold cyan]Enter your choice[/] [yellow](1-{len(sorted_investigators)})[/]: "
+            )
+            try:
+                choice_idx = int(choice) - 1
+                if 0 <= choice_idx < len(sorted_investigators):
+                    return sorted_investigators[choice_idx][
+                        0
+                    ]  # Return the investigator ID
+                else:
+                    self.print(
+                        f"[red]Invalid choice. Please enter a number between 1 and {len(sorted_investigators)}.[/red]"
+                    )
+            except ValueError:
+                self.print("[red]Invalid input. Please enter a number.[/red]")
+
+    def show_investigator_details(self, investigator_data):
+        """
+        Display detailed information about an investigator.
+
+        Args:
+            investigator_data: Dict containing investigator data
+
+        Returns:
+            True if the player confirms the selection, False otherwise
+        """
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]INVESTIGATOR DETAILS[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        # Create a panel for the investigator
+        name = investigator_data["name"]
+        occupation = investigator_data["occupation"]
+        role = investigator_data["role"]
+
+        # Basic info
+        self.print(f"[bold cyan]{name}[/bold cyan], [italic]{occupation}[/italic]")
+        self.print(f"Role: [yellow]{role}[/yellow]")
+        self.print(
+            f"Starting Location: [green]{investigator_data.get('starting_location', 'London')}[/green]"
+        )
+
+        # Stats
+        self.print("\n[bold]Stats:[/bold]")
+        self.print(f"Health: [red]{investigator_data['max_health']}[/red]")
+        self.print(f"Sanity: [blue]{investigator_data['max_sanity']}[/blue]")
+
+        # Skills
+        self.print("\n[bold]Skills:[/bold]")
+        skills = investigator_data["skills"]
+        for skill, value in skills.items():
+            self.print(f"{skill.capitalize()}: {value}")
+
+        # Quote and bio
+        if "quote" in investigator_data:
+            self.print(f"\n[italic]\"{investigator_data['quote']}\"[/italic]")
+
+        if "bio" in investigator_data:
+            bio_panel = Panel(
+                investigator_data["bio"], title="[bold]Biography[/bold]", width=80
+            )
+            self.print(bio_panel)
+
+        # Abilities
+        if "abilities" in investigator_data and investigator_data["abilities"]:
+            self.print("\n[bold]Abilities:[/bold]")
+            for ability in investigator_data["abilities"]:
+                ability_type = ability.get("type", "").capitalize()
+                ability_text = ability.get("text", "")
+                self.print(f"[yellow]{ability_type}:[/yellow] {ability_text}")
+
+        # Confirm selection
+        return self.ask_yes_no("\nConfirm this investigator selection?")
+
     def show_action_phase(self, state):
         self.clear_screen()
+
+        # Get current player and investigator using player_manager
+        player_manager = state.player_manager
+        current_player = player_manager.get_current_player()
+        
+        if not current_player or not current_player.investigator:
+            self.show_message("Error: No current player or investigator found!")
+            return "9"  # End turn
+
+        # Get current investigator
+        current_investigator = current_player.investigator
+        player_name = current_player.name if current_player else "Unknown"
+
         # Get location info
-        location_name = state.investigator.current_location
+        location_name = current_investigator.current_location
         location: Location = state.locations[location_name]
         real_location = location.real_world_location
         location_desc = location.description
@@ -139,6 +320,12 @@ Good luck, investigator. The fate of the world is in your hands.
 
         self.rule(style="bright_yellow")
 
+        # Display player info
+        if current_player:
+            self.print(f"Current Player: [bold]{player_name}[/bold]")
+            if current_player.is_lead_investigator:
+                self.print("[yellow]Lead Investigator[/yellow]")
+
         # Display current location with real world location for Space X locations
         if location_name.startswith("Space ") and real_location:
             self.print(
@@ -149,7 +336,7 @@ Good luck, investigator. The fate of the world is in your hands.
 
         self.print(f"Current Phase: [bold]{state.current_phase.value}[/bold]")
         self.print(
-            f"Actions Remaining: [bold green]{state.investigator.actions}[/bold green]"
+            f"Actions Remaining: [bold green]{current_investigator.actions}[/bold green]"
         )
 
         if location.has_gate:
@@ -160,18 +347,18 @@ Good luck, investigator. The fate of the world is in your hands.
 
         # Display investigator status
         self.print(
-            f"\nHealth: {state.investigator.health}/{state.investigator.max_health} | "
-            + f"Sanity: {state.investigator.sanity}/{state.investigator.max_sanity} | "
-            + f"Clue Tokens: {state.investigator.clue_tokens}"
+            f"\nHealth: {current_investigator.health}/{current_investigator.max_health} | "
+            + f"Sanity: {current_investigator.sanity}/{current_investigator.max_sanity} | "
+            + f"Clue Tokens: {current_investigator.clue_tokens}"
         )
 
         # Display tickets
         self.print(
-            f"Train Tickets: {state.investigator.train_tickets} | Ship Tickets: {state.investigator.ship_tickets}"
+            f"Train Tickets: {current_investigator.train_tickets} | Ship Tickets: {current_investigator.ship_tickets}"
         )
 
         # Display available actions
-        if state.investigator.actions > 0:
+        if current_investigator.actions > 0:
             self.print("\nAvailable Actions:")
             self.print("1. Travel")
             self.print("2. Rest (heal 1 Health and 1 Sanity)")
@@ -196,9 +383,18 @@ Good luck, investigator. The fate of the world is in your hands.
     def show_travel_menu(self, state):
         """Display travel options for the current location"""
         self.clear_screen()
-        connections = state.locations[state.investigator.current_location].connections
 
-        self.print(f"\n[bold]Travel from {state.investigator.current_location}[/bold]")
+        # Get current investigator
+        current_investigator = state.get_current_investigator()
+        if not current_investigator:
+            self.show_message("Error: No current investigator found!")
+            return "0"  # Cancel
+
+        connections = state.locations[current_investigator.current_location].connections
+
+        self.print(
+            f"\n[bold]Travel from {current_investigator.current_location}[/bold]"
+        )
         self.rule(style="bright_yellow")
 
         self.print("\nConnected locations:")
@@ -226,8 +422,15 @@ Good luck, investigator. The fate of the world is in your hands.
         """Display travel options for ticket-based travel"""
         self.clear_screen()
 
+        # Get current investigator
+        current_investigator = state.get_current_investigator()
+        if not current_investigator:
+            self.show_message("Error: No current investigator found!")
+            return "0"  # Cancel
+
         self.print(
-            f"\n[bold]Travel by {ticket_type.capitalize()} from {state.investigator.current_location}[/bold]"
+            f"\n[bold]Travel by {ticket_type.capitalize()} from "
+            f"{current_investigator.current_location}[/bold]"
         )
         self.rule(style="bright_yellow")
 
@@ -365,7 +568,7 @@ Good luck, investigator. The fate of the world is in your hands.
 
         # Add cancel option if allowed
         if allow_cancel:
-            self.print(f"[green]0.[/green] Cancel")
+            self.print("[green]0.[/green] Cancel")
 
         # Get user choice
         max_choice = len(options)
@@ -381,9 +584,26 @@ Good luck, investigator. The fate of the world is in your hands.
                 if choice_idx == 0:
                     return None  # Canceled
                 return options[choice_idx - 1]
-            else:
-                self.show_message("Invalid choice.")
-                return self.show_choice(prompt, options, allow_cancel)
+
+            self.show_message("Invalid choice.")
+            return self.show_choice(prompt, options, allow_cancel)
         except ValueError:
             self.show_message("Invalid input. Please enter a number.")
             return self.show_choice(prompt, options, allow_cancel)
+
+    def show_player_turn_transition(self, player_name, investigator_name):
+        """
+        Display a transition screen when switching to a new player's turn.
+
+        Args:
+            player_name: Name of the player whose turn is starting
+            investigator_name: Name of the investigator controlled by the player
+        """
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]PLAYER TURN[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        self.print(Align.center(f"[bold cyan]{player_name}[/bold cyan]'s Turn"))
+        self.print(Align.center(f"Playing as [bold]{investigator_name}[/bold]"))
+
+        self.input("\n[bold cyan]Press Enter to begin your turn...[/]")

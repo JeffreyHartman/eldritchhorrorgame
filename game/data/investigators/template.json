@@ -1,0 +1,112 @@
+[
+  {
+    "id": ,
+    "expansion": "CORE",
+    "name": "",
+    "occupation": "",
+    "role": "",
+    "max_health": "",
+    "max_sanity": "",
+    "skills": {
+      "lore": "",
+      "influence": "",
+      "observation": "",
+      "strength": "",
+      "will": ""
+    },
+    "starting_location": "",
+    "starting_spells": [],
+    "starting_assets": [],
+    "starting_clues": ,
+    "abilities": [
+      {
+        "type": "action",
+        "text": "",
+        "components": [
+          {
+            "type": "",
+            "action_id": ""
+          }
+        ]
+      },
+      {
+        "type": "passive",
+        "text": "",
+        "components": [
+          {
+            "type": "",
+            "action_id": ""
+          }
+        ]
+      }
+    ],
+    "quote": "",
+    "bio": "",
+    "defeated_encounters": [
+      {
+        "type": "injury",
+        "text": "",
+        "components": [
+          {
+            "type": "",
+            "skill_test": "",
+            "skill": "",
+            "modifier": "",
+            "success_components": [
+              {
+                "type": "",
+                "text": ""
+              }
+            ],
+            "failure_components": [
+              {
+                "type": "",
+                "text": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "insanity",
+        "text": "",
+        "components": [
+          {
+            "type": "",
+            "skill_test": "",
+            "skill": "",
+            "modifier": "",
+            "success_components": [
+              {
+                "type": "",
+                "text": ""
+              }
+            ],
+            "failure_components": [
+              {
+                "type": "",
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "personal_story": {
+      "name": "",
+      "text": "",
+      "conditions": [
+        {
+          "type": "reward",
+          "text": "",
+          "action_id": "_personal_story_reward"
+        },
+        {
+          "type": "consequence",
+          "text": "",
+          "action_id": "_personal_story_consequence"
+        }
+      ]
+    }
+  }
+]

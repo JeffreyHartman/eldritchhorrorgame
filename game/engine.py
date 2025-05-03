@@ -3,11 +3,13 @@ Engine module for the Eldritch Pursuit game.
 Handles core game logic and main game loop.
 """
 
+from typing import List, Dict, Optional, Any
 from game.game_state import GameState
 from game.enums import GamePhase
 from game.phases.action_phase import ActionPhase
 from game.phases.encounter_phase import EncounterPhase
 from game.phases.mythos_phase import MythosPhase
+from game.systems.setup_manager import SetupManager, SetupConfig
 
 
 class GameEngine:
@@ -18,6 +20,7 @@ class GameEngine:
     def __init__(self, ui):
         self.ui = ui
         self.state = GameState()
+        self.setup_manager = SetupManager(self.state)
 
     def run(self):
         self.main_menu()
@@ -36,7 +39,52 @@ class GameEngine:
 
     def start_game(self):
         """Initialize and start a new game."""
-        self.state.reset_game()
+        # Get player count
+        player_count = self.ui.show_player_count_selection()
+
+        # Set up players and investigators
+        player_names = []
+        investigator_ids = []
+
+        # Get player names and investigators
+        for i in range(1, player_count + 1):
+            # Get player name
+            player_name = self.ui.show_player_name_entry(i)
+            player_names.append(player_name)
+
+            # Get available investigators
+            available_investigators = self.setup_manager.get_available_investigators()
+
+            # Let player select an investigator
+            while True:
+                investigator_id = self.ui.show_investigator_selection(
+                    available_investigators, player_name
+                )
+
+                # Show investigator details and confirm selection
+                investigator_data = (
+                    self.state.investigator_factory.get_investigator_data(
+                        investigator_id
+                    )
+                )
+                if investigator_data and self.ui.show_investigator_details(
+                    investigator_data
+                ):
+                    investigator_ids.append(investigator_id)
+                    break
+
+        # Create setup config with selected investigators
+        config = SetupConfig(
+            num_players=player_count,
+            ancient_one_id=1,  # Default ancient one
+            investigator_ids=investigator_ids,
+            player_names=player_names,
+        )
+
+        # Initialize game with config
+        self.setup_manager.initialize_game(config)
+
+        # Start the game loop
         self.game_loop()
 
     def game_loop(self):
@@ -56,11 +104,18 @@ class GameEngine:
             phases[self.state.current_phase].execute()
 
             # Check for game over conditions
-            if (
-                self.state.investigator.health <= 0
-                or self.state.investigator.sanity <= 0
-            ):
-                self.ui.show_defeat_screen("Your investigator has been defeated!")
+            all_investigators_defeated = True
+            for player in self.state.players:
+                if (
+                    player.investigator
+                    and player.investigator.health > 0
+                    and player.investigator.sanity > 0
+                ):
+                    all_investigators_defeated = False
+                    break
+
+            if all_investigators_defeated:
+                self.ui.show_defeat_screen("All investigators have been defeated!")
                 return self.main_menu()
 
         # Game ended - check win/loss
