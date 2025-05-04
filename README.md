@@ -15,7 +15,8 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
 
 - [x] Game engine with phase-based gameplay
 - [x] Main menu and basic UI
-- [x] Win/loss conditions\
+- [x] Win/loss conditions
+- [ ] Game Setup Phase
 - [ ] Implement action phase
   - [x] Travel between locations
   - [x] Rest action
@@ -32,10 +33,11 @@ A text-based implementation of an Eldritch Horror-inspired board game, where pla
 
 - [x] Location system with connections
 - [x] Train and ship ticket system
-- [ ] Investigators
+- [/] Investigators
   - [x] Investigator class
-  - [ ] Multiple investigators
-  - [ ] Investigator selection
+  - [x] Multiple investigators
+  - [x] Investigator selection
+  - [ ] All Core investigators added
 - [ ] Assets
   - [ ] Asset system
   - [ ] Allies

@@ -1,5 +1,7 @@
 import json
 import logging
+import random
+
 from typing import Optional
 
 from game.entities.cards.mythos import MythosCard
@@ -13,13 +15,52 @@ class MythosFactory:
         self.yellow_cards = []
         self.green_cards = []
 
-        self._load_all_mythos_cards()
-
     def get_cards(self, color, count, difficulty):
-        # Get the specified number of cards of the specified color and difficulty
-        pass
+        """
+        Get the specified number of cards of the specified color and difficulty.
 
-    def _load_all_mythos_cards(self):
+        Args:
+            color: The color of cards to get ("blue", "yellow", or "green")
+            count: The number of cards to get
+            difficulty: The difficulty level to filter by
+
+        Returns:
+            A list of MythosCard objects
+        """
+        cards = []
+
+        # Select the appropriate card pool based on color
+        if color == "blue":
+            card_pool = self.blue_cards
+        elif color == "yellow":
+            card_pool = self.yellow_cards
+        elif color == "green":
+            card_pool = self.green_cards
+        else:
+            self.logger.error(f"Invalid color: {color}")
+            return []
+
+        # Filter by difficulty if needed
+        if difficulty:
+            filtered_pool = [
+                card for card in card_pool if card.difficulty == difficulty
+            ]
+            # If no cards match the difficulty, fall back to the full pool
+            if not filtered_pool:
+                filtered_pool = card_pool
+        else:
+            filtered_pool = card_pool
+
+        # Get random cards up to the count
+
+        if filtered_pool:
+            # Don't try to get more cards than are available
+            count = min(count, len(filtered_pool))
+            cards = random.sample(filtered_pool, count)
+
+        return cards
+
+    def load_all_mythos_cards(self):
         # Load all mythos cards frmo JSON files
         self._load_mythos_cards_from_file("game/data/mythos/blue.json", "blue")
         self._load_mythos_cards_from_file("game/data/mythos/yellow.json", "yellow")

@@ -20,7 +20,7 @@ class GameEngine:
     def __init__(self, ui):
         self.ui = ui
         self.state = GameState()
-        self.setup_manager = SetupManager(self.state)
+        self.setup_manager = SetupManager(self.state, self.ui)
 
     def run(self):
         self.main_menu()
@@ -73,10 +73,22 @@ class GameEngine:
                     investigator_ids.append(investigator_id)
                     break
 
-        # Create setup config with selected investigators
+        # Get ancient one selection
+        ancient_one_id = 1  # Default to Yog-Sothoth
+        available_ancient_ones = self.setup_manager.get_available_ancient_ones()
+
+        while True:
+            ancient_one_id = self.ui.show_ancient_one_selection(available_ancient_ones)
+
+            # Show ancient one details and confirm selection
+            ancient_one_data = available_ancient_ones.get(ancient_one_id)
+            if ancient_one_data and self.ui.show_ancient_one_details(ancient_one_data):
+                break
+
+        # Create setup config with selected investigators and ancient one
         config = SetupConfig(
             num_players=player_count,
-            ancient_one_id=1,  # Default ancient one
+            ancient_one_id=ancient_one_id,
             investigator_ids=investigator_ids,
             player_names=player_names,
         )
@@ -96,35 +108,47 @@ class GameEngine:
             GamePhase.MYTHOS: MythosPhase(self, self.state, self.ui),
         }
 
-        while (
-            self.state.doom_track < self.state.max_doom
-            and self.state.mysteries_solved < 3
-        ):
+        while True:
             # Execute current phase
             phases[self.state.current_phase].execute()
 
             # Check for game over conditions
-            all_investigators_defeated = True
-            for player in self.state.players:
-                if (
-                    player.investigator
-                    and player.investigator.health > 0
-                    and player.investigator.sanity > 0
-                ):
-                    all_investigators_defeated = False
-                    break
+            if self.check_game_over():
+                break
 
-            if all_investigators_defeated:
-                self.ui.show_defeat_screen("All investigators have been defeated!")
-                return self.main_menu()
-
-        # Game ended - check win/loss
-        if self.state.mysteries_solved >= 3:
-            self.ui.show_victory_screen()
-        else:
-            self.ui.show_defeat_screen("The Ancient One has awakened!")
+            # state.phase handled in phase classes
 
         self.main_menu()
+
+    def check_game_over(self):
+        """Check for game over conditions."""
+        all_investigators_defeated = True
+        for player in self.state.players:
+            if (
+                player.investigator
+                and player.investigator.health > 0
+                and player.investigator.sanity > 0
+            ):
+                all_investigators_defeated = False
+                break
+
+        if all_investigators_defeated:
+            self.ui.show_defeat_screen("All investigators have been defeated!")
+            return True
+
+        # Check Ancient One victory/defeat conditions
+        game_over, investigators_win = self.state.ancient_one.check_defeat_conditions(
+            self.state
+        )
+
+        if game_over:
+            if investigators_win:
+                self.ui.show_victory_screen()
+            else:
+                self.ui.show_defeat_screen("The Ancient One has awakened!")
+            return True
+
+        return False
 
     def quit_game(self):
         self.ui.clear_screen()

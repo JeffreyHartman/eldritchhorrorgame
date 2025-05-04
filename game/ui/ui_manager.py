@@ -104,7 +104,7 @@ Each round consists of three phases:
   • [bold]Encounter Phase[/]: Deal with monsters or location events
   • [bold]Mythos Phase[/]: Face random events, often dangerous
 
-The doom track advances throughout the game. If it reaches maximum,
+The doom track advances throughout the game. If it reaches 0,
 the Ancient One awakens and the final mystery begins.
 
 Good luck, investigator. The fate of the world is in your hands.
@@ -291,7 +291,7 @@ Good luck, investigator. The fate of the world is in your hands.
         # Get current player and investigator using player_manager
         player_manager = state.player_manager
         current_player = player_manager.get_current_player()
-        
+
         if not current_player or not current_player.investigator:
             self.show_message("Error: No current player or investigator found!")
             return "9"  # End turn
@@ -607,3 +607,85 @@ Good luck, investigator. The fate of the world is in your hands.
         self.print(Align.center(f"Playing as [bold]{investigator_name}[/bold]"))
 
         self.input("\n[bold cyan]Press Enter to begin your turn...[/]")
+
+    def show_ancient_one_selection(self, available_ancient_ones):
+        """
+        Display ancient one selection menu.
+
+        Args:
+            available_ancient_ones: Dict of ancient_one_id -> ancient_one_data
+
+        Returns:
+            The selected ancient one ID, or None if canceled
+        """
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]ANCIENT ONE SELECTION[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        self.print("\n[bold]Choose the Ancient One to face:[/bold]")
+
+        # Create a table for ancient ones
+        table = Table(show_header=True, header_style="bold")
+        table.add_column("#", style="dim")
+        table.add_column("Name", style="cyan")
+        table.add_column("Subtitle", style="green")
+        table.add_column("Difficulty", style="yellow")
+
+        # Sort ancient ones by ID
+        sorted_ancient_ones = sorted(available_ancient_ones.items(), key=lambda x: x[0])
+
+        # Add ancient ones to the table
+        for i, (ancient_one_id, data) in enumerate(sorted_ancient_ones, 1):
+            table.add_row(str(i), data["name"], data["subtitle"], data["difficulty"])
+
+        self.print(table)
+
+        # Get user choice
+        while True:
+            choice = self.input(
+                f"\n[bold cyan]Enter your choice[/] [yellow](1-{len(sorted_ancient_ones)})[/]: "
+            )
+            try:
+                choice_idx = int(choice) - 1
+                if 0 <= choice_idx < len(sorted_ancient_ones):
+                    return sorted_ancient_ones[choice_idx][
+                        0
+                    ]  # Return the ancient one ID
+                else:
+                    self.print(
+                        f"[red]Invalid choice. Please enter a number between 1 and {len(sorted_ancient_ones)}.[/red]"
+                    )
+            except ValueError:
+                self.print("[red]Invalid input. Please enter a number.[/red]")
+
+    def show_ancient_one_details(self, ancient_one_data):
+        """
+        Display detailed information about an ancient one.
+
+        Args:
+            ancient_one_data: Dict containing ancient one data
+
+        Returns:
+            True if the player confirms the selection, False otherwise
+        """
+        self.clear_screen()
+        self.print(Align.center("[bold magenta]ANCIENT ONE DETAILS[/bold magenta]"))
+        self.rule(style="bright_yellow")
+
+        # Basic info
+        name = ancient_one_data["name"]
+        subtitle = ancient_one_data["subtitle"]
+        difficulty = ancient_one_data["difficulty"]
+        description = ancient_one_data["description"]
+
+        self.print(f"[bold red]{name}[/bold red], [italic]{subtitle}[/italic]")
+        self.print(f"Difficulty: [yellow]{difficulty}[/yellow]")
+
+        # Description
+        description_panel = Panel(
+            description, title="[bold]Description[/bold]", width=80
+        )
+        self.print(description_panel)
+
+        # Confirm selection
+        return self.ask_yes_no("\nConfirm this Ancient One selection?")

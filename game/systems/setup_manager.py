@@ -24,8 +24,9 @@ class SetupConfig:
 
 
 class SetupManager:
-    def __init__(self, state):
+    def __init__(self, state, ui=None):
         self.state = state
+        self.ui = ui
 
     def initialize_game(self, config: SetupConfig) -> None:
         """
@@ -111,8 +112,21 @@ class SetupManager:
         Args:
             ancient_one_id: ID of the ancient one to set up
         """
-        # TODO: Implement ancient one setup
-        pass
+        # Create the appropriate ancient one instance based on ID
+        if ancient_one_id == 1:
+            from game.entities.ancient_ones.yog_sothoth import YogSothoth
+
+            self.state.ancient_one = YogSothoth()
+        # Add more ancient ones as they become available
+        else:
+            # Default to Yog-Sothoth if ID not found
+            from game.entities.ancient_ones.yog_sothoth import YogSothoth
+
+            self.state.ancient_one = YogSothoth()
+
+        # Call the ancient one's setup method
+        self.state.ancient_one.set_ui(self.ui)  # Set the UI reference
+        self.state.ancient_one.on_setup(self.state)
 
     def _resolve_starting_effects(self) -> None:
         """
@@ -129,3 +143,24 @@ class SetupManager:
             Dict of investigator_id -> investigator data for available investigators
         """
         return self.state.investigator_selector.get_available_investigators()
+
+    def get_available_ancient_ones(self) -> Dict[int, Dict[str, Any]]:
+        """
+        Get all available ancient ones.
+
+        Returns:
+            Dict of ancient_one_id -> ancient_one_data
+        """
+        # This would ideally come from a factory similar to investigator_factory
+        # For now, we'll hardcode the available ancient ones
+        ancient_ones = {
+            1: {
+                "id": 1,
+                "name": "Yog-Sothoth",
+                "subtitle": "The Lurker at the Threshold",
+                "difficulty": "Low",
+                "description": "For eons, sorcerers have called upon the power of Yog-Sothoth to bend reality to their will. This incomprehensible Ancient One exists parallel to all places and times, but is bound to the space between dimensions. Gates between worlds continue to open with more frequency and soon, Yog-Sothoth will be free.",
+            },
+            # Add more ancient ones as they become available
+        }
+        return ancient_ones

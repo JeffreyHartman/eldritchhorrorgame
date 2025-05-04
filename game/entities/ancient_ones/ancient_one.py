@@ -18,11 +18,11 @@ class MythosDeckStage:
 class AncientOne:
     """Represents an Ancient One in the game."""
 
-    id: int
     name: str
     difficulty: AncientOneDifficulty
+    subTitle: str
     description: str
-    current_doom: int
+    starting_doom: int
     mysteries_to_solve: int
     expansion: Expansion
 
@@ -30,10 +30,19 @@ class AncientOne:
 
     awakened: bool = False
     defeated: bool = False
+    ui = None  # UI reference for the ancient one methods. Temporary hack.
+
+    def set_ui(self, ui):
+        """Set the UI reference for Ancient One."""
+        self.ui = ui
 
     def on_setup(self, game_state):
         """Called when the Ancient One is set up for the game."""
-        self._build_mythos_deck(game_state)
+        game_state.mythos_deck = self._build_mythos_deck(game_state)
+        game_state.doom_track = self.starting_doom
+
+        # Free memory by clearing the factory
+        game_state._mythos_factory = None
 
     def on_reckoning(self, game_state):
         """Called when the Ancient One's Reckoning is triggered."""
@@ -55,6 +64,24 @@ class AncientOne:
         """Returns the Cultist monster for this Ancient One."""
         monster = Monster()
         return monster
+
+    def check_defeat_conditions(self, game_state) -> tuple[bool, bool]:
+        """
+        Checks for win or loss conditions.
+        Returns:
+            tuple: (game_over, investigators_win)
+        """
+        if not self.awakened and game_state.mysteries_solved >= self.mysteries_to_solve:
+            self.defeated = True
+            return True, True
+        elif not self.awakened and game_state.doom_track == 0:
+            self.defeated = True
+            return True, False
+        elif self.awakened:
+            # Ancient one specific conditions
+            return self._check_awakened_defeat_conditions(game_state)
+
+        return False, False
 
     def _build_mythos_deck(self, game_state):
         """Builds the Mythos deck for this Ancient One."""
@@ -100,3 +127,7 @@ class AncientOne:
         random.shuffle(stage_cards)
 
         return stage_cards
+
+    def _check_awakened_defeat_conditions(self, game_state):
+        """Checks for defeat conditions when the Ancient One is awakened."""
+        pass

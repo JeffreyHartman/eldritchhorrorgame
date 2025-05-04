@@ -6,6 +6,7 @@ from game.factories.encounter_factory import EncounterFactory
 from game.factories.asset_factory import AssetFactory
 from game.factories.condition_factory import ConditionFactory
 from game.factories.investigator_factory import InvestigatorFactory
+from game.factories.mythos_factory import MythosFactory
 from game.entities.cards.asset_deck import AssetDeck
 from game.entities.cards.condition_deck import ConditionDeck
 from game.entities.cards.encounter_deck import EncounterDeck
@@ -35,6 +36,8 @@ class GameState:
         self.mysteries_solved = 0
         self.current_phase = GamePhase.ACTION
         self.defeated_investigators = []
+        self.ancient_one = None
+        self.mythos_deck = None
 
         # Initialize factories
         self.encounter_factory = EncounterFactory()
@@ -48,6 +51,8 @@ class GameState:
 
         self.investigator_factory = InvestigatorFactory()
         self.investigator_factory.load_all_investigators()
+
+        self._mythos_factory = None
 
         # Initialize player management
         self.player_manager = PlayerManager(self.investigator_factory)
@@ -63,6 +68,18 @@ class GameState:
 
         # TODO: Make this selectable at game start
         self.difficulty = GameDifficulty.NORMAL
+
+    @property
+    def mythos_factory(self):
+        """
+        Lazy-load the mythos factory only when needed.
+        This property getter is called whenever code accesses self.mythos_factory
+        """
+        if self._mythos_factory is None:
+            # Create and initialize the factory only on first access
+            self._mythos_factory = MythosFactory()
+            self._mythos_factory.load_all_mythos_cards()
+        return self._mythos_factory
 
     def reset_game(self, player_count: int = 1):
         """

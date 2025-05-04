@@ -12,7 +12,7 @@ class MythosPhase(GamePhase):
         self.ui.show_message("Mythos phase not implemented yet.")
 
         # Advance doom track (placeholder)
-        self.state.doom_track += 1
+        self.state.doom_track -= 1
         self.ui.show_message(
             f"Doom advances to {self.state.doom_track}/{self.state.max_doom}"
         )
