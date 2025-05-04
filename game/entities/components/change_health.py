@@ -1,4 +1,6 @@
+from typing import Dict, Any
 from game.entities.base.component import EncounterComponent
+
 
 class ChangeHealthComponent(EncounterComponent):
     def __init__(self, amount: int):
@@ -21,3 +23,9 @@ class ChangeHealthComponent(EncounterComponent):
         result["final_health"] = final_health
         result["is_zero"] = final_health <= 0
         return result
+
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> "ChangeHealthComponent":
+        """Create a change health component from data dictionary"""
+        amount = data.get("amount", 0)
+        return cls(amount)

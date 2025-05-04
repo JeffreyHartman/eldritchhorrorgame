@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from game.entities.base.component import EncounterComponent
 from game.enums import AssetTrait
 
@@ -18,10 +18,26 @@ class AssetGainComponent(EncounterComponent):
         self.options = options or []
         self.specific_asset_id = specific_asset_id
 
-    def process(self, state, investigator, ui=None):  # investigator will be used by phase controller
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> "AssetGainComponent":
+        """Create an asset gain component from data dictionary"""
+        asset_type = data.get("asset_type", "")
+        count = data.get("count", 1)
+        source = data.get("source", None)
+        options = data.get("options", [])
+        specific_asset_id = data.get("specific_asset_id", None)
+        return cls(asset_type, count, source, options, specific_asset_id)
+
+    def process(
+        self, state, investigator, ui=None
+    ):  # investigator will be used by phase controller
         result = {
             "type": "asset_gain",
-            "asset_type": self.asset_type.value if isinstance(self.asset_type, AssetTrait) else self.asset_type,
+            "asset_type": (
+                self.asset_type.value
+                if isinstance(self.asset_type, AssetTrait)
+                else self.asset_type
+            ),
             "count": self.count,
             "source": self.source,
             "options": self.options,
@@ -47,8 +63,13 @@ class AssetGainComponent(EncounterComponent):
             if choice == "reserve":
                 # Choose from reserve
                 if ui and state.asset_deck and state.asset_deck.reserve:
-                    reserve_options = [f"{i+1}. {asset.name}" for i, asset in enumerate(state.asset_deck.reserve)]
-                    reserve_choice = ui.show_choice("Choose an asset from the reserve:", reserve_options)
+                    reserve_options = [
+                        f"{i+1}. {asset.name}"
+                        for i, asset in enumerate(state.asset_deck.reserve)
+                    ]
+                    reserve_choice = ui.show_choice(
+                        "Choose an asset from the reserve:", reserve_options
+                    )
                     if reserve_choice and reserve_choice.isdigit():
                         index = int(reserve_choice) - 1
                         asset = state.asset_deck.take_from_reserve(index)
@@ -70,8 +91,13 @@ class AssetGainComponent(EncounterComponent):
         elif self.source == "reserve":
             # Choose from reserve
             if ui and state.asset_deck and state.asset_deck.reserve:
-                reserve_options = [f"{i+1}. {asset.name}" for i, asset in enumerate(state.asset_deck.reserve)]
-                reserve_choice = ui.show_choice("Choose an asset from the reserve:", reserve_options)
+                reserve_options = [
+                    f"{i+1}. {asset.name}"
+                    for i, asset in enumerate(state.asset_deck.reserve)
+                ]
+                reserve_choice = ui.show_choice(
+                    "Choose an asset from the reserve:", reserve_options
+                )
                 if reserve_choice and reserve_choice.isdigit():
                     index = int(reserve_choice) - 1
                     asset = state.asset_deck.take_from_reserve(index)

@@ -5,13 +5,9 @@ import logging
 from typing import Dict, List, Optional, Any
 
 from game.entities.cards.encounter import Encounter
-from game.entities.components.narrative import NarrativeComponent
-from game.entities.components.skill_test import SkillTestComponent
-
-from game.entities.components.asset_gain import AssetGainComponent
-from game.entities.components.condition_gain import ConditionGainComponent
 from game.entities.location import LocationType
-from game.enums import EncounterType, EncounterSubType, AssetType
+from game.enums import EncounterType, EncounterSubType
+from game.entities.components.component_factory import create_component
 
 
 class EncounterFactory:
@@ -36,7 +32,7 @@ class EncounterFactory:
         file_path = f"game/data/encounters/{encounter_type}.json"
 
         if not os.path.exists(file_path):
-            self.logger.warning(f"Encounter file not found: {file_path}")
+            self.logger.warning("Encounter file not found: %s", file_path)
             return
 
         try:
@@ -65,12 +61,12 @@ class EncounterFactory:
                 self.loaded_types.add(encounter_type)
 
                 self.logger.info(
-                    f"Loaded {len(encounters_data)} {encounter_type} encounters"
+                    "Loaded %d %s encounters", len(encounters_data), encounter_type
                 )
         except json.JSONDecodeError:
-            self.logger.error(f"Error parsing JSON in {file_path}")
+            self.logger.error("Error parsing JSON in %s", file_path)
         except Exception as e:
-            self.logger.error(f"Error loading encounters from {file_path}: {str(e)}")
+            self.logger.error("Error loading encounters from %s: %s", file_path, str(e))
 
     def _create_encounter(self, data: Dict[str, Any]) -> Optional[Encounter]:
         """Create an encounter from JSON data"""
@@ -101,7 +97,7 @@ class EncounterFactory:
             # Add components
             components_data = data.get("components", [])
             for component_data in components_data:
-                component = self._create_component(component_data)
+                component = create_component(component_data)
                 if component:
                     encounter.add_component(component)
 
@@ -109,91 +105,6 @@ class EncounterFactory:
         except Exception as e:
             self.logger.error(f"Error creating encounter {data.get('id')}: {str(e)}")
             return None
-
-    def _create_component(self, data: Dict[str, Any]) -> Any:
-        """Create an encounter component from JSON data"""
-        component_type = data.get("type")
-
-        if component_type == "narrative":
-            return self._create_narrative_component(data)
-        elif component_type == "skill_test":
-            return self._create_skill_test_component(data)
-        elif component_type == "asset_gain":
-            return self._create_asset_gain_component(data)
-        elif component_type == "condition_gain":
-            return self._create_condition_gain_component(data)
-        else:
-            self.logger.warning(f"Unknown component type: {component_type}")
-            return None
-
-    def _create_skill_test_component(self, data: Dict[str, Any]) -> SkillTestComponent:
-        """Create a skill test component from JSON data"""
-        skill = data.get("skill")
-        modifier = data.get("modifier", 0)
-        if skill is None:
-            error_msg = f"Skill test component missing required 'skill' field: {data}"
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Create success components
-        success_components = []
-        for success_data in data.get("success_components", []):
-            component = self._create_component(success_data)
-            if component:
-                success_components.append(component)
-
-        # Create failure components
-        failure_components = []
-        for failure_data in data.get("failure_components", []):
-            component = self._create_component(failure_data)
-            if component:
-                failure_components.append(component)
-
-        return SkillTestComponent(
-            skill, modifier, success_components, failure_components
-        )
-
-    def _create_narrative_component(self, data: Dict[str, Any]) -> NarrativeComponent:
-        """Create a narrative component from JSON data"""
-        text = data.get("text", "")
-        return NarrativeComponent(text)
-
-    def _create_asset_gain_component(self, data: Dict[str, Any]) -> AssetGainComponent:
-        """Create an asset gain component from JSON data"""
-        asset_type = data.get("asset_type")
-        count = data.get("count", 1)
-        source = data.get("source")
-        options = data.get("options", [])
-
-        if asset_type is None or source is None:
-            error_msg = f"Asset gain component missing required field: {data}"
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        # Convert string asset type to enum if needed
-        asset_type_value = asset_type
-        try:
-            asset_type_value = AssetType(asset_type).value
-        except ValueError:
-            # If not a valid enum value, keep the original string
-            pass
-
-        return AssetGainComponent(asset_type_value, count, source, options)
-
-    def _create_condition_gain_component(
-        self, data: Dict[str, Any]
-    ) -> ConditionGainComponent:
-        """Create a condition gain component from JSON data"""
-        condition = data.get("condition")
-
-        if condition is None:
-            error_msg = (
-                f"Condition gain component missing required 'condition' field: {data}"
-            )
-            self.logger.error(error_msg)
-            raise ValueError(error_msg)
-
-        return ConditionGainComponent(condition)
 
     def create_encounter(
         self, encounter_type: str, subtype: Optional[str] = None
@@ -217,7 +128,7 @@ class EncounterFactory:
 
         # If no encounters of this type, return None
         if encounter_type not in self.encounters or not self.encounters[encounter_type]:
-            self.logger.warning(f"No encounters found for type: {encounter_type}")
+            self.logger.warning("No encounters found for type: %s", encounter_type)
             return None
 
         # If subtype is specified and we have encounters for that subtype, return one

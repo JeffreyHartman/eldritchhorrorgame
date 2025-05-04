@@ -31,7 +31,7 @@ class ArtifactCard(Card):
 
     def _build_components(self, component_data):
         """Build card components from data"""
-        from game.entities.cards.component_registry import create_component
+        from game.entities.components.component_registry import create_component
 
         for comp_data in component_data:
             component = create_component(comp_data)

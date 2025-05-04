@@ -1,7 +1,6 @@
 import json
 from typing import List, Optional, Dict, Any
 from game.entities.location import Location, LocationType
-from game.entities.investigator import Investigator
 from game.entities.player import Player
 from game.factories.encounter_factory import EncounterFactory
 from game.factories.asset_factory import AssetFactory
@@ -12,7 +11,17 @@ from game.entities.cards.condition_deck import ConditionDeck
 from game.entities.cards.encounter_deck import EncounterDeck
 from game.systems.player_manager import PlayerManager
 from game.systems.investigator_selector import InvestigatorSelector
-from game.enums import GamePhase, EncounterType
+from game.enums import (
+    Expansion,
+    GamePhase,
+    EncounterType,
+    TicketType,
+    AssetType,
+    AssetTrait,
+    AssetSecondaryTrait,
+    AncientOneDifficulty,
+    GameDifficulty,
+)
 
 
 class GameState:
@@ -51,6 +60,9 @@ class GameState:
 
         self.locations = {}
         self.players = []  # List of Player objects
+
+        # TODO: Make this selectable at game start
+        self.difficulty = GameDifficulty.NORMAL
 
     def reset_game(self, player_count: int = 1):
         """
@@ -116,11 +128,6 @@ class GameState:
         current_player = self.player_manager.get_current_player()
         if current_player and current_player.investigator:
             current_player.investigator.actions = 2
-
-    # Remove these methods as they're now handled directly in the action phase
-    # def use_action(self):
-    # def has_actions_left(self):
-    # def get_current_investigator(self):
 
     def advance_to_next_player(self):
         """

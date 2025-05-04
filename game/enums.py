@@ -86,3 +86,18 @@ class AssetSecondaryTrait(Enum):
     TOME = "tome"
     WEAPON = "weapon"
     TEAMWORK = "teamwork"
+
+
+class AncientOneDifficulty(Enum):
+    """Ancient One difficulty enum"""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class GameDifficulty(Enum):
+
+    NORMAL = "normal"
+    EASY = "easy"
+    HARD = "hard"

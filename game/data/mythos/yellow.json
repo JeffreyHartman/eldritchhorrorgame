@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "expansion": "CORE",
+    "name": "A Dark Power",
+    "traits": ["event"],
+    "color": "yellow",
+    "difficulty": "normal",
+    "icons": ["advance_omen", "reckoning", "spawn_gates"],
+    "text": "Lightning cracks across the sky. You have a sinking dread that all the good you've accomplished is about to be undone.",
+    "components": [
+      {
+        "type": "narrative",
+        "text": "Each Monster recovers all Health Health. Then each investigator immediately encounters each Monster on his space in the order of his choice."
+      },
+      {
+        "type": "heal_all_monsters"
+      },
+      {
+        "type": "investigator_encounter_monsters",
+        "target": "all"
+      }
+    ]
+  }
+]

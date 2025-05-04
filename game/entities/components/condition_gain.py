@@ -1,4 +1,4 @@
-from typing import Optional, Union, List
+from typing import Any, Dict, Optional, Union, List
 from game.entities.base.component import EncounterComponent
 from game.entities.investigator import Investigator
 
@@ -14,7 +14,7 @@ class ConditionGainComponent(EncounterComponent):
         self,
         condition: str,
         trait: Optional[str] = None,
-        prevent_duplicates: bool = True
+        prevent_duplicates: bool = True,
     ):
         """Initialize the component.
 
@@ -26,6 +26,14 @@ class ConditionGainComponent(EncounterComponent):
         self.condition = condition
         self.trait = trait
         self.prevent_duplicates = prevent_duplicates
+
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> "ConditionGainComponent":
+        """Create a condition gain component from data dictionary"""
+        condition = data.get("condition", "")
+        trait = data.get("trait", None)
+        prevent_duplicates = data.get("prevent_duplicates", True)
+        return cls(condition, trait, prevent_duplicates)
 
     def process(self, state, investigator: Investigator, ui=None):
         """Process this component's effect.
@@ -43,11 +51,11 @@ class ConditionGainComponent(EncounterComponent):
             "condition": self.condition,
             "trait": self.trait,
             "gained_condition": None,
-            "prevented": False
+            "prevented": False,
         }
 
         # Check if condition deck is available
-        if not hasattr(state, 'condition_deck') or not state.condition_deck:
+        if not hasattr(state, "condition_deck") or not state.condition_deck:
             result["error"] = "No condition deck available"
             return result
 
