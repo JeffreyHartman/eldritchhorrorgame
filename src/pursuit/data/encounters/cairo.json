@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ca_saqqara_dig", "title": "A Dig at Saqqara",
+    "text": "An excavation team has broken into a sealed chamber. The foreman will let you look, if you are quick.",
+    "effects": [
+      {"type": "test", "skill": "lore",
+       "pass": [{"type": "text", "text": "You recognize the one object in the chamber that matters, and you take it."}, {"type": "gain_asset", "kind": "relic"}],
+       "fail": [{"type": "text", "text": "The air in the chamber is very old, and very angry."}, {"type": "health", "amount": -1}, {"type": "gain_condition", "id": "hexed"}]}
+    ]
+  },
+  {
+    "id": "ca_khan_bazaar", "title": "The Great Bazaar",
+    "text": "Lanterns, spices, brass, and a merchant who says he has exactly what you need.",
+    "effects": [
+      {"type": "test", "skill": "charm",
+       "pass": [{"type": "text", "text": "You drink three glasses of tea, and he gives you a gift."}, {"type": "gain_asset", "source": "market"}],
+       "fail": [{"type": "text", "text": "You buy something you did not want, at a price you cannot afford."}, {"type": "funds", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "ca_museum_storeroom", "title": "The Museum Storeroom",
+    "text": "The museum keeps its most disturbing finds in a storeroom that is not on any floor plan.",
+    "effects": [
+      {"type": "test", "skill": "wits",
+       "pass": [{"type": "text", "text": "You read the catalogue cards by flashlight."}, {"type": "clues", "amount": 2}],
+       "fail": [{"type": "text", "text": "A guard catches you, and the museum presses charges."}, {"type": "gain_condition", "id": "wanted"}]}
+    ]
+  },
+  {
+    "id": "ca_the_unwrapped", "title": "The Unwrapped",
+    "text": "A mummy was unwrapped at a society dinner last night. This morning the sarcophagus is empty.",
+    "effects": [
+      {"type": "test", "skill": "nerve",
+       "pass": [{"type": "text", "text": "You find the hieroglyph that names what it was waiting for."}, {"type": "clues", "amount": 1}],
+       "fail": [{"type": "text", "text": "It has not gone far."}, {"type": "ambush", "id": "grave_revenant"}]}
+    ]
+  }
+]

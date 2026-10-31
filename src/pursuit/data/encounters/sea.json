@@ -1,0 +1,102 @@
+[
+  {
+    "id": "sea_squall", "title": "Squall",
+    "text": "A squall comes out of a clear sky and throws the ship onto its side.",
+    "effects": [
+      {"type": "test", "skill": "brawn",
+       "pass": [{"type": "text", "text": "You help the crew hold the ship steady."}],
+       "fail": [{"type": "text", "text": "You are thrown against the rail. The ship limps into port a day late."}, {"type": "health", "amount": -1}, {"type": "delay"}]}
+    ]
+  },
+  {
+    "id": "sea_man_overboard", "title": "Man Overboard",
+    "text": "A man is in the water off the port side. No one aboard recognizes him, and the nearest land is hundreds of miles away.",
+    "effects": [
+      {"type": "test", "skill": "brawn", "mod": -1,
+       "pass": [{"type": "text", "text": "You haul him aboard. He thanks you in a language no one speaks, then points at the horizon and dies."}, {"type": "clues", "amount": 1}, {"type": "sanity", "amount": -1}],
+       "fail": [{"type": "text", "text": "He sinks without a sound. He was smiling."}, {"type": "sanity", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "sea_captains_table", "title": "The Captain's Table",
+    "text": "The captain invites you to dinner. He collects stories, and pays well for good ones.",
+    "effects": [
+      {"type": "test", "skill": "charm",
+       "pass": [{"type": "text", "text": "He likes your story so much that he refunds your passage."}, {"type": "funds", "amount": 2}],
+       "fail": [{"type": "text", "text": "He yawns through dessert."}]}
+    ]
+  },
+  {
+    "id": "sea_strange_cargo", "title": "Strange Cargo",
+    "text": "In the hold, a crate stamped with a museum's name has started to scratch from the inside.",
+    "effects": [
+      {"type": "choice", "prompt": "Open the crate?", "options": [
+        {"label": "Open it", "effects": [{"type": "random", "outcomes": [
+          {"weight": 1, "text": "Inside, packed in straw, is an artifact of great power.", "effects": [{"type": "gain_asset", "kind": "relic"}]},
+          {"weight": 1, "text": "Something climbs out.", "effects": [{"type": "ambush"}]},
+          {"weight": 1, "text": "Rats, only rats, and a forgotten case of supplies.", "effects": [{"type": "gain_asset", "kind": "item"}]}
+        ]}]},
+        {"label": "Leave it alone", "effects": [{"type": "text", "text": "The scratching stops before dawn."}]}
+      ]}
+    ]
+  },
+  {
+    "id": "sea_lights_below", "title": "Lights Below",
+    "text": "Green lights glow far beneath the hull, in a pattern like streets.",
+    "effects": [
+      {"type": "test", "skill": "nerve", "mod": -1,
+       "pass": [{"type": "text", "text": "You sketch the pattern before it fades."}, {"type": "clues", "amount": 2}],
+       "fail": [{"type": "text", "text": "You cannot stop looking, and something below starts looking back."}, {"type": "sanity", "amount": -2}]}
+    ]
+  },
+  {
+    "id": "sea_stowaway", "title": "The Stowaway",
+    "text": "You catch someone hiding in a lifeboat. They beg you not to tell the captain.",
+    "effects": [
+      {"type": "test", "skill": "wits",
+       "pass": [{"type": "text", "text": "The stowaway is running from the same thing you are chasing. They join you."}, {"type": "gain_asset", "kind": "ally"}],
+       "fail": [{"type": "text", "text": "In the morning the stowaway is gone, and so is your purse."}, {"type": "funds", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "sea_dreams_at_sea", "title": "Dreams at Sea",
+    "text": "Every passenger aboard has the same dream on the same night.",
+    "effects": [
+      {"type": "test", "skill": "lore",
+       "pass": [{"type": "text", "text": "You understand the dream, and it is a warning."}, {"type": "clues", "amount": 1}, {"type": "gain_condition", "id": "inspired"}],
+       "fail": [{"type": "text", "text": "You do not want to sleep again."}, {"type": "gain_condition", "id": "night_terrors"}]}
+    ]
+  },
+  {
+    "id": "sea_uncharted_island", "title": "An Uncharted Island",
+    "text": "The ship anchors off an island that is on no chart. The captain lets you go ashore for one hour.",
+    "effects": [
+      {"type": "test", "skill": "wits",
+       "pass": [{"type": "text", "text": "In a ruined temple at the island's heart you find something old and powerful."}, {"type": "gain_asset", "kind": "relic"}],
+       "fail": [{"type": "text", "text": "Something in the jungle has been waiting a long time for visitors."}, {"type": "ambush"}]}
+    ]
+  },
+  {
+    "id": "sea_mutiny", "title": "Mutiny",
+    "text": "The crew say the voyage is cursed and want to turn back. The mates have pistols out.",
+    "effects": [
+      {"type": "choice", "prompt": "How do you stop the mutiny?", "options": [
+        {"label": "Talk them down (Charm)", "effects": [{"type": "test", "skill": "charm",
+          "pass": [{"type": "text", "text": "The crew go back to work, and the grateful captain pays you."}, {"type": "funds", "amount": 1}],
+          "fail": [{"type": "text", "text": "Someone throws a punch, and then everyone does."}, {"type": "health", "amount": -2}]}]},
+        {"label": "Take the wheel (Brawn)", "effects": [{"type": "test", "skill": "brawn",
+          "pass": [{"type": "text", "text": "You hold the bridge until the crew calm down."}, {"type": "funds", "amount": 1}],
+          "fail": [{"type": "text", "text": "You are knocked down the ladder."}, {"type": "health", "amount": -2}]}]}
+      ]}
+    ]
+  },
+  {
+    "id": "sea_fog_bank", "title": "Fog Bank",
+    "text": "The ship sails into fog so thick that the bow disappears. Bells ring somewhere ahead.",
+    "effects": [
+      {"type": "test", "skill": "wits",
+       "pass": [{"type": "text", "text": "You read the stars through a gap in the fog and set the course."}],
+       "fail": [{"type": "text", "text": "Three days in the fog, and the bells never stop."}, {"type": "delay"}, {"type": "sanity", "amount": -1}]}
+    ]
+  }
+]

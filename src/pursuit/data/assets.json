@@ -1,0 +1,211 @@
+[
+  {
+    "id": "revolver", "name": ".38 Revolver", "kind": "item", "traits": ["weapon"], "cost": 2, "count": 2,
+    "text": "+2 Brawn in combat.",
+    "flavor": "Six shots. Count them.",
+    "modifiers": [{"amount": 2, "skill": "brawn", "context": "combat"}]
+  },
+  {
+    "id": "baling_hook", "name": "Baling Hook", "kind": "item", "traits": ["weapon"], "cost": 1, "count": 2,
+    "text": "+1 Brawn in combat.",
+    "flavor": "Made for cotton bales. Works on worse.",
+    "modifiers": [{"amount": 1, "skill": "brawn", "context": "combat"}]
+  },
+  {
+    "id": "pump_shotgun", "name": "Pump Shotgun", "kind": "item", "traits": ["weapon"], "cost": 4, "count": 1,
+    "text": "+3 Brawn in combat.",
+    "flavor": "Loud enough to wake the dead. That is sometimes a problem.",
+    "modifiers": [{"amount": 3, "skill": "brawn", "context": "combat"}]
+  },
+  {
+    "id": "thompson_gun", "name": "Thompson Gun", "kind": "item", "traits": ["weapon"], "cost": 5, "count": 1,
+    "text": "+4 Brawn in combat. -1 Wits when you evade. It is heavy.",
+    "flavor": "Borrowed from a Chicago gentleman who will want it back.",
+    "modifiers": [
+      {"amount": 4, "skill": "brawn", "context": "combat"},
+      {"amount": -1, "skill": "wits", "context": "evade"}
+    ]
+  },
+  {
+    "id": "trench_knife", "name": "Trench Knife", "kind": "item", "traits": ["weapon"], "cost": 1, "count": 2,
+    "text": "+1 Brawn in combat. You may discard it to add 2 dice to a fight.",
+    "flavor": "A brass-knuckle grip and a bad reputation.",
+    "modifiers": [{"amount": 1, "skill": "brawn", "context": "combat"}],
+    "boosts": [{"text": "Discard it for +2 dice in this fight.", "amount": 2, "context": "combat", "exhaust": false, "discard": true}]
+  },
+  {
+    "id": "dynamite", "name": "Bundle of Dynamite", "kind": "item", "traits": ["weapon"], "cost": 2, "count": 2,
+    "text": "Discard to add 4 dice to a fight.",
+    "flavor": "Stolen from a mining camp. The fuses are short.",
+    "boosts": [{"text": "Light the fuse: +4 dice in this fight, then discard it.", "amount": 4, "context": "combat", "exhaust": false, "discard": true}]
+  },
+  {
+    "id": "field_journal", "name": "Field Journal", "kind": "item", "traits": ["tome"], "cost": 2, "count": 1,
+    "text": "+1 Lore. Action: test Lore (-1). If you pass, gain 1 Clue.",
+    "flavor": "Twenty years of notes, and the last pages are in someone else's hand.",
+    "modifiers": [{"amount": 1, "skill": "lore"}],
+    "action": {
+      "text": "Study your notes: test Lore (-1). If you pass, gain 1 Clue.",
+      "effects": [{"type": "test", "skill": "lore", "mod": -1, "pass": [{"type": "clues", "amount": 1}]}]
+    }
+  },
+  {
+    "id": "crumbling_grimoire", "name": "Crumbling Grimoire", "kind": "item", "traits": ["tome", "magical"], "cost": 3, "count": 1,
+    "text": "Action: test Lore (-1). If you pass, gain 1 Spell. If you fail, lose 1 Sanity.",
+    "flavor": "The binding is human skin. The ink is not ink.",
+    "action": {
+      "text": "Read the grimoire: test Lore (-1). Pass: gain 1 Spell. Fail: lose 1 Sanity.",
+      "effects": [{"type": "test", "skill": "lore", "mod": -1, "context": "cast",
+                   "pass": [{"type": "gain_asset", "kind": "spell"}],
+                   "fail": [{"type": "sanity", "amount": -1}]}]
+    }
+  },
+  {
+    "id": "storm_lantern", "name": "Storm Lantern", "kind": "item", "traits": ["tool"], "cost": 1, "count": 2,
+    "text": "+1 Wits when you investigate.",
+    "flavor": "Light pushes the dark back. Only a little.",
+    "modifiers": [{"amount": 1, "skill": "wits", "context": "investigate"}]
+  },
+  {
+    "id": "field_glasses", "name": "Field Glasses", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
+    "text": "+1 Wits when you investigate or evade.",
+    "flavor": "See it before it sees you.",
+    "modifiers": [
+      {"amount": 1, "skill": "wits", "context": "investigate"},
+      {"amount": 1, "skill": "wits", "context": "evade"}
+    ]
+  },
+  {
+    "id": "doctors_bag", "name": "Doctor's Bag", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
+    "text": "Action: an investigator here recovers 2 Health.",
+    "flavor": "Catgut, carbolic, and a bottle of laudanum.",
+    "action": {
+      "text": "Treat wounds: an investigator here recovers 2 Health.",
+      "target": "investigator_here",
+      "effects": [{"type": "health", "amount": 2}]
+    }
+  },
+  {
+    "id": "whiskey_flask", "name": "Flask of Whiskey", "kind": "item", "traits": ["tool"], "cost": 1, "count": 2,
+    "text": "Action: discard it to recover 2 Sanity.",
+    "flavor": "Prohibition is for people who have not seen what you have seen.",
+    "action": {
+      "text": "Take a long drink: recover 2 Sanity, then discard it.",
+      "discard": true,
+      "effects": [{"type": "sanity", "amount": 2}]
+    }
+  },
+  {
+    "id": "rabbits_foot", "name": "Rabbit's Foot", "kind": "item", "traits": ["trinket"], "cost": 1, "count": 1,
+    "text": "Once per round, add 1 die to any test.",
+    "flavor": "It was not lucky for the rabbit.",
+    "boosts": [{"text": "Rub it for luck: +1 die.", "amount": 1, "context": "any"}]
+  },
+  {
+    "id": "blessed_rosary", "name": "Blessed Rosary", "kind": "item", "traits": ["trinket", "magical"], "cost": 2, "count": 1,
+    "text": "+1 Nerve against horror.",
+    "flavor": "Worn smooth by a hundred years of prayer.",
+    "modifiers": [{"amount": 1, "skill": "nerve", "context": "horror"}]
+  },
+  {
+    "id": "folding_camera", "name": "Folding Camera", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
+    "text": "+1 Wits when you investigate. +1 Charm when you raise funds. Newspapers pay for pictures.",
+    "flavor": "Some of the photographs show things that were not there when you took them.",
+    "modifiers": [
+      {"amount": 1, "skill": "wits", "context": "investigate"},
+      {"amount": 1, "skill": "charm", "context": "funds"}
+    ]
+  },
+  {
+    "id": "diving_rig", "name": "Diving Rig", "kind": "item", "traits": ["tool"], "cost": 3, "count": 1,
+    "text": "+1 to every test while you are at sea.",
+    "flavor": "A brass helmet, a canvas suit, and forty feet of hose.",
+    "modifiers": [{"amount": 1, "where": {"terrain": "sea"}}]
+  },
+  {
+    "id": "climbing_kit", "name": "Mountaineering Kit", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
+    "text": "+1 to every test while you are in the wilderness.",
+    "flavor": "Ropes, pitons, and a tin of pemmican.",
+    "modifiers": [{"amount": 1, "where": {"terrain": "wilderness"}}]
+  },
+  {
+    "id": "rail_pass", "name": "First-Class Rail Pass", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
+    "text": "Your first rail or sea step each Travel is free.",
+    "flavor": "Valid on every line from Calais to Constantinople, and some that are not on the map.",
+    "perks": {"free_travel_steps": 1}
+  },
+  {
+    "id": "forged_papers", "name": "Forged Papers", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
+    "text": "Action: discard them to discard every Legal condition.",
+    "flavor": "Your name is now Mr. or Mrs. Smith.",
+    "action": {
+      "text": "Show the papers: discard every Legal condition, then discard them.",
+      "discard": true,
+      "effects": [{"type": "remove_condition", "trait": "legal"}]
+    }
+  },
+  {
+    "id": "professor_hale", "name": "Professor Edmund Hale", "kind": "ally", "traits": ["scholar"], "cost": 3, "count": 1,
+    "text": "+1 Lore. Action: test Lore. If you pass, gain 1 Clue.",
+    "flavor": "Retired from the chair of comparative mythology. He did not retire from the subject.",
+    "modifiers": [{"amount": 1, "skill": "lore"}],
+    "action": {
+      "text": "Ask the professor: test Lore. If you pass, gain 1 Clue.",
+      "effects": [{"type": "test", "skill": "lore", "pass": [{"type": "clues", "amount": 1}]}]
+    }
+  },
+  {
+    "id": "mickey_sullivan", "name": "Mickey Sullivan, Bodyguard", "kind": "ally", "traits": ["fighter"], "cost": 3, "count": 1,
+    "text": "+2 Brawn in combat.",
+    "flavor": "Ex-Navy, ex-boxer, ex-convict. Loyal to whoever paid him last.",
+    "modifiers": [{"amount": 2, "skill": "brawn", "context": "combat"}]
+  },
+  {
+    "id": "ruth_okafor", "name": "Nurse Ruth Okafor", "kind": "ally", "traits": ["healer"], "cost": 3, "count": 1,
+    "text": "Action: an investigator here recovers 1 Health and 1 Sanity.",
+    "flavor": "She has seen field hospitals in three wars. Nothing surprises her now.",
+    "action": {
+      "text": "Ruth's care: an investigator here recovers 1 Health and 1 Sanity.",
+      "target": "investigator_here",
+      "effects": [{"type": "health", "amount": 1}, {"type": "sanity", "amount": 1}]
+    }
+  },
+  {
+    "id": "ace_morrow", "name": "Jack \"Ace\" Morrow, Pilot", "kind": "ally", "traits": ["pilot"], "cost": 3, "count": 1,
+    "text": "Your first rail or sea step each Travel is free. +1 Nerve against horror.",
+    "flavor": "He flew in France. He does not talk about what he saw above the clouds.",
+    "perks": {"free_travel_steps": 1},
+    "modifiers": [{"amount": 1, "skill": "nerve", "context": "horror"}]
+  },
+  {
+    "id": "madame_zora", "name": "Madame Zora, Medium", "kind": "ally", "traits": ["mystic"], "cost": 3, "count": 1,
+    "text": "+1 Lore when you cast. Once per round, add 2 dice to a horror check.",
+    "flavor": "Half of her act is fake. She will not say which half.",
+    "modifiers": [{"amount": 1, "skill": "lore", "context": "cast"}],
+    "boosts": [{"text": "Zora steadies you: +2 dice against horror.", "amount": 2, "context": "horror"}]
+  },
+  {
+    "id": "grand_hotel", "name": "A Night at the Grand Hotel", "kind": "service", "traits": ["service"], "cost": 2, "count": 2,
+    "text": "Recover 2 Health and 2 Sanity.",
+    "flavor": "Clean sheets, hot water, and a door that locks.",
+    "on_gain": [{"type": "health", "amount": 2}, {"type": "sanity", "amount": 2}]
+  },
+  {
+    "id": "paid_informant", "name": "Paid Informant", "kind": "service", "traits": ["service"], "cost": 3, "count": 2,
+    "text": "Gain 1 Clue.",
+    "flavor": "He knows a man who knows a man.",
+    "on_gain": [{"type": "clues", "amount": 1}]
+  },
+  {
+    "id": "retain_lawyer", "name": "Retain a Lawyer", "kind": "service", "traits": ["service"], "cost": 2, "count": 1,
+    "text": "Discard every Legal condition.",
+    "flavor": "Expensive, discreet, and very good at paperwork.",
+    "on_gain": [{"type": "remove_condition", "trait": "legal"}]
+  },
+  {
+    "id": "private_sanitarium", "name": "Private Sanitarium", "kind": "service", "traits": ["service"], "cost": 3, "count": 1,
+    "text": "Discard every Madness condition and recover 1 Sanity.",
+    "flavor": "Quiet gardens, high walls, and doctors who do not ask questions.",
+    "on_gain": [{"type": "remove_condition", "trait": "madness"}, {"type": "sanity", "amount": 1}]
+  }
+]

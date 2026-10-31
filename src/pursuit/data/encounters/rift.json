@@ -1,0 +1,116 @@
+[
+  {
+    "id": "rift_mirror_city", "title": "The Mirror City",
+    "text": "You step through into a copy of the city you left, reversed and empty. The rift is a bright seam in the sky above it.",
+    "effects": [
+      {"type": "test", "skill": "lore", "mod": -1,
+       "pass": [{"type": "text", "text": "You find the place where the two cities touch, and you stitch them apart."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "Your reflection follows you out, two steps behind."}, {"type": "sanity", "amount": -2}]}
+    ]
+  },
+  {
+    "id": "rift_garden_of_teeth", "title": "A Garden of Teeth",
+    "text": "Flowers turn to follow you, and every one has teeth.",
+    "effects": [
+      {"type": "test", "skill": "brawn", "mod": -1,
+       "pass": [{"type": "text", "text": "You hack a path to the rift's root and tear it out."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "You escape, bleeding from a dozen bites."}, {"type": "health", "amount": -2}]}
+    ]
+  },
+  {
+    "id": "rift_library_without_walls", "title": "The Library Without Walls",
+    "text": "Shelves of books stretch in every direction, under a sky of more books.",
+    "effects": [
+      {"type": "test", "skill": "lore",
+       "pass": [{"type": "text", "text": "You find the book that describes this rift, and the page that ends it."}, {"type": "clues", "amount": 2}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "You read for what feels like years. When you step out, only an hour has passed."}, {"type": "sanity", "amount": -1}, {"type": "gain_condition", "id": "unmoored"}]}
+    ]
+  },
+  {
+    "id": "rift_endless_stair", "title": "The Endless Stair",
+    "text": "A staircase spirals down through nothing. Far below, something breathes.",
+    "effects": [
+      {"type": "test", "skill": "nerve", "mod": -1,
+       "pass": [{"type": "text", "text": "You walk down without looking back, and lock the door at the bottom."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "You run back up for what feels like days."}, {"type": "delay"}, {"type": "sanity", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "rift_lost_bazaar", "title": "The Bazaar of Lost Things",
+    "text": "A market where everything ever lost is for sale. The merchants do not take money.",
+    "effects": [
+      {"type": "pay", "cost": {"sanity": 2}, "prompt": "Trade a piece of your mind for a relic?",
+       "then": [{"type": "text", "text": "The merchant wraps your purchase in a page of your own memories."}, {"type": "gain_asset", "kind": "relic"}],
+       "else": [{"type": "test", "skill": "wits",
+                 "pass": [{"type": "text", "text": "You find the stall that sells doors, and you buy this one shut."}, {"type": "close_rift"}],
+                 "fail": [{"type": "text", "text": "A pickpocket with too many hands finds you first."}, {"type": "health", "amount": -1}]}]}
+    ]
+  },
+  {
+    "id": "rift_black_star", "title": "Under a Black Star",
+    "text": "A black star hangs in a white sky. It is singing to you.",
+    "effects": [
+      {"type": "test", "skill": "nerve", "mod": -2,
+       "pass": [{"type": "text", "text": "You sing back, and the star goes quiet. You come home changed, and stronger."}, {"type": "close_rift"}, {"type": "improve_skill", "skill": "choose"}],
+       "fail": [{"type": "text", "text": "You listen to the whole song."}, {"type": "sanity", "amount": -3}]}
+    ]
+  },
+  {
+    "id": "rift_your_echo", "title": "Your Own Echo",
+    "text": "On the other side you meet yourself, older, coming back.",
+    "effects": [
+      {"type": "test", "skill": "wits", "mod": -1,
+       "pass": [{"type": "text", "text": "Your older self tells you how to close it. You do not ask what else they know."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "You trade places for a little while. You do not remember what you did."}, {"type": "gain_condition", "id": "lost_hours"}, {"type": "sanity", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "rift_tide_of_hands", "title": "The Tide of Hands",
+    "text": "The ground on the other side is a sea of grasping hands.",
+    "effects": [
+      {"type": "test", "skill": "brawn",
+       "pass": [{"type": "text", "text": "You wade through them and pull the rift shut behind you."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "They squeeze until something cracks."}, {"type": "health", "amount": -2}, {"type": "gain_condition", "id": "cracked_ribs"}]}
+    ]
+  },
+  {
+    "id": "rift_singing_dark", "title": "The Singing Dark",
+    "text": "Total darkness, full of voices singing one long chord.",
+    "effects": [
+      {"type": "test", "skill": "lore", "mod": -1,
+       "pass": [{"type": "text", "text": "You learn the chord and sing it backward. The rift closes, and you keep the song."}, {"type": "close_rift"}, {"type": "gain_asset", "kind": "spell"}],
+       "fail": [{"type": "text", "text": "The chord gets into your head and stays there."}, {"type": "sanity", "amount": -2}]}
+    ]
+  },
+  {
+    "id": "rift_gatekeeper", "title": "The Gatekeeper",
+    "text": "Something guards the far side of the rift, and it does not want you to leave.",
+    "effects": [
+      {"type": "ambush"},
+      {"type": "test", "skill": "lore",
+       "pass": [{"type": "text", "text": "With the guard out of the way, you close the gate."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "You escape, but the rift stays open."}]}
+    ]
+  },
+  {
+    "id": "rift_voice_deal", "title": "A Voice Offers a Deal",
+    "text": "A pleasant voice offers to close the rift for you. It only wants a small favor, later.",
+    "effects": [
+      {"type": "choice", "prompt": "Accept the deal?", "options": [
+        {"label": "Accept", "effects": [{"type": "close_rift"}, {"type": "gain_condition", "id": "dark_bargain"}]},
+        {"label": "Refuse and do it yourself", "effects": [{"type": "test", "skill": "nerve",
+          "pass": [{"type": "text", "text": "The voice sulks as you close the rift without it."}, {"type": "close_rift"}],
+          "fail": [{"type": "text", "text": "The voice stops being pleasant."}, {"type": "sanity", "amount": -2}]}]}
+      ]}
+    ]
+  },
+  {
+    "id": "rift_lost_between", "title": "Lost Between",
+    "text": "You fall between worlds, and the way back keeps moving.",
+    "effects": [
+      {"type": "test", "skill": "wits", "mod": -1,
+       "pass": [{"type": "text", "text": "You catch the edge of the rift and fold it shut as you climb out."}, {"type": "close_rift"}],
+       "fail": [{"type": "text", "text": "You climb out somewhere else entirely, days later."}, {"type": "move", "to": "random_city"}, {"type": "delay"}]}
+    ]
+  }
+]

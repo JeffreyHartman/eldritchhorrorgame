@@ -1,87 +1,109 @@
 # Eldritch Pursuit
 
-A text-based implementation of an Eldritch Horror-inspired board game, where players take on the role of investigators trying to solve mysteries before ancient cosmic horrors awaken.
+Eldritch Pursuit is a co-operative cosmic horror game for the terminal. You control a team of 1 to 4
+investigators who travel a 1926 world map. They seal rifts, fight monsters, and perform rites before an
+Old One wakes up and ends the world.
 
-## Project Goals
+The game is a single-player, hot-seat game. All of the content (investigators, Old Ones, encounters,
+assets, monsters, conditions, and portents) is in JSON files that you can edit.
 
-- Create a faithful digital adaptation of the Eldritch Horror board game experience
-- Implement a text-based UI with rich formatting for an immersive experience
-- Provide a challenging single-player experience with replayability
-- Maintain the thematic elements and strategic depth of the original game
+## Requirements
 
-## Features Checklist
+- Python 3.12 or later
+- [uv](https://docs.astral.sh/uv/)
+- A terminal that is at least 100 columns wide
 
-### Core Game Structure
+## Play
 
-- [x] Game engine with phase-based gameplay
-- [x] Main menu and basic UI
-- [x] Win/loss conditions
-- [ ] Game Setup Phase
-- [ ] Implement action phase
-  - [x] Travel between locations
-  - [x] Rest action
-  - [ ] Trade action
-  - [x] Prepare for travel action
-  - [ ] Acquire assets action
-  - [ ] Perform component action
-- [ ] Implement encouter phase
-  - [x] Resolve encounters
-  - [ ] Handle defeated investigators
-- [ ] Implement mythos phase
+```sh
+uv run eldritch-pursuit
+```
 
-### Game Components
+The main menu lets you start a new game, continue the last game, load a save, or read the rules.
 
-- [x] Location system with connections
-- [x] Train and ship ticket system
-- [/] Investigators
-  - [x] Investigator class
-  - [x] Multiple investigators
-  - [x] Investigator selection
-  - [ ] All Core investigators added
-- [ ] Assets
-  - [ ] Asset system
-  - [ ] Allies
-  - [ ] Artifacts
-  - [ ] Items
-  - [ ] Spells
-- [ ] Gates
-- [ ] Monsters
-- [ ] Ancient Ones
-- [ ] Conditions
-- [/] Encounter Decks
-- [ ] Mysteries
-- [ ] Mythos deck
-- [ ] Clues
-- [ ] Complete world map visualization
+### How a game goes
 
-### Investigator Features
+1. Choose an Old One, a difficulty, and 1 to 4 investigators.
+2. Each round has three phases:
+   - **Day.** Each investigator takes 2 different actions, for example Travel, Rest, Investigate,
+     Seal the rift, Raise funds, or Perform rite. The market, trading, and collecting belongings
+     are free.
+   - **Encounters.** Each investigator fights or evades the monsters at their location. Then they
+     have an encounter at that location, or they step through a rift there.
+   - **Night.** Doom advances, a portent card resolves, the Old One acts, and conditions can come
+     due.
+3. You win when the investigators complete the Old One's rites.
+4. If Doom reaches 0, the Old One wakes. You then have a few nights to complete one final rite.
 
-- [ ] Investigator stats (health, sanity, skills)
-- [x] Basic actions (travel, rest, prepare for travel)
-- [ ] Multiple investigator options
-- [ ] Character progression
-- [ ] Inventory management
+The **How to play** screen in the game has the full rules. `docs/design.md` has the rules and the
+design of the code.
 
-### Game Mechanics
+### Keys
 
-- [x] Location movement mechanics
-- [ ] Game setup
-- [x] Skill tests
-- [ ] Combat system
-- [ ] Spell casting
-- [ ] Item usage
-- [ ] Gate mechanics
-- [ ] Monster movement and encounters
+On the action menu, type the number of an option. These keys open views:
 
-### Technical Features
+| Key | View                         |
+| --- | ---------------------------- |
+| `m` | World map                    |
+| `i` | Investigators                |
+| `r` | Rites and the Old One        |
+| `k` | Market                       |
+| `l` | Log of recent events         |
+| `h` | Help                         |
+| `s` | Save                         |
+| `q` | Quit to the main menu        |
 
-- [ ] Save/load game functionality
-- [ ] Configuration options
-- [ ] Difficulty settings
-- [ ] Game statistics tracking
+### Saves
 
-## Getting Started
+The game saves automatically at the start of each Day turn. You can also save with `s`.
+The saves go to `$XDG_DATA_HOME/eldritch-pursuit/saves` (usually `~/.local/share/eldritch-pursuit/saves`).
+On Windows, they go to `%APPDATA%\eldritch-pursuit\saves`. To use a different folder, set
+`PURSUIT_SAVES`.
 
-1. Clone the repository
-2. Install requirements: `pip install -r requirements.txt`
-3. Run the game: `python main.py`
+## Content
+
+The game data is in `src/pursuit/data/`. The game checks all of it when it starts. If a file has an
+error, the game stops and shows the JSON path of the error, for example
+`city.json[0].effects[1]: unknown effect type 'summon_cake'`.
+
+To play with your own copy of the data, copy the folder and set `PURSUIT_DATA`:
+
+```sh
+cp -r src/pursuit/data ~/my-data
+PURSUIT_DATA=~/my-data uv run eldritch-pursuit
+```
+
+`docs/design.md` describes each file and every effect type.
+
+## Development
+
+```sh
+uv run pytest                     # unit, rules, UI, and short bot-game tests
+uv run pytest -m soak             # 200 full games with random bots
+uv run ruff check src tests       # lint
+uv run ruff format src tests      # format
+uv run mypy                       # type check
+```
+
+To measure balance, run bot games:
+
+```sh
+uv run python -m pursuit.sim --games 200 --bot heuristic --players 2 --old-one cthulhu
+```
+
+The command shows the win rate, the average number of rounds, and how the games ended.
+
+## Layout
+
+```
+src/pursuit/
+  content/     JSON reader, content definitions, loader, and cross-reference checks
+  effects/     effect registry and every effect type that content can use
+  engine/      game state, rules, dice, combat, actions, phases, setup, save and load
+  ui/          rich terminal UI, renderers, and ASCII art
+  data/        all game content as JSON
+  bots.py      RandomBot and HeuristicBot controllers
+  sim.py       bot game runner for balance checks
+tests/         pytest suite
+docs/          design document
+```

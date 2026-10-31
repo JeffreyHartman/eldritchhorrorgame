@@ -1,0 +1,61 @@
+[
+  {
+    "id": "star_stone", "name": "Star-Carved Stone", "traits": ["magical"],
+    "text": "+2 Lore when you seal a rift. Each rift you seal gives 1 extra Trophy.",
+    "flavor": "A grey stone with a five-pointed star cut deep into it. It is warm to the touch.",
+    "modifiers": [{"amount": 2, "skill": "lore", "context": "seal"}],
+    "perks": {"seal_bonus": 1}
+  },
+  {
+    "id": "lens_of_seeing", "name": "Lens of Clear Seeing", "traits": ["magical"],
+    "text": "+2 Wits. Gain 1 extra Clue when you investigate.",
+    "flavor": "Through it, every lie has a shadow.",
+    "modifiers": [{"amount": 2, "skill": "wits"}],
+    "perks": {"investigate_bonus": 1}
+  },
+  {
+    "id": "bronze_sickle", "name": "Bronze Sickle of Ur", "traits": ["weapon", "magical"],
+    "text": "+3 Brawn in combat.",
+    "flavor": "Four thousand years old and still sharp.",
+    "modifiers": [{"amount": 3, "skill": "brawn", "context": "combat"}]
+  },
+  {
+    "id": "obsidian_mirror", "name": "Obsidian Mirror", "traits": ["magical"],
+    "text": "Once per round, lose 1 Sanity to add 3 dice to any test.",
+    "flavor": "Your reflection moves a moment after you do.",
+    "boosts": [{"text": "Look into the mirror: lose 1 Sanity for +3 dice.", "amount": 3, "context": "any", "cost": {"sanity": 1}}]
+  },
+  {
+    "id": "unbroken_chalice", "name": "Unbroken Chalice", "traits": ["magical"],
+    "text": "Action: discard it to recover 4 Health and 4 Sanity.",
+    "flavor": "Whatever you pour into it comes out as clear water.",
+    "action": {
+      "text": "Drink from the chalice: recover 4 Health and 4 Sanity, then discard it.",
+      "discard": true,
+      "effects": [{"type": "health", "amount": 4}, {"type": "sanity", "amount": 4}]
+    }
+  },
+  {
+    "id": "chart_of_stars", "name": "Chart of the Wandering Stars", "traits": ["tome", "magical"],
+    "text": "Your first two rail or sea steps each Travel are free.",
+    "flavor": "It shows the stars as they will be, not as they are.",
+    "perks": {"free_travel_steps": 2}
+  },
+  {
+    "id": "sleeping_idol", "name": "Idol of the Sleeping God", "traits": ["magical"],
+    "text": "+2 Nerve against horror. When you gain it, lose 1 Sanity.",
+    "flavor": "A squat green figure with its eyes shut. Do not wake it.",
+    "modifiers": [{"amount": 2, "skill": "nerve", "context": "horror"}],
+    "on_gain": [{"type": "sanity", "amount": -1}]
+  },
+  {
+    "id": "ninth_hour_ring", "name": "Ring of the Ninth Hour", "traits": ["magical"],
+    "text": "Action: discard it to make Doom retreat by 2.",
+    "flavor": "Turn the ring backward, and the clocks of the world turn with it.",
+    "action": {
+      "text": "Turn the ring: Doom retreats by 2, then discard it.",
+      "discard": true,
+      "effects": [{"type": "retreat_doom", "amount": 2}]
+    }
+  }
+]

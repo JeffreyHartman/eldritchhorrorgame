@@ -1,0 +1,38 @@
+[
+  {
+    "id": "rj_carnival_masks", "title": "Carnival Masks",
+    "text": "A street party spills out of a side street. One of the dancers wears a mask that does not come off.",
+    "effects": [
+      {"type": "test", "skill": "wits",
+       "pass": [{"type": "text", "text": "You follow the dancer to a door with a symbol you know."}, {"type": "clues", "amount": 1}],
+       "fail": [{"type": "text", "text": "The dancer was following you."}, {"type": "ambush", "id": "masked_acolyte"}]}
+    ]
+  },
+  {
+    "id": "rj_cable_car", "title": "The Cable Car",
+    "text": "The cable car to the top of the granite peak sways over the bay. From up here you can see the whole city, and the shadow in the water.",
+    "effects": [
+      {"type": "test", "skill": "nerve",
+       "pass": [{"type": "text", "text": "You watch the shadow until you know where it is going."}, {"type": "clues", "amount": 1}, {"type": "sanity", "amount": 1}],
+       "fail": [{"type": "text", "text": "The car stops halfway, and swings in the wind for an hour."}, {"type": "sanity", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "rj_hill_temple", "title": "A Temple in the Hills",
+    "text": "Drums and singing come from a temple in the hills. The priestess sees the darkness on you and invites you in.",
+    "effects": [
+      {"type": "test", "skill": "charm",
+       "pass": [{"type": "text", "text": "The priestess cleanses you with smoke, song, and cold water."}, {"type": "remove_condition", "trait": "curse"}, {"type": "gain_condition", "id": "blessed"}, {"type": "sanity", "amount": 2}],
+       "fail": [{"type": "text", "text": "You are welcome to stay, but you do not understand the ceremony."}, {"type": "sanity", "amount": 1}]}
+    ]
+  },
+  {
+    "id": "rj_harbor_master", "title": "The Harbor Master",
+    "text": "The harbor master keeps records of every ship, and of every ship that did not arrive.",
+    "effects": [
+      {"type": "test", "skill": "charm",
+       "pass": [{"type": "text", "text": "He hires you to look into a missing freighter, and pays in advance."}, {"type": "funds", "amount": 2}, {"type": "spawn_clue", "count": 1}],
+       "fail": [{"type": "text", "text": "He is too busy to talk."}]}
+    ]
+  }
+]

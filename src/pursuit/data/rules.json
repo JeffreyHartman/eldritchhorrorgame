@@ -1,0 +1,37 @@
+{
+  "_comment": "Core numbers for the rules. The engine reads every value here.",
+  "actions_per_turn": 2,
+  "success_on": 5,
+  "market_size": 4,
+  "max_paid_steps": 2,
+  "step_cost": 1,
+  "start_rifts": 2,
+  "start_clues": 4,
+  "night_doom": 1,
+  "max_improvement": 2,
+  "max_investigators": 4,
+  "defeat_doom": 1,
+  "difficulties": [
+    {
+      "id": "easy",
+      "label": "Easy",
+      "text": "Three more nights before the end, more money, and one fewer rift at the start.",
+      "doom_mod": 3,
+      "funds_mod": 1,
+      "start_rifts_mod": -1
+    },
+    {
+      "id": "normal",
+      "label": "Normal",
+      "text": "The intended challenge."
+    },
+    {
+      "id": "hard",
+      "label": "Hard",
+      "text": "Two fewer nights, less money, and an extra rift at the start.",
+      "doom_mod": -2,
+      "funds_mod": -1,
+      "start_rifts_mod": 1
+    }
+  ]
+}

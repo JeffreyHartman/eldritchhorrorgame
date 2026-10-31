@@ -1,0 +1,224 @@
+[
+  {
+    "id": "miriam_achterberg",
+    "name": "Dr. Miriam Achterberg",
+    "occupation": "The Archaeologist",
+    "bio": "Miriam spent twenty years digging up the Nile valley and publishing careful, dull papers. Then her team opened a tomb with the seals on the inside. She burned her notes, but she remembers every word.",
+    "quote": "Everything buried was buried for a reason.",
+    "health": 5,
+    "sanity": 7,
+    "skills": {"lore": 4, "charm": 2, "wits": 3, "brawn": 2, "nerve": 3},
+    "start": "cairo",
+    "funds": 2,
+    "assets": ["field_journal"],
+    "passive_text": "+1 Lore when you seal a rift.",
+    "modifiers": [{"amount": 1, "skill": "lore", "context": "seal"}],
+    "action": {
+      "text": "Decipher: spend 1 Trophy to gain 2 Clues.",
+      "cost": {"trophies": 1},
+      "effects": [
+        {"type": "text", "text": "Miriam reads the sealed rift's residue like an inscription."},
+        {"type": "clues", "amount": 2}
+      ]
+    }
+  },
+  {
+    "id": "tug_mulroney",
+    "name": "Tobias \"Tug\" Mulroney",
+    "occupation": "The Dockhand",
+    "bio": "Tug unloaded freighters on the Brooklyn piers and boxed for cash on Saturdays. One night a crate from Singapore started to knock from the inside. He was the only one who did not run.",
+    "quote": "Hold the lamp steady. I'll do the rest.",
+    "health": 8,
+    "sanity": 4,
+    "skills": {"lore": 1, "charm": 2, "wits": 2, "brawn": 5, "nerve": 3},
+    "start": "new_york",
+    "funds": 1,
+    "assets": ["baling_hook"],
+    "passive_text": "+1 Nerve against horror. He has seen worse on the docks.",
+    "modifiers": [{"amount": 1, "skill": "nerve", "context": "horror"}],
+    "action": {
+      "text": "Rough first aid: an investigator here recovers 2 Health.",
+      "target": "investigator_here",
+      "effects": [{"type": "health", "amount": 2}]
+    }
+  },
+  {
+    "id": "celestine_boudreaux",
+    "name": "Celestine Boudreaux",
+    "occupation": "The Singer",
+    "bio": "Celestine sings in a Royal Street club where the crowd is half gangsters and half society. Her grandmother taught her songs that keep the bayou quiet. Lately the bayou has started singing back.",
+    "quote": "Every room has a mood, honey. I can change it.",
+    "health": 5,
+    "sanity": 7,
+    "skills": {"lore": 2, "charm": 5, "wits": 3, "brawn": 1, "nerve": 3},
+    "start": "new_orleans",
+    "funds": 3,
+    "assets": ["rabbits_foot"],
+    "passive_text": "Gain 1 extra Funds when you raise funds.",
+    "perks": {"earn_bonus": 1},
+    "action": {
+      "text": "A song for the weary: every investigator here recovers 1 Sanity.",
+      "effects": [
+        {"type": "text", "text": "Celestine sings low, and for a moment the dark feels far away."},
+        {"type": "each_investigator", "here": true, "effects": [{"type": "sanity", "amount": 1}]}
+      ]
+    }
+  },
+  {
+    "id": "hollis_grange",
+    "name": "Hollis Grange",
+    "occupation": "The Private Eye",
+    "bio": "Hollis left the Chicago police when he found out who paid his captain. Now he finds missing people for a fee. The last six he found had all been somewhere they should not have been able to reach.",
+    "quote": "People lie. Footprints don't.",
+    "health": 6,
+    "sanity": 6,
+    "skills": {"lore": 2, "charm": 2, "wits": 5, "brawn": 3, "nerve": 2},
+    "start": "chicago",
+    "funds": 2,
+    "assets": ["revolver"],
+    "passive_text": "Gain 1 extra Clue when you investigate.",
+    "perks": {"investigate_bonus": 1},
+    "action": {
+      "text": "Work the paper trail: test Wits (-1). If you pass, gain 1 Clue.",
+      "effects": [
+        {"type": "test", "skill": "wits", "mod": -1,
+         "pass": [{"type": "text", "text": "A ledger, a forged signature, a name."}, {"type": "clues", "amount": 1}],
+         "fail": [{"type": "text", "text": "The trail ends in a burned file room."}]}
+      ]
+    }
+  },
+  {
+    "id": "agnieszka_wolna",
+    "name": "Sister Agnieszka Wolna",
+    "occupation": "The Nun",
+    "bio": "Agnieszka nursed soldiers through the Great War and kept her faith. In Prague she was asked to sit with a dying alchemist. What he told her before the end sent her across the world.",
+    "quote": "Fear is a door. I choose not to open it.",
+    "health": 5,
+    "sanity": 8,
+    "skills": {"lore": 3, "charm": 3, "wits": 2, "brawn": 1, "nerve": 5},
+    "start": "prague",
+    "funds": 1,
+    "assets": ["blessed_rosary"],
+    "passive_text": "Recover 1 extra Health and Sanity when you rest.",
+    "perks": {"rest_bonus": 1},
+    "action": {
+      "text": "Absolution: lose 1 Sanity. An investigator here discards every Madness and Curse condition.",
+      "cost": {"sanity": 1},
+      "target": "investigator_here",
+      "effects": [
+        {"type": "remove_condition", "trait": "madness"},
+        {"type": "remove_condition", "trait": "curse"}
+      ]
+    }
+  },
+  {
+    "id": "rashid_haddad",
+    "name": "Rashid Haddad",
+    "occupation": "The Antiquarian",
+    "bio": "Rashid sells rare books and rarer artifacts from a shop near the Tigris. He knows every buyer and every forger from Istanbul to Bombay. Lately his best customers have been buying up one book in particular.",
+    "quote": "Everything has a price. Some prices you pay later.",
+    "health": 6,
+    "sanity": 6,
+    "skills": {"lore": 3, "charm": 4, "wits": 3, "brawn": 2, "nerve": 2},
+    "start": "baghdad",
+    "funds": 4,
+    "assets": [],
+    "passive_text": "Market assets cost you 1 less.",
+    "perks": {"market_discount": 1},
+    "action": {
+      "text": "Haggle: test Charm (-1). If you pass, take one asset from the market for free.",
+      "effects": [
+        {"type": "test", "skill": "charm", "mod": -1,
+         "pass": [{"type": "gain_asset", "source": "market"}],
+         "fail": [{"type": "text", "text": "The merchant laughs and names a higher price."}]}
+      ]
+    }
+  },
+  {
+    "id": "ingrid_solveig",
+    "name": "Ingrid Solveig",
+    "occupation": "The Aviator",
+    "bio": "Ingrid flew mail over the Arctic in a plane held together with wire and prayer. She saw lights on the ice cap that moved against the wind. She has been chasing them ever since.",
+    "quote": "Everything looks smaller from ten thousand feet. Almost everything.",
+    "health": 6,
+    "sanity": 5,
+    "skills": {"lore": 2, "charm": 2, "wits": 3, "brawn": 3, "nerve": 4},
+    "start": "reykjavik",
+    "funds": 3,
+    "assets": [],
+    "passive_text": "Your first rail or sea step each Travel is free.",
+    "perks": {"free_travel_steps": 1},
+    "action": {
+      "text": "Fly: pay 1 Funds to move to any location up to 3 steps away.",
+      "cost": {"funds": 1},
+      "effects": [{"type": "move", "to": "choose_within", "range": 3}]
+    }
+  },
+  {
+    "id": "kenji_mori",
+    "name": "Dr. Kenji Mori",
+    "occupation": "The Surgeon",
+    "bio": "Kenji worked for three days without sleep after the Great Kanto earthquake. Among the wounded he found a fisherman with gills. The man died in surgery. Kenji kept the X-rays.",
+    "quote": "Hold still. This will hurt, and then it will help.",
+    "health": 6,
+    "sanity": 6,
+    "skills": {"lore": 3, "charm": 3, "wits": 3, "brawn": 2, "nerve": 3},
+    "start": "yokohama",
+    "funds": 2,
+    "assets": ["doctors_bag"],
+    "passive_text": "+1 Wits when you investigate. A clinician notices details.",
+    "modifiers": [{"amount": 1, "skill": "wits", "context": "investigate"}],
+    "action": {
+      "text": "Surgery: an investigator here recovers 3 Health and discards every Injury condition.",
+      "target": "investigator_here",
+      "effects": [
+        {"type": "health", "amount": 3},
+        {"type": "remove_condition", "trait": "injury"}
+      ]
+    }
+  },
+  {
+    "id": "ada_penhallow",
+    "name": "Ada Penhallow",
+    "occupation": "The Occultist",
+    "bio": "Ada is the last of an old Providence family that her neighbors avoid. She inherited the house, the library, and the debts her ancestors made with things that are not people. She intends to pay them off on her own terms.",
+    "quote": "My great-grandfather opened this door. I will be the one to close it.",
+    "health": 4,
+    "sanity": 6,
+    "skills": {"lore": 5, "charm": 2, "wits": 3, "brawn": 1, "nerve": 3},
+    "start": "providence",
+    "funds": 1,
+    "assets": ["withering_word"],
+    "passive_text": "+1 Lore when you cast a spell.",
+    "modifiers": [{"amount": 1, "skill": "lore", "context": "cast"}],
+    "action": {
+      "text": "Commune: lose 1 Sanity to gain 1 Spell.",
+      "cost": {"sanity": 1},
+      "effects": [{"type": "gain_asset", "kind": "spell"}]
+    }
+  },
+  {
+    "id": "elijah_brandt",
+    "name": "Elijah Brandt",
+    "occupation": "The Reporter",
+    "bio": "Elijah writes for a Chicago daily from a desk in Paris. His editor wants stories about jazz and expatriates. Elijah keeps filing stories about disappearances, and his editor keeps spiking them.",
+    "quote": "If the people knew, they'd fight. So I'm going to tell them.",
+    "health": 6,
+    "sanity": 5,
+    "skills": {"lore": 2, "charm": 3, "wits": 4, "brawn": 2, "nerve": 3},
+    "start": "paris",
+    "funds": 2,
+    "assets": ["folding_camera"],
+    "passive_text": "+1 Charm in any city.",
+    "modifiers": [{"amount": 1, "skill": "charm", "where": {"terrain": "city"}}],
+    "action": {
+      "text": "Run the story: in a city, test Charm and get 2 successes to make Doom retreat by 1.",
+      "requires": {"at": {"terrain": "city"}},
+      "effects": [
+        {"type": "test", "skill": "charm", "needed": 2,
+         "pass": [{"type": "text", "text": "The story runs on the front page. People lock their doors, and some of them start asking questions."}, {"type": "retreat_doom", "amount": 1}],
+         "fail": [{"type": "text", "text": "The editor spikes the story again."}]}
+      ]
+    }
+  }
+]

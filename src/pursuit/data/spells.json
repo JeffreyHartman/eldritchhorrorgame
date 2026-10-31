@@ -1,0 +1,87 @@
+[
+  {
+    "id": "withering_word", "name": "Withering Word", "traits": ["incantation"],
+    "text": "Once per round, lose 1 Sanity to add 3 dice to a fight.",
+    "flavor": "A word that makes flesh forget how to hold together.",
+    "boosts": [{"text": "Speak the word: lose 1 Sanity for +3 dice.", "amount": 3, "context": "combat", "cost": {"sanity": 1}}]
+  },
+  {
+    "id": "ward_of_salt", "name": "Ward of Salt and Iron", "traits": ["ward"],
+    "text": "Once per round, lose 1 Sanity to add 3 dice to a horror check.",
+    "flavor": "A circle drawn quickly, in the old way.",
+    "boosts": [{"text": "Raise the ward: lose 1 Sanity for +3 dice against horror.", "amount": 3, "context": "horror", "cost": {"sanity": 1}}]
+  },
+  {
+    "id": "veil_of_mists", "name": "Veil of Mists", "traits": ["incantation"],
+    "text": "Once per round, lose 1 Sanity to add 3 dice when you evade.",
+    "flavor": "The air thickens, and you are somewhere slightly to the left of where you were.",
+    "boosts": [{"text": "Call the mist: lose 1 Sanity for +3 dice to evade.", "amount": 3, "context": "evade", "cost": {"sanity": 1}}]
+  },
+  {
+    "id": "closing_sign", "name": "The Closing Sign", "traits": ["ward"],
+    "text": "Once per round, lose 1 Sanity to add 3 dice when you seal a rift.",
+    "flavor": "Five fingers, folded in an order that hurts.",
+    "boosts": [{"text": "Make the sign: lose 1 Sanity for +3 dice to seal.", "amount": 3, "context": "seal", "cost": {"sanity": 1}}]
+  },
+  {
+    "id": "mend_flesh", "name": "Mend Flesh", "traits": ["ritual"],
+    "text": "Action: test Lore. If you pass, recover 3 Health. If you fail, lose 1 Sanity.",
+    "flavor": "The wound closes. The scar is not quite your own skin.",
+    "action": {
+      "text": "Cast Mend Flesh: test Lore. Pass: recover 3 Health. Fail: lose 1 Sanity.",
+      "effects": [{"type": "test", "skill": "lore", "context": "cast",
+                   "pass": [{"type": "health", "amount": 3}],
+                   "fail": [{"type": "sanity", "amount": -1}]}]
+    }
+  },
+  {
+    "id": "clarity_lamp", "name": "Clarity of the Lamp", "traits": ["ritual"],
+    "text": "Action: test Lore. If you pass, recover 2 Sanity.",
+    "flavor": "Stare into the flame until the shadows stop moving.",
+    "action": {
+      "text": "Cast Clarity: test Lore. Pass: recover 2 Sanity.",
+      "effects": [{"type": "test", "skill": "lore", "context": "cast", "pass": [{"type": "sanity", "amount": 2}]}]
+    }
+  },
+  {
+    "id": "seeking_rite", "name": "Seeking Rite", "traits": ["ritual"],
+    "text": "Action: test Lore (-1). If you pass, gain 1 Clue. If you fail, lose 1 Sanity.",
+    "flavor": "A needle on a thread, dangled over a map, and a name whispered three times.",
+    "action": {
+      "text": "Cast the Seeking Rite: test Lore (-1). Pass: gain 1 Clue. Fail: lose 1 Sanity.",
+      "effects": [{"type": "test", "skill": "lore", "mod": -1, "context": "cast",
+                   "pass": [{"type": "clues", "amount": 1}],
+                   "fail": [{"type": "sanity", "amount": -1}]}]
+    }
+  },
+  {
+    "id": "far_step", "name": "Far Step", "traits": ["incantation"],
+    "text": "Action: test Lore. If you pass, move to any location up to 2 steps away. If you fail, lose 1 Sanity.",
+    "flavor": "You step through a doorway that was not there, into a street you have never seen.",
+    "action": {
+      "text": "Cast Far Step: test Lore. Pass: move up to 2 steps. Fail: lose 1 Sanity.",
+      "effects": [{"type": "test", "skill": "lore", "context": "cast",
+                   "pass": [{"type": "move", "to": "choose_within", "range": 2}],
+                   "fail": [{"type": "sanity", "amount": -1}]}]
+    }
+  },
+  {
+    "id": "binding_chain", "name": "Binding Chain", "traits": ["incantation"],
+    "text": "+1 Brawn in combat. Once per round, lose 1 Sanity to add 2 more dice to a fight.",
+    "flavor": "Links of light that wrap around things with too many limbs.",
+    "modifiers": [{"amount": 1, "skill": "brawn", "context": "combat"}],
+    "boosts": [{"text": "Tighten the chain: lose 1 Sanity for +2 dice.", "amount": 2, "context": "combat", "cost": {"sanity": 1}}]
+  },
+  {
+    "id": "speech_of_dreams", "name": "Speech of Dreams", "traits": ["ritual"],
+    "text": "Action: lose 1 Sanity and test Lore with 2 successes needed. If you pass, Doom retreats by 1. If you fail, lose 1 more Sanity.",
+    "flavor": "You speak to the sleepers of the world, and ask them to dream a little longer.",
+    "action": {
+      "text": "Cast Speech of Dreams: lose 1 Sanity, then test Lore (2 successes). Pass: Doom retreats by 1. Fail: lose 1 Sanity.",
+      "cost": {"sanity": 1},
+      "effects": [{"type": "test", "skill": "lore", "needed": 2, "context": "cast",
+                   "pass": [{"type": "retreat_doom", "amount": 1}],
+                   "fail": [{"type": "sanity", "amount": -1}]}]
+    }
+  }
+]

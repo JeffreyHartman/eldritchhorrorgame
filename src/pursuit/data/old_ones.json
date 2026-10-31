@@ -1,0 +1,593 @@
+[
+  {
+    "id": "king_in_yellow",
+    "name": "The King in Yellow",
+    "title": "Lord of Lost Carcosa",
+    "difficulty": "low",
+    "art": "king_in_yellow",
+    "description": "A play is going around. It has two acts. Everyone who reads the first act wants to read the second, and everyone who reads the second act is changed. They see a city by a cloudy lake under twin suns, and they hear a King calling them home.",
+    "doom": 15,
+    "dread_at": [
+      10,
+      5
+    ],
+    "rift_pressure": 4,
+    "rules_text": [
+      "Each Night, the investigator with the lowest Sanity tests Nerve (-1) or gains Night Terrors.",
+      "An extra Pallid Mask drifts through the world."
+    ],
+    "night": [
+      {
+        "type": "one_investigator",
+        "pick": "lowest_sanity",
+        "effects": [
+          {
+            "type": "text",
+            "text": "Someone hums a tune from the play."
+          },
+          {
+            "type": "test",
+            "skill": "nerve",
+            "fail": [
+              {
+                "type": "gain_condition",
+                "id": "night_terrors"
+              }
+            ],
+            "mod": -1
+          }
+        ]
+      }
+    ],
+    "monsters": [
+      "pallid_mask"
+    ],
+    "rites_needed": 3,
+    "rites": [
+      {
+        "id": "ky_burn",
+        "name": "Burn Every Copy",
+        "text": "Spend Funds in any city to buy up the play and burn it. 3 per investigator.",
+        "kind": "spend",
+        "resource": "funds",
+        "amount": 3,
+        "per_investigator": true,
+        "where": {
+          "terrain": "city"
+        }
+      },
+      {
+        "id": "ky_second_act",
+        "name": "Survive the Second Act",
+        "text": "Test Nerve in Paris, where the play is staged. 2 successes per investigator.",
+        "kind": "test",
+        "skill": "nerve",
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "id": "paris"
+        }
+      },
+      {
+        "id": "ky_seal",
+        "name": "Close the Road to Carcosa",
+        "text": "Seal rifts anywhere. 1 per investigator.",
+        "kind": "seal",
+        "amount": 1,
+        "per_investigator": true
+      },
+      {
+        "id": "ky_phantom",
+        "name": "Lay the Phantom to Rest",
+        "text": "Defeat the Phantom of Truth, which waits in Prague.",
+        "kind": "defeat",
+        "monster": "phantom_of_truth",
+        "spawn_at": "prague"
+      },
+      {
+        "id": "ky_lake",
+        "name": "Read the Reflections",
+        "text": "Spend Clues on the Tibetan Plateau, where the high lakes show Carcosa's sky. 2 per investigator.",
+        "kind": "spend",
+        "resource": "clues",
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "id": "tibet"
+        }
+      }
+    ],
+    "awakening": {
+      "text": "Twin suns rise over a lake of cloud, and the King removes his mask. There is no mask. Everyone who has read the play rises from their beds and walks toward the nearest water. You have three nights to write a different ending.",
+      "effects": [],
+      "nights": 3,
+      "night": [
+        {
+          "type": "each_investigator",
+          "effects": [
+            {
+              "type": "test",
+              "skill": "nerve",
+              "mod": -1,
+              "fail": [
+                {
+                  "type": "sanity",
+                  "amount": -2
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "final_rite": {
+        "id": "ky_final",
+        "name": "Write the Third Act",
+        "text": "Test Lore in any city to write an ending the King cannot bear. 3 successes per investigator.",
+        "kind": "test",
+        "skill": "lore",
+        "amount": 3,
+        "per_investigator": true,
+        "where": {
+          "terrain": "city"
+        }
+      }
+    }
+  },
+  {
+    "id": "cthulhu",
+    "name": "Cthulhu",
+    "title": "The Dreamer Beneath the Waves",
+    "difficulty": "high",
+    "art": "cthulhu",
+    "description": "In a drowned city at the bottom of the South Pacific, a vast thing lies dead but dreaming. Its dreams leak into the minds of artists, madmen, and sailors. When the stars come right, the city will rise, and the dreamer will wake.",
+    "doom": 15,
+    "dread_at": [
+      10,
+      5
+    ],
+    "rift_pressure": 4,
+    "rules_text": [
+      "-1 Nerve for investigators at sea.",
+      "Each Night, every investigator at sea tests Nerve or loses 1 Sanity.",
+      "Extra Drowned Ones and Tide Crawlers lurk in the monster pool."
+    ],
+    "modifiers": [
+      {
+        "amount": -1,
+        "skill": "nerve",
+        "where": {
+          "terrain": "sea"
+        }
+      }
+    ],
+    "setup": [
+      {
+        "type": "spawn_monster",
+        "id": "drowned_one",
+        "at": "south_pacific"
+      }
+    ],
+    "night": [
+      {
+        "type": "each_investigator",
+        "where": {
+          "at": {
+            "terrain": "sea"
+          }
+        },
+        "effects": [
+          {
+            "type": "text",
+            "text": "The water whispers a name."
+          },
+          {
+            "type": "test",
+            "skill": "nerve",
+            "fail": [
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "monsters": [
+      "drowned_one",
+      "tide_crawler"
+    ],
+    "rites_needed": 3,
+    "rites": [
+      {
+        "id": "cth_chart",
+        "name": "Chart the Dreaming Currents",
+        "text": "Spend Clues at sea, where the dreams are strongest. 2 per investigator.",
+        "kind": "spend",
+        "resource": "clues",
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "terrain": "sea"
+        }
+      },
+      {
+        "id": "cth_sleepers",
+        "name": "Wake the Sleepers",
+        "text": "Test Charm in Rio de Janeiro or Yokohama to talk the dreamers out of their trance. 2 successes per investigator.",
+        "kind": "test",
+        "skill": "charm",
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "id": [
+            "rio",
+            "yokohama"
+          ]
+        }
+      },
+      {
+        "id": "cth_seal",
+        "name": "Seal the Wet Gates",
+        "text": "Seal rifts anywhere. 1 per investigator.",
+        "kind": "seal",
+        "amount": 1,
+        "per_investigator": true
+      },
+      {
+        "id": "cth_herald",
+        "name": "Slay the Herald",
+        "text": "Defeat the Spawn of the Deep, which waits in the North Pacific.",
+        "kind": "defeat",
+        "monster": "spawn_of_the_deep",
+        "spawn_at": "north_pacific"
+      },
+      {
+        "id": "cth_idol",
+        "name": "Return the Idol to the Sea",
+        "text": "Offer a relic at sea.",
+        "kind": "spend",
+        "resource": "relic",
+        "amount": 1,
+        "where": {
+          "terrain": "sea"
+        }
+      }
+    ],
+    "awakening": {
+      "text": "The stars are right. A city of green stone rises from the South Pacific, and its doors swing open. The dreamer wakes. You have four nights to sing it back to sleep.",
+      "effects": [
+        {
+          "type": "spawn_monster",
+          "id": "dreamer_risen",
+          "at": "south_pacific"
+        }
+      ],
+      "nights": 4,
+      "night": [
+        {
+          "type": "each_investigator",
+          "effects": [
+            {
+              "type": "sanity",
+              "amount": -1
+            }
+          ]
+        }
+      ],
+      "final_rite": {
+        "id": "cth_final",
+        "name": "Sing the City Down",
+        "text": "Test Lore in the South Pacific, in the shadow of the risen city. 3 successes per investigator.",
+        "kind": "test",
+        "skill": "lore",
+        "amount": 3,
+        "per_investigator": true,
+        "where": {
+          "id": "south_pacific"
+        }
+      }
+    }
+  },
+  {
+    "id": "yog_sothoth",
+    "name": "Yog-Sothoth",
+    "title": "The Key and the Gate",
+    "difficulty": "medium",
+    "art": "yog_sothoth",
+    "description": "Yog-Sothoth does not live behind a door. It is the door, and every door. It touches all places and all times at once, and sorcerers who call it never call it twice. Rifts open more often now, because something on the other side is pushing.",
+    "doom": 15,
+    "dread_at": [
+      10,
+      5
+    ],
+    "seal_mod": 1,
+    "rift_pressure": 4,
+    "rift_limit": 8,
+    "rules_text": [
+      "Sealing a rift needs 2 successes.",
+      "Each Night, something may push through a rift from the other side.",
+      "If 8 rifts are open at once, the investigators lose."
+    ],
+    "night": [
+      {
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 2,
+            "effects": []
+          },
+          {
+            "weight": 1,
+            "text": "Something pushes through from the other side.",
+            "effects": [
+              {
+                "type": "spawn_monster",
+                "at": "random_rift_site"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "monsters": [
+      "angle_hound"
+    ],
+    "rites_needed": 3,
+    "rites": [
+      {
+        "id": "ys_seal",
+        "name": "Close the Doors",
+        "text": "Seal rifts anywhere. 1 per investigator.",
+        "kind": "seal",
+        "amount": 1,
+        "per_investigator": true
+      },
+      {
+        "id": "ys_nameless",
+        "name": "Lay the Broken Seals",
+        "text": "Spend 2 Trophies in the Empty Quarter, at the nameless city.",
+        "kind": "spend",
+        "resource": "trophies",
+        "amount": 2,
+        "per_investigator": false,
+        "where": {
+          "id": "empty_quarter"
+        }
+      },
+      {
+        "id": "ys_formula",
+        "name": "Recite the Reversed Formula",
+        "text": "Test Lore (-1) in Providence or Prague. 2 successes per investigator.",
+        "kind": "test",
+        "skill": "lore",
+        "mod": -1,
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "id": [
+            "providence",
+            "prague"
+          ]
+        }
+      },
+      {
+        "id": "ys_twin",
+        "name": "Banish the Unseen Twin",
+        "text": "Defeat the Unseen Twin, which starts in the Yukon Wilds and hunts investigators.",
+        "kind": "defeat",
+        "monster": "unseen_twin",
+        "spawn_at": "yukon"
+      },
+      {
+        "id": "ys_pages",
+        "name": "Gather the Scattered Pages",
+        "text": "Spend Clues in Europe. 2 per investigator.",
+        "kind": "spend",
+        "resource": "clues",
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "region": "europe"
+        }
+      }
+    ],
+    "awakening": {
+      "text": "Every rift on Earth flares at once. Through them all you see the same thing: a mass of shining spheres, pressing closer. Yog-Sothoth is here, and it is everywhere. Lock the doors before it steps through.",
+      "effects": [
+        {
+          "type": "open_rift",
+          "count": 2
+        }
+      ],
+      "nights": 4,
+      "night": [
+        {
+          "type": "open_rift",
+          "count": 1
+        }
+      ],
+      "final_rite": {
+        "id": "ys_final",
+        "name": "Lock Every Door",
+        "text": "Seal rifts anywhere while the doors burn open. 1 per investigator.",
+        "kind": "seal",
+        "amount": 1,
+        "per_investigator": true
+      }
+    }
+  },
+  {
+    "id": "nyarlathotep",
+    "name": "Nyarlathotep",
+    "title": "The Crawling Chaos",
+    "difficulty": "medium",
+    "art": "nyarlathotep",
+    "description": "He came out of Egypt, they say, tall and dark and smiling, and gave lectures on electricity and the stars. Crowds followed him. Cities went mad after he left. He is the messenger of older gods, and he wears a thousand faces. Some of those faces belong to people you trust.",
+    "doom": 12,
+    "dread_at": [
+      8,
+      4
+    ],
+    "rift_pressure": 4,
+    "rules_text": [
+      "-1 Charm for every investigator. No one can be trusted.",
+      "Each Night, the investigator with the most Clues tests Wits or loses 1 Clue to his agents.",
+      "Each Night, a Masked Acolyte may appear. Extra Acolytes walk among the crowds."
+    ],
+    "modifiers": [
+      {
+        "amount": -1,
+        "skill": "charm"
+      }
+    ],
+    "night": [
+      {
+        "type": "one_investigator",
+        "pick": "most_clues",
+        "where": {
+          "clues_at_least": 1
+        },
+        "effects": [
+          {
+            "type": "text",
+            "text": "A friendly stranger buys you a drink and asks about your work."
+          },
+          {
+            "type": "test",
+            "skill": "wits",
+            "fail": [
+              {
+                "type": "clues",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 1,
+            "effects": []
+          },
+          {
+            "weight": 1,
+            "text": "A smiling stranger in a porcelain mask steps off a train.",
+            "effects": [
+              {
+                "type": "spawn_monster",
+                "id": "masked_acolyte",
+                "at": "random_rift_site"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "monsters": [
+      "masked_acolyte",
+      "masked_acolyte"
+    ],
+    "rites_needed": 3,
+    "rites": [
+      {
+        "id": "ny_stranger",
+        "name": "Unmask the Stranger",
+        "text": "Defeat the Smiling Stranger, who starts in Cairo and hunts investigators.",
+        "kind": "defeat",
+        "monster": "smiling_stranger",
+        "spawn_at": "cairo"
+      },
+      {
+        "id": "ny_expose",
+        "name": "Expose the Cult",
+        "text": "Test Charm in a hub city (Providence, Rio, Paris, Cairo, Bombay, or Peking). 3 successes per investigator.",
+        "kind": "test",
+        "skill": "charm",
+        "amount": 3,
+        "per_investigator": true,
+        "where": {
+          "hub": true
+        }
+      },
+      {
+        "id": "ny_footsteps",
+        "name": "Follow His Footsteps",
+        "text": "Spend Clues anywhere in Africa. 2 per investigator.",
+        "kind": "spend",
+        "resource": "clues",
+        "amount": 2,
+        "per_investigator": true,
+        "where": {
+          "region": "africa"
+        }
+      },
+      {
+        "id": "ny_lectures",
+        "name": "Buy Back the Lecture Notes",
+        "text": "Spend Funds in New York or Paris. 4 per investigator.",
+        "kind": "spend",
+        "resource": "funds",
+        "amount": 4,
+        "per_investigator": true,
+        "where": {
+          "id": [
+            "new_york",
+            "paris"
+          ]
+        }
+      },
+      {
+        "id": "ny_relic",
+        "name": "Return the Stolen Relic",
+        "text": "Offer a relic in Cairo.",
+        "kind": "spend",
+        "resource": "relic",
+        "amount": 1,
+        "where": {
+          "id": "cairo"
+        }
+      }
+    ],
+    "awakening": {
+      "text": "Every face in every crowd turns toward you at once, and every one of them is smiling. The Crawling Chaos has dropped its masks. You have four nights before the world forgets it was ever sane.",
+      "effects": [
+        {
+          "type": "spawn_monster",
+          "at": "rifts"
+        }
+      ],
+      "nights": 4,
+      "night": [
+        {
+          "type": "one_investigator",
+          "pick": "lowest_sanity",
+          "effects": [
+            {
+              "type": "gain_condition",
+              "id": "paranoia"
+            },
+            {
+              "type": "sanity",
+              "amount": -1
+            }
+          ]
+        }
+      ],
+      "final_rite": {
+        "id": "ny_final",
+        "name": "Stare Down the Thousand Faces",
+        "text": "Test Nerve in Cairo, where he first appeared. 3 successes per investigator.",
+        "kind": "test",
+        "skill": "nerve",
+        "amount": 3,
+        "per_investigator": true,
+        "where": {
+          "id": "cairo"
+        }
+      }
+    }
+  }
+]

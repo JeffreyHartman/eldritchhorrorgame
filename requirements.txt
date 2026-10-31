@@ -1,4 +1,0 @@
-rich
-pyfiglet
-requests
-beautifulsoup4

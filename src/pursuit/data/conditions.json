@@ -1,0 +1,163 @@
+[
+  {
+    "id": "leg_wound", "name": "Leg Wound", "traits": ["injury"],
+    "text": "You limp, and it slows you down. -1 Brawn and -1 Wits when you evade. Rest and hope it heals.",
+    "modifiers": [{"amount": -1, "skill": "brawn"}, {"amount": -1, "skill": "wits", "context": "evade"}],
+    "trigger": "rest",
+    "outcomes": [
+      {"weight": 2, "text": "The wound closes clean.", "effects": [{"type": "remove_self"}]},
+      {"weight": 1, "text": "The wound festers. You lose 1 Health.", "effects": [{"type": "health", "amount": -1}]}
+    ],
+    "cure": {"text": "See a doctor: pay 2 Funds to discard it.", "cost": {"funds": 2}}
+  },
+  {
+    "id": "cracked_ribs", "name": "Cracked Ribs", "traits": ["injury"],
+    "text": "Every breath hurts. -1 Brawn in combat. Rest and hope it heals.",
+    "modifiers": [{"amount": -1, "skill": "brawn", "context": "combat"}],
+    "trigger": "rest",
+    "outcomes": [
+      {"weight": 3, "text": "The ribs knit. You can breathe again.", "effects": [{"type": "remove_self"}]},
+      {"weight": 1, "text": "You turn the wrong way in your sleep. You lose 1 Health.", "effects": [{"type": "health", "amount": -1}]}
+    ]
+  },
+  {
+    "id": "jungle_fever", "name": "Jungle Fever", "traits": ["injury"],
+    "text": "Sweats, chills, and dreams that feel like memories. -1 Nerve. Something may happen at night.",
+    "modifiers": [{"amount": -1, "skill": "nerve"}],
+    "trigger": "night", "chance": 2,
+    "outcomes": [
+      {"weight": 2, "text": "The fever breaks in the small hours.", "effects": [{"type": "remove_self"}]},
+      {"weight": 2, "text": "In the fever you walk a stone city under a green sky. You lose 1 Sanity.", "effects": [{"type": "sanity", "amount": -1}]},
+      {"weight": 1, "text": "The fever burns hot. You lose 2 Health.", "effects": [{"type": "health", "amount": -2}]}
+    ],
+    "cure": {"text": "Take quinine: pay 1 Funds and test Brawn to discard it.", "cost": {"funds": 1}, "skill": "brawn"}
+  },
+  {
+    "id": "exhausted", "name": "Exhausted", "traits": ["injury"],
+    "text": "Your body begs for sleep. -1 Brawn and -1 Wits. Rest to recover.",
+    "modifiers": [{"amount": -1, "skill": "brawn"}, {"amount": -1, "skill": "wits"}],
+    "trigger": "rest",
+    "outcomes": [
+      {"weight": 1, "text": "You sleep for fourteen hours and wake up yourself again.", "effects": [{"type": "remove_self"}]}
+    ]
+  },
+  {
+    "id": "paranoia", "name": "Paranoia", "traits": ["madness"],
+    "text": "They are watching. All of them. -1 Charm. Something may happen at night.",
+    "modifiers": [{"amount": -1, "skill": "charm"}],
+    "trigger": "night", "chance": 2,
+    "outcomes": [
+      {"weight": 1, "text": "You hide in your room for a day with the furniture against the door.", "effects": [{"type": "delay"}]},
+      {"weight": 1, "text": "You burn your papers so they cannot read them. You lose 1 Clue.", "effects": [{"type": "clues", "amount": -1}]},
+      {"weight": 1, "text": "For once you were right. The man following you drops a letter, and you read it.", "effects": [{"type": "clues", "amount": 1}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "A long talk with a friend, and the fear loosens its grip.", "effects": [{"type": "remove_self"}]}
+    ],
+    "cure": {"text": "Talk it through: test Nerve to discard it.", "skill": "nerve"}
+  },
+  {
+    "id": "night_terrors", "name": "Night Terrors", "traits": ["madness"],
+    "text": "You dread sleep. Something may happen at night.",
+    "trigger": "night", "chance": 3,
+    "outcomes": [
+      {"weight": 2, "text": "You wake up screaming. You lose 1 Sanity.", "effects": [{"type": "sanity", "amount": -1}]},
+      {"weight": 1, "text": "The dream shows you a door, and where it is. You gain 1 Clue.", "effects": [{"type": "clues", "amount": 1}]},
+      {"weight": 1, "text": "A dreamless night, at last. The terrors fade.", "effects": [{"type": "remove_self"}]}
+    ],
+    "cure": {"text": "Laudanum and willpower: pay 1 Funds and test Nerve to discard it.", "cost": {"funds": 1}, "skill": "nerve"}
+  },
+  {
+    "id": "lost_hours", "name": "Lost Hours", "traits": ["madness"],
+    "text": "You cannot account for whole days. You will find out what you did after your next encounter.",
+    "trigger": "encounter",
+    "outcomes": [
+      {"weight": 1, "text": "There is a bloody knife in your coat pocket. The police want to talk to you.", "effects": [{"type": "gain_condition", "id": "wanted"}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "You find pages of notes in your own hand, in a language you do not know. You gain 2 Clues and lose 1 Sanity.", "effects": [{"type": "clues", "amount": 2}, {"type": "sanity", "amount": -1}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "A hotel sends you the bill for a room you do not remember. You lose 2 Funds.", "effects": [{"type": "funds", "amount": -2}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "A stranger shakes your hand and thanks you for saving his daughter. He insists on a reward.", "effects": [{"type": "funds", "amount": 2}, {"type": "remove_self"}]}
+    ]
+  },
+  {
+    "id": "unmoored", "name": "Unmoored", "traits": ["madness"],
+    "text": "Time slips around you. Something may happen at night.",
+    "trigger": "night", "chance": 2,
+    "outcomes": [
+      {"weight": 1, "text": "You lose a day entirely.", "effects": [{"type": "delay"}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "You come back to yourself in a city you do not remember traveling to.", "effects": [{"type": "move", "to": "random_city"}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "You see a moment of tomorrow, and it helps you. You gain 1 Clue.", "effects": [{"type": "clues", "amount": 1}, {"type": "remove_self"}]}
+    ]
+  },
+  {
+    "id": "wanted", "name": "Wanted by the Police", "traits": ["legal"],
+    "text": "Your face is on a poster. You cannot raise funds or visit the market. Something may happen at night.",
+    "blocks": ["earn", "buy"],
+    "trigger": "night", "chance": 2,
+    "outcomes": [
+      {"weight": 2, "text": "The police find you. A night in the cells and a heavy fine.", "effects": [{"type": "delay"}, {"type": "funds", "amount": -2}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "The heat dies down. A bigger story pushes your face off the front page.", "effects": [{"type": "remove_self"}]}
+    ],
+    "cure": {"text": "Pay off the right sergeant: pay 3 Funds to discard it.", "cost": {"funds": 3}}
+  },
+  {
+    "id": "debt", "name": "Debt to the Kessler Brothers", "traits": ["debt"],
+    "text": "You borrowed money from people who always collect. Something may happen at night.",
+    "trigger": "night", "chance": 2,
+    "outcomes": [
+      {"weight": 2, "text": "Two men in good suits come to collect.", "effects": [
+        {"type": "pay", "cost": {"funds": 3}, "prompt": "Pay the Kesslers what you owe?",
+         "then": [{"type": "remove_self"}],
+         "else": [{"type": "text", "text": "They take it out of your hide instead."}, {"type": "health", "amount": -2}, {"type": "remove_self"}]}
+      ]},
+      {"weight": 1, "text": "The brothers are busy with someone else this week.", "effects": []}
+    ],
+    "cure": {"text": "Pay the debt: pay 3 Funds to discard it.", "cost": {"funds": 3}}
+  },
+  {
+    "id": "hexed", "name": "Hexed", "traits": ["curse"],
+    "text": "Bad luck sticks to you like tar. -1 to every test. Something may happen at night.",
+    "modifiers": [{"amount": -1}],
+    "trigger": "night", "chance": 1,
+    "outcomes": [
+      {"weight": 1, "text": "The hex lifts as suddenly as it came.", "effects": [{"type": "remove_self"}]},
+      {"weight": 1, "text": "Your luck sours further. Something you own breaks.", "effects": [{"type": "lose_asset"}]}
+    ],
+    "cure": {"text": "Burn sage and pray: test Nerve (-1) to discard it.", "skill": "nerve", "mod": -1}
+  },
+  {
+    "id": "marked", "name": "Marked by the Watcher", "traits": ["curse"],
+    "text": "Something has your scent. Something may happen at night.",
+    "trigger": "night", "chance": 2,
+    "outcomes": [
+      {"weight": 2, "text": "It finds you.", "effects": [{"type": "ambush"}]},
+      {"weight": 1, "text": "It loses your trail in the crowds.", "effects": [{"type": "remove_self"}]}
+    ],
+    "cure": {"text": "Wash in running water at night: test Lore to discard it.", "skill": "lore"}
+  },
+  {
+    "id": "dark_bargain", "name": "A Bargain in the Dark", "traits": ["curse", "pact"],
+    "text": "You owe something you cannot name. Something may happen at night.",
+    "trigger": "night", "chance": 1,
+    "outcomes": [
+      {"weight": 1, "text": "Payment is due. The world grows a little darker.", "effects": [{"type": "advance_doom", "amount": 1}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "Payment is due. It takes part of your mind.", "effects": [{"type": "sanity", "amount": -3}, {"type": "remove_self"}]},
+      {"weight": 1, "text": "Payment is due. It asks for blood.", "effects": [{"type": "health", "amount": -3}, {"type": "remove_self"}]}
+    ]
+  },
+  {
+    "id": "blessed", "name": "Blessed", "traits": ["boon"],
+    "text": "Someone is watching over you. +1 to every test. Something may happen at night.",
+    "modifiers": [{"amount": 1}],
+    "trigger": "night", "chance": 1,
+    "outcomes": [
+      {"weight": 1, "text": "The blessing fades.", "effects": [{"type": "remove_self"}]}
+    ]
+  },
+  {
+    "id": "inspired", "name": "Inspired", "traits": ["boon"],
+    "text": "The pieces are coming together. +1 Lore and +1 Wits. It lasts until after your next encounter.",
+    "modifiers": [{"amount": 1, "skill": "lore"}, {"amount": 1, "skill": "wits"}],
+    "trigger": "encounter",
+    "outcomes": [
+      {"weight": 1, "text": "The insight settles into something solid. You gain 1 Clue.", "effects": [{"type": "clues", "amount": 1}, {"type": "remove_self"}]}
+    ]
+  }
+]
