@@ -2,6 +2,7 @@
   {
     "id": "special_key_1",
     "title": "A mass of glowing spheres, mouths, and...",
+    "expansion": "CORE",
     "text": "A mass of glowing spheres, mouths, and tentacles burst forth from the portal. You feel a terrible intelligence searching your mind for signs of corruption. If you have a Dark Pact Condition, you are devoured. The Lurker then fills your thoughts with forbidden knowledge (Will-1).",
     "effects": [
       {
@@ -99,6 +100,7 @@
   {
     "id": "special_key_2",
     "title": "Yog-Sothoth's avatar 'Umr-At-Tawil, stands...",
+    "expansion": "CORE",
     "text": "Yog-Sothoth's avatar 'Umr-At-Tawil, stands before the Ultimate Gate. He is a tall figure, wrapped in gray fabric, and you can hear his thoughts thundering in your head. He warns you to proceed no further if you are afraid (Will-1).",
     "effects": [
       {
@@ -145,6 +147,7 @@
   {
     "id": "special_key_3",
     "title": "Carl Sanford stands high atop a mountain in a...",
+    "expansion": "CORE",
     "text": "Carl Sanford stands high atop a mountain in a swirling dimension of his own creation. He claims that the Silver Twilight Lodge has harnessed the power of Yog-Sothoth to transform him into a god. However, you suspect much of what you see is an illusion (Observation-1).",
     "effects": [
       {
@@ -191,6 +194,7 @@
   {
     "id": "special_key_4",
     "title": "You can sense Yog-Sothoth in your thoughts,...",
+    "expansion": "CORE",
     "text": "You can sense Yog-Sothoth in your thoughts, trying to consume your identity by filling your memories with ultimate knowledge. You struggle against the swirling energy that drags you forward, into the gate (Strength-1).",
     "effects": [
       {
@@ -259,6 +263,7 @@
   {
     "id": "special_key_5",
     "title": "Despite the reports of the mad albino woman's...",
+    "expansion": "CORE",
     "text": "Despite the reports of the mad albino woman's death, she stands at this gate to wait for her child, the so-called Dunwich Horror, to call its father's name. As soon as she sees you, she casts a hex, and you attempt to produce a protective ward (Lore-1).",
     "effects": [
       {
@@ -313,6 +318,7 @@
   {
     "id": "special_key_6",
     "title": "You see a circle of stones, each covered with...",
+    "expansion": "CORE",
     "text": "You see a circle of stones, each covered with magic runes. You sense that this is some sort of test of your knowledge (Lore-1).",
     "effects": [
       {

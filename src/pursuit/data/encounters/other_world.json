@@ -2,6 +2,7 @@
   {
     "id": "other_world_city_of_the_great_race_1",
     "title": "On a high, stone shelf you find books containing the...",
+    "expansion": "CORE",
     "text": "On a high, stone shelf you find books containing the wisdom of both the distant past and the far-flung future. Unfortunately, the tomes were written using a series of strange curvilinear symbols. You do your best to translate the alien language (Lore-1).",
     "effects": [
       {
@@ -55,6 +56,7 @@
   {
     "id": "other_world_city_of_the_great_race_2",
     "title": "You are horrified to realize that the body you are...",
+    "expansion": "CORE",
     "text": "You are horrified to realize that the body you are inhabiting in this world is not your own. The shock of seeing yourself in an alien, conical shell threatens to shatter your mind (Will).",
     "effects": [
       {
@@ -109,6 +111,7 @@
   {
     "id": "other_world_city_of_the_great_race_3",
     "title": "You hear the sound of a terrible gust of wind and...",
+    "expansion": "CORE",
     "text": "You hear the sound of a terrible gust of wind and listen carefully to determine the origin of the sound. You may spend 1 Clue to resolve the pass effect. If you do not spend the Clue, resolve the fail effect.",
     "effects": [
       {
@@ -166,6 +169,7 @@
   {
     "id": "other_world_city_of_the_great_race_4",
     "title": "You find others who, like you, have had their...",
+    "expansion": "CORE",
     "text": "You find others who, like you, have had their consciousness pulled into alien bodies from throughout time. You try to convince them to share their knowledge (Influence).",
     "effects": [
       {
@@ -231,6 +235,7 @@
   {
     "id": "other_world_great_hall_of_celaeno_1",
     "title": "You are stunned to see a familiar face reading through...",
+    "expansion": "CORE",
     "text": "You are stunned to see a familiar face reading through tomes of dark sorcery. You try to catch a glimpse of what he's reading without alerting him to your presence (Observation-1).",
     "effects": [
       {
@@ -289,6 +294,7 @@
   {
     "id": "other_world_great_hall_of_celaeno_2",
     "title": "You are forbidden to enter the library unless you bear...",
+    "expansion": "CORE",
     "text": "You are forbidden to enter the library unless you bear the necessary sigil. You draw the symbol to the best of your knowledge (Lore).",
     "effects": [
       {
@@ -342,6 +348,7 @@
   {
     "id": "other_world_great_hall_of_celaeno_3",
     "title": "The book you are looking for is not on its proper shelf.",
+    "expansion": "CORE",
     "text": "The book you are looking for is not on its proper shelf. You search the surrounding area, but after long hours you have lost the will to keep searching (Will).",
     "effects": [
       {
@@ -398,6 +405,7 @@
   {
     "id": "other_world_great_hall_of_celaeno_4",
     "title": "The book you are reading describes complex rituals in...",
+    "expansion": "CORE",
     "text": "The book you are reading describes complex rituals in very abstract terms. You do your best to comprehend the dense material (Lore).",
     "effects": [
       {
@@ -473,6 +481,7 @@
   {
     "id": "other_world_lost_carcosa_1",
     "title": "Turning the corner, you suddenly find yourself on stage.",
+    "expansion": "CORE",
     "text": "Turning the corner, you suddenly find yourself on stage. Other actors speak their dialogue and look at you expectantly. Someone offstage passes you a script, but the text is difficult to interpret (Lore-1).",
     "effects": [
       {
@@ -525,6 +534,7 @@
   {
     "id": "other_world_lost_carcosa_2",
     "title": "You grow frustrated walking through the empty streets,...",
+    "expansion": "CORE",
     "text": "You grow frustrated walking through the empty streets, able to hear people talking and laughing nearby, but unable to catch up to them. You try to focus and distinguish specific words from the mingling conversations (Observation).",
     "effects": [
       {
@@ -582,6 +592,7 @@
   {
     "id": "other_world_lost_carcosa_3",
     "title": "Staring out at the cloudy water of Lake Hali, you are...",
+    "expansion": "CORE",
     "text": "Staring out at the cloudy water of Lake Hali, you are horrified to see the entire lake rippling, as if something at the bottom is about to surface. You are seized by a terrible panic that paralyzes you (Will).",
     "effects": [
       {
@@ -657,6 +668,7 @@
   {
     "id": "other_world_lost_carcosa_4",
     "title": "At an elaborate masquerade, you talk to decadent...",
+    "expansion": "CORE",
     "text": "At an elaborate masquerade, you talk to decadent party-goers who are all maneuvering to be declared as the proper heir to the crown (Influence).",
     "effects": [
       {
@@ -714,6 +726,7 @@
   {
     "id": "other_world_the_abyss_1",
     "title": "The nightgaunts seem intent on keeping you here in the...",
+    "expansion": "CORE",
     "text": "The nightgaunts seem intent on keeping you here in the darkness. You do your best to continue climbing out of these terrible depths without alerting them to your presence (Observation).",
     "effects": [
       {
@@ -789,6 +802,7 @@
   {
     "id": "other_world_the_dreamlands_1",
     "title": "In the cavern of flame, the bearded priests Nasht and...",
+    "expansion": "CORE",
     "text": "In the cavern of flame, the bearded priests Nasht and Kaman-Thah warn you that it is too dangerous to continue. You insist that you possess the knowledge you need and are resolved to enter the Dreamlands (Will-1). Roll 1 additional die for each Clue you have.",
     "effects": [
       {
@@ -849,6 +863,7 @@
   {
     "id": "other_world_the_dreamlands_2",
     "title": "You are strictly admonished that in the city of...",
+    "expansion": "CORE",
     "text": "You are strictly admonished that in the city of Ulthar, no man may kill a cat. As a result, you see the city is filled with cats. If you know the language, you can communicate with these highly intelligent creatures (Lore).",
     "effects": [
       {
@@ -906,6 +921,7 @@
   {
     "id": "other_world_the_future_1",
     "title": "You stand in Times Square, New York, but not as you...",
+    "expansion": "CORE",
     "text": "You stand in Times Square, New York, but not as you know it. The streets are empty, and the buildings have crumbled to dust. It appears that you will fail to save the world, and you try desperately not to fall into despair (Will-1).",
     "effects": [
       {
@@ -968,6 +984,7 @@
   {
     "id": "other_world_the_future_2",
     "title": "You find yourself in a familiar city, but there's no...",
+    "expansion": "CORE",
     "text": "You find yourself in a familiar city, but there's no electricity. The only light comes from the greenish moon, and the only sound is distant screaming. You can feel your reason being overrun by fear (Will).",
     "effects": [
       {
@@ -1035,6 +1052,7 @@
   {
     "id": "other_world_the_past_1",
     "title": "Through the slits in the closet door you see yourself...",
+    "expansion": "CORE",
     "text": "Through the slits in the closet door you see yourself as a small child, sitting up in bed. \"Who's there?\" asks a frightened voice. You try to calmly persuade your younger self that you're a friend (Influence-1).",
     "effects": [
       {
@@ -1087,6 +1105,7 @@
   {
     "id": "other_world_the_past_2",
     "title": "You find yourself standing in front of antique...",
+    "expansion": "CORE",
     "text": "You find yourself standing in front of antique scientific equipment. According to the papers the year is 1771. You read through the notes and try to interpret the nature of the experiments (Lore).",
     "effects": [
       {
@@ -1140,6 +1159,7 @@
   {
     "id": "other_world_the_underworld_1",
     "title": "You find yourself surrounded by ghouls.",
+    "expansion": "CORE",
     "text": "You find yourself surrounded by ghouls. However, they don't seem to be antagonistic toward you. In fact, you believe you could persuade them to help you (Influence).",
     "effects": [
       {
@@ -1198,6 +1218,7 @@
   {
     "id": "other_world_yuggoth_1",
     "title": "You find a room filled with strange metal cylinders.",
+    "expansion": "CORE",
     "text": "You find a room filled with strange metal cylinders. Inside of each cylinder is a living brain that can communicate through a speaker box. You ask them for help (Influence).",
     "effects": [
       {
@@ -1252,6 +1273,7 @@
   {
     "id": "other_world_yuggoth_2",
     "title": "You discover a waxen mask and artificial hands.",
+    "expansion": "CORE",
     "text": "You discover a waxen mask and artificial hands. Your mind reels as you realize that the old man you had spoken to earlier was actually some terrible creature disguised as a human (Will).",
     "effects": [
       {
@@ -1326,6 +1348,7 @@
   {
     "id": "other_world_yuggoth_3",
     "title": "You discover a fetid creature with wings and webbed feet.",
+    "expansion": "CORE",
     "text": "You discover a fetid creature with wings and webbed feet. The beast is strange, like something from your wildest dreams. You may spend 1 Clue to resolve the pass effect. If you do not spend the Clue, resolve the fail effect.",
     "effects": [
       {
@@ -1383,6 +1406,7 @@
   {
     "id": "other_world_yuggoth_4",
     "title": "The mi-go refuse to go near the city of green pyramids.",
+    "expansion": "CORE",
     "text": "The mi-go refuse to go near the city of green pyramids. You summon your courage and explore this abandoned area (Will).",
     "effects": [
       {

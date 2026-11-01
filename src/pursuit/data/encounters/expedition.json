@@ -2,6 +2,7 @@
   {
     "id": "expedition_the_amazon_1",
     "title": "You see the vine-covered temple ahead of you, but...",
+    "expansion": "CORE",
     "location": "the_amazon",
     "text": "You see the vine-covered temple ahead of you, but you're going to have to fight your way through a thick tangle of venomous snakes between yourself and the entrance (Strength).",
     "effects": [
@@ -74,6 +75,7 @@
   {
     "id": "expedition_the_amazon_2",
     "title": "As you slip into a deep trance and touch the odd...",
+    "expansion": "CORE",
     "location": "the_amazon",
     "text": "As you slip into a deep trance and touch the odd stone, the jungle around you subtle changes in appearance. You look for hints regarding this new jungle terrain (Observation).",
     "effects": [
@@ -153,6 +155,7 @@
   {
     "id": "expedition_the_amazon_3",
     "title": "You've heard rumors that a particular secret of the...",
+    "expansion": "CORE",
     "location": "the_amazon",
     "text": "You've heard rumors that a particular secret of the ancients is visible from the top of a hill. You find that climbing the hillside is not an easy task (Strength).",
     "effects": [
@@ -241,6 +244,7 @@
   {
     "id": "expedition_antarctica_1",
     "title": "Flying over the area, you see evidence of an ancient...",
+    "expansion": "CORE",
     "location": "antarctica",
     "text": "Flying over the area, you see evidence of an ancient stone city. You land your plane as close as you can and climb across the ice to reach the strange architecture (Strength).",
     "effects": [
@@ -313,6 +317,7 @@
   {
     "id": "expedition_antarctica_2",
     "title": "You hear a faint sound echoing up from the caves that...",
+    "expansion": "CORE",
     "location": "antarctica",
     "text": "You hear a faint sound echoing up from the caves that lead down in to the darkness. You listen carefully to discern the sound's origin (Observation).",
     "effects": [
@@ -392,6 +397,7 @@
   {
     "id": "expedition_antarctica_3",
     "title": "You find what you believe to be star-shaped burial...",
+    "expansion": "CORE",
     "location": "antarctica",
     "text": "You find what you believe to be star-shaped burial mounds in the snow. It is physically exhausting, but you try to dig the bodies out of the ice and snow (Strength).",
     "effects": [
@@ -471,6 +477,7 @@
   {
     "id": "expedition_the_heart_of_africa_1",
     "title": "The whole jungle shakes, and the ground splits beneath...",
+    "expansion": "CORE",
     "location": "the_heart_of_africa",
     "text": "The whole jungle shakes, and the ground splits beneath your feet. You fall through the crevice into a vast subterranean tunnel (Strength).",
     "effects": [
@@ -543,6 +550,7 @@
   {
     "id": "expedition_the_heart_of_africa_2",
     "title": "The old N'bangu man's map to the gray city of the...",
+    "expansion": "CORE",
     "location": "the_heart_of_africa",
     "text": "The old N'bangu man's map to the gray city of the white god relies on landmarks that are now overgrown by the dense jungle. You search carefully to recognize anything familiar (Observation).",
     "effects": [
@@ -622,6 +630,7 @@
   {
     "id": "expedition_the_heart_of_africa_3",
     "title": "Suddenly, you are surrounded by leopard men!",
+    "expansion": "CORE",
     "location": "the_heart_of_africa",
     "text": "Suddenly, you are surrounded by leopard men! They quickly capture you, tie you up, and take you back to their village. On the way, you try to free yourself from the ropes that bind you (Strength).",
     "effects": [
@@ -701,6 +710,7 @@
   {
     "id": "expedition_the_himalayas_1",
     "title": "A horrifying beast suddenly attacks you, almost as if...",
+    "expansion": "CORE",
     "location": "the_himalayas",
     "text": "A horrifying beast suddenly attacks you, almost as if it had stepped right out of your nightmares. Spawn a Monster on your space and immediately encounter it. If you defeat it, resolve the pass effect. If you do not defeat it, resolve the fail effect.",
     "effects": [
@@ -756,6 +766,7 @@
   {
     "id": "expedition_the_himalayas_2",
     "title": "You duck into a cave to find shelter from the deadly...",
+    "expansion": "CORE",
     "location": "the_himalayas",
     "text": "You duck into a cave to find shelter from the deadly snowstorm. Inside, the tunnels twist and turn in the dark, making it almost impossible to navigate (Observation).",
     "effects": [
@@ -835,6 +846,7 @@
   {
     "id": "expedition_the_himalayas_3",
     "title": "The gnoph-keh summons a terrible blizzard to destroy...",
+    "expansion": "CORE",
     "location": "the_himalayas",
     "text": "The gnoph-keh summons a terrible blizzard to destroy you and your expedition. You'll have to survive the storm before you can continue (Strength).",
     "effects": [
@@ -910,6 +922,7 @@
   {
     "id": "expedition_the_pyramids_1",
     "title": "Bandits tie your hands and blindfold you.",
+    "expansion": "CORE",
     "location": "the_pyramids",
     "text": "Bandits tie your hands and blindfold you. They lower you into catacombs deep under the pyramids and leave you there to die. You try to free yourself from your bonds (Strength).",
     "effects": [
@@ -982,6 +995,7 @@
   {
     "id": "expedition_the_pyramids_2",
     "title": "Inside the pyramid, you find a hidden passage leading...",
+    "expansion": "CORE",
     "location": "the_pyramids",
     "text": "Inside the pyramid, you find a hidden passage leading to an undiscovered throne room. You explore the room for indications of its history (Observation).",
     "effects": [
@@ -1065,6 +1079,7 @@
   {
     "id": "expedition_the_pyramids_3",
     "title": "You reach for the ancient relic when a small white cat...",
+    "expansion": "CORE",
     "location": "the_pyramids",
     "text": "You reach for the ancient relic when a small white cat jumps in front of you. To your horror, the cat transforms into a demonic, feline creature and attacks (Strength).",
     "effects": [
@@ -1144,6 +1159,7 @@
   {
     "id": "expedition_tunguska_1",
     "title": "A strange color that you've never seen before...",
+    "expansion": "CORE",
     "location": "tunguska",
     "text": "A strange color that you've never seen before permeates the air. It crawls like a phosphorescent mist along every surface. You can feel its corrosive effect on your skin, and you struggle to escape the area (Strength).",
     "effects": [
@@ -1221,6 +1237,7 @@
   {
     "id": "expedition_tunguska_2",
     "title": "A small piece of the stone you are standing on...",
+    "expansion": "CORE",
     "location": "tunguska",
     "text": "A small piece of the stone you are standing on crumbles away, revealing a hollowed-out chamber beneath you. You look for a safe way to get inside (Observation).",
     "effects": [
@@ -1300,6 +1317,7 @@
   {
     "id": "expedition_tunguska_3",
     "title": "As you approach the crater described in Rasputin's...",
+    "expansion": "CORE",
     "location": "tunguska",
     "text": "As you approach the crater described in Rasputin's notes, toxic fumes pour out of a fissure in the earth. You struggle to stay conscious and continue your descent (Strength).",
     "effects": [

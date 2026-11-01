@@ -2,6 +2,7 @@
   {
     "id": "research_yog_sothoth_city_1",
     "title": "Randolph Carter claims that the Silver Twilight Lodge...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "Randolph Carter claims that the Silver Twilight Lodge stole a unique family treasure. You investigate the local Lodge (Observation). If you pass, you gain the opportunity to examine the stolen treasure; gain this Clue and you may discard a Spell to gain the Silver Key Artifact. If you fail, the Lodge frames you for the theft; gain a Detained Condition.",
     "effects": [
@@ -39,6 +40,7 @@
   {
     "id": "research_yog_sothoth_city_2",
     "title": "An old man approaches you and begs you to make a...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "An old man approaches you and begs you to make a solemn vow to deliver a book to his grandson, Wilbur, in a town called Dunwich. You may gain a Dark Pact Condition to gain this Clue and the Necronomicon Artifact. If you do not gain the Condition, discard this Clue.",
     "effects": [
@@ -54,6 +56,7 @@
   {
     "id": "research_yog_sothoth_city_3",
     "title": "The library has received several requests from the...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "The library has received several requests from the Whateley family for information about the Necronomicon. You tell the staff to ignore all such requests from that family (Influence-1). If you pass, the staff sends out a warning to other libraries; gain this Clue and 1 additional Clue. If you fail, the Whateleys acquire forbidden knowledge; advance Doom by 1.",
     "effects": [
@@ -91,6 +94,7 @@
   {
     "id": "research_yog_sothoth_city_4",
     "title": "You attempt to sneak into the local Silver Twilight...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "You attempt to sneak into the local Silver Twilight Lodge (Observation). If you pass, you find a chart that assigns the names of wizards to seasons of the year; gain this Clue and 1 additional Clue. Sanford corresponds to Spring, Waite to Summer, Curwen to Autumn and Eibon to Winter. You remember the information in case it someday proves useful..}}",
     "effects": [
@@ -119,6 +123,7 @@
   {
     "id": "research_yog_sothoth_city_5",
     "title": "Carl Sanford, head of Arkham's Silver Twilight Lodge,...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "Carl Sanford, head of Arkham's Silver Twilight Lodge, has tracked you down to find out what you know about Yog-Sothoth (Influence). If you pass, you learn more from him than he does from you; gain this Clue and 1 Spell. If you fail, your knowledge aids his mysterious pursuit; spawn 1 Gate.",
     "effects": [
@@ -152,6 +157,7 @@
   {
     "id": "research_yog_sothoth_city_6",
     "title": "You hear of a bookstore that sells extremely rare...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "You hear of a bookstore that sells extremely rare volumes, but it is in an area that is very difficult to navigate (Observation-1). If you pass, gain this Clue and 1 Tome Artifact. If you fail, you get lost; become Delayed.",
     "effects": [
@@ -184,6 +190,7 @@
   {
     "id": "research_yog_sothoth_city_7",
     "title": "A noted politician walks straight toward you, glaring.",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "A noted politician walks straight toward you, glaring. A Cultist Monster ambushes you! If you defeat it, you find out that he was secretly a member of the Silver Twilight Lodge; gain this Clue. If you do not defeat it, the magical attack leaves you deeply shaken; gain a Paranoia Condition.",
     "effects": [
@@ -203,6 +210,7 @@
   {
     "id": "research_yog_sothoth_city_8",
     "title": "A distraught woman claims that her missing son struck...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "A distraught woman claims that her missing son struck a bargain with the Lurker at the Threshold (Observation). If you pass, you find the boy and try to free him from the debt; you may discard 1 Spell to gain this Clue and 1 additional Clue. If you fail, you suffer Yog-Sothoth's wrath; discard this Clue and gain a Cursed Condition.",
     "effects": [
@@ -245,6 +253,7 @@
   {
     "id": "research_yog_sothoth_wilderness_1",
     "title": "Talking to one of the locals, you realize that this...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "Talking to one of the locals, you realize that this village and its surrounding farms are inhabited by worshipers of Yog-Sothoth. A Cultist Monster ambushes you! If you defeat it, you manage to reach safety; gain this Clue.",
     "effects": [
@@ -260,6 +269,7 @@
   {
     "id": "research_yog_sothoth_wilderness_2",
     "title": "You watch several mi-go operate alien technology.",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You watch several mi-go operate alien technology. Gain this Clue. If you have at least 1 Spell, the mi-go are suddenly aware of your presence and turn their strange devices toward you (Observation). If you fail, their devices erode your sense of reason; lose 1 Sanity and gain a Paranoia Condition.",
     "effects": [
@@ -289,6 +299,7 @@
   {
     "id": "research_yog_sothoth_wilderness_3",
     "title": "The terrain has been flattened by some enormous creature.",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "The terrain has been flattened by some enormous creature. You follow its path of destruction (Observation). If you pass, you find that the thing had been stored in a barn; gain this Clue and 1 additional Clue. If you fail, all you find is mutilated animals; lose 1 Sanity.",
     "effects": [
@@ -326,6 +337,7 @@
   {
     "id": "research_yog_sothoth_wilderness_4",
     "title": "Local lore speaks of a place of tremendous arcane...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "Local lore speaks of a place of tremendous arcane potential (Observation-1). If you pass, you find a junction of ley lines; gain this Clue and 1 additional Clue. If you fail, your power is channeled for a dark purpose; spawn 1 Gate and discard 1 Spell.",
     "effects": [
@@ -368,6 +380,7 @@
   {
     "id": "research_yog_sothoth_wilderness_5",
     "title": "A rumor has passed through the small communities of a...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "A rumor has passed through the small communities of a witch named Lavinia. You sift through many eyewitness accounts to determine if Wilbur Whateley's mother still lives (Observation-1). If you pass, gain this Clue and 1 additional Clue. If you fail, the cult of Yog-Sothoth learns of your investigation; spawn 1 Gate.",
     "effects": [
@@ -405,6 +418,7 @@
   {
     "id": "research_yog_sothoth_wilderness_6",
     "title": "You dream of being in all places and existing at all...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You dream of being in all places and existing at all times. You know that you will wake up soon, so you use this heightened state to explore significant times and places (Lore). If you pass, gain this Clue. If you fail, your memories have been changed when you wake up; gain an Amnesia Condition.",
     "effects": [
@@ -438,6 +452,7 @@
   {
     "id": "research_yog_sothoth_wilderness_7",
     "title": "At midnight, you feel an eerie presence surrounding...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "At midnight, you feel an eerie presence surrounding the stone altar at the top of the hill. This strange presence fills your mind with blasphemous secrets. Gain this Clue. If you have at least 1 Spell, the entity tries to pull you into a deep trance (Will). If you fail, lose 1 Sanity and become Delayed.",
     "effects": [
@@ -466,6 +481,7 @@
   {
     "id": "research_yog_sothoth_wilderness_8",
     "title": "You find footprints that indicate a large number of...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You find footprints that indicate a large number of people passed through the area. You try to follow their path (Observation-1). If you pass, the trail leads you to an ancient stone circle inscribed with runes; gain this Clue and 1 Spell. If you fail, the search is long and exhausting; lose 1 Health.",
     "effects": [
@@ -499,6 +515,7 @@
   {
     "id": "research_yog_sothoth_sea_1",
     "title": "A strange fog covers the water, but no one else seems...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "A strange fog covers the water, but no one else seems to see it (Observation). If you pass, you find that the fog originates from a circle of stones on the beach of a small island; gain this Clue. If you fail, the mist impairs your vision; discard this Clue unless you discard 1 Spell.",
     "effects": [
@@ -533,6 +550,7 @@
   {
     "id": "research_yog_sothoth_sea_2",
     "title": "You see a white ship on the horizon, its sails...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "You see a white ship on the horizon, its sails apparently unaffected by the strong winds you feel racing across the waves. You use a telescope to examine the craft (Observation-1). If you pass, you see the ship passing through a fog bank into another world; gain this Clue and 1 additional Clue.",
     "effects": [
@@ -561,6 +579,7 @@
   {
     "id": "research_yog_sothoth_sea_3",
     "title": "Your ship travels through a time portal, and you hear...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "Your ship travels through a time portal, and you hear news of future events on the radio; gain this Clue. Then, if a Hound of Tindalos Monster is on the game board, move it to your space and encounter it. Otherwise, lose 1 Sanity.",
     "effects": [
@@ -576,6 +595,7 @@
   {
     "id": "research_yog_sothoth_sea_4",
     "title": "Sheets of luminescent colors fill the horizon.",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "Sheets of luminescent colors fill the horizon. You hear a hum in the air, almost like a voice (Observation). If you pass, it tells you of arcane secrets; gain this Clue and 1 Spell. If you fail, the sounds gives you a terrible headache; lose 1 Health.",
     "effects": [
@@ -609,6 +629,7 @@
   {
     "id": "research_yog_sothoth_sea_5",
     "title": "Large, winged crustaceans land on your ship and...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "Large, winged crustaceans land on your ship and command you to join Yog-Sothoth. You may gain a Dark Pact Condition. If you do, the mi-go share their plans with you; gain this Clue and 1 additional Clue. If you do not, spawn 1 Gate.",
     "effects": [
@@ -632,6 +653,7 @@
   {
     "id": "research_yog_sothoth_sea_6",
     "title": "The captain believes that you're bad luck.",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "The captain believes that you're bad luck. You search for the true source of the ship's trouble (Observation). If you pass, you find a hex bag among your possessions; gain this Clue. If you fail, the ill fortune seems to follow you; gain a Cursed Condition.",
     "effects": [
@@ -665,6 +687,7 @@
   {
     "id": "research_yog_sothoth_sea_7",
     "title": "The punctures in reality have caused a terrible storm...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "The punctures in reality have caused a terrible storm over the ocean, but you believe you know a way to patch the rift between worlds (Lore). If you pass, gain this Clue and you may discard 1 Spell to discard 1 Gate of your choice.",
     "effects": [
@@ -694,6 +717,7 @@
   {
     "id": "research_yog_sothoth_sea_8",
     "title": "The whole ship is dragged sideways across the water by...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "The whole ship is dragged sideways across the water by an invisible force. Gain this Clue and move 1 space toward the nearest Gate. Then lose 2 Sanity unless you discard 1 Spell.",
     "effects": [

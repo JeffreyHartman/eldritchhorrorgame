@@ -2,6 +2,7 @@
   {
     "id": "europe_1",
     "title": "The Silver Twilight Lodge is locked up tight.",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -90,6 +91,7 @@
   {
     "id": "europe_2",
     "title": "Inside the Herefordshire Asylum, a patient asks you if...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -164,6 +166,7 @@
   {
     "id": "europe_3",
     "title": "You peruse The Scoop, a tabloid paper that specializes...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -248,6 +251,7 @@
   {
     "id": "europe_4",
     "title": "In exchange for a generous donation, the Penhew...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -309,6 +313,7 @@
   {
     "id": "europe_5",
     "title": "Impulsively, you look through the inspector's files...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -384,6 +389,7 @@
   {
     "id": "europe_6",
     "title": "You meet an eccentric painter in Soho who offers to...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -481,6 +487,7 @@
   {
     "id": "europe_7",
     "title": "At the lecture of a noted archaeologist, he reveals...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",
@@ -564,6 +571,7 @@
   {
     "id": "europe_8",
     "title": "You are invited to journey down to Oxford to examine...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "london",

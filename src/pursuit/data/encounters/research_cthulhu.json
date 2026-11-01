@@ -2,6 +2,7 @@
   {
     "id": "research_cthulhu_city_1",
     "title": "The librarian tells you that the book you're looking...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "The librarian tells you that the book you're looking for was checked out by someone named Mr. Marsh. You scout the city to find him before he leaves town (Observation). If you pass, you manage to steal the book from his hotel room; gain this Clue. If you fail, move this Clue to the nearest Sea space.",
     "effects": [
@@ -31,6 +32,7 @@
   {
     "id": "research_cthulhu_city_2",
     "title": "You recognize allusions to Cthulhu in a sculptor's...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "You recognize allusions to Cthulhu in a sculptor's recent works. You speak to the artist about his inspirations (Influence). If you pass, gain this Clue and 1 additional Clue. If you fail, he tells you a terrible vision of the future; lose 1 Sanity.",
     "effects": [
@@ -68,6 +70,7 @@
   {
     "id": "research_cthulhu_city_3",
     "title": "The police ask for help in tracking down a cultist...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "The police ask for help in tracking down a cultist sect (Observation-1). If you pass, you help them launch a midnight raid; gain this Clue and 1 additional Clue. If you fail, the cult foils your investigation and rob your hotel; discard 1 Item Asset.",
     "effects": [
@@ -106,6 +109,7 @@
   {
     "id": "research_cthulhu_city_4",
     "title": "A man tells you about his terrible dreams of...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "A man tells you about his terrible dreams of underwater cities. You suspect you understand the source of such nightmares (Lore). If you pass, you warn him about his heritage; gain this Clue. If you fail, a Deep One Monster ambushes you.",
     "effects": [
@@ -139,6 +143,7 @@
   {
     "id": "research_cthulhu_city_5",
     "title": "You dream of a city built from massive green stones...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "You dream of a city built from massive green stones set at non-Euclidean angles. You try to retain as many details as you can to investigate when you wake up (Observation). If you pass, you identify the location by the stars overhead; gain this Clue and 1 additional Clue. If you fail, the details of the dream are too horrible to remember; lose 1 Sanity.",
     "effects": [
@@ -176,6 +181,7 @@
   {
     "id": "research_cthulhu_city_6",
     "title": "After the police raid a local Order of Dagon, you have...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "After the police raid a local Order of Dagon, you have a chance to search the temple (Observation). If you pass, you find ledgers and historical documents; gain this Clue and a Mists of Releh Spell. If you fail, you feel the statues and icons in the building staring at you; gain a Paranoia Condition.",
     "effects": [
@@ -209,6 +215,7 @@
   {
     "id": "research_cthulhu_city_7",
     "title": "The cult of Cthulhu anticipated your arrival.",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "The cult of Cthulhu anticipated your arrival. A Cultist Monster ambushes you! If you defeat it, gain this Clue. If you do not defeat it, you cannot recall how you escaped; gain an Amnesia Condition and move this Clue to the nearest Sea space.",
     "effects": [
@@ -228,6 +235,7 @@
   {
     "id": "research_cthulhu_city_8",
     "title": "You see dozens of people with the distinct features of...",
+    "expansion": "CORE",
     "terrain": "city",
     "text": "You see dozens of people with the distinct features of deep one hybrids. They watch you constantly, and you'll have to fight to escape (Strength). If you pass, you identify more families descended from deep ones; gain this Clue. If you fail; they attack and turn you over to the police; lose 1 Health and gain a Detained Condition.",
     "effects": [
@@ -260,6 +268,7 @@
   {
     "id": "research_cthulhu_wilderness_1",
     "title": "In a remote area, you discover an ancient ritual...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "In a remote area, you discover an ancient ritual underway stop to observe. A Cultist Monster ambushes you! If you defeat it, the cultists abandon their ritual; gain this Clue. If you do not defeat it, you are incorporated into the ceremony; gain a Cursed Condition.",
     "effects": [
@@ -279,6 +288,7 @@
   {
     "id": "research_cthulhu_wilderness_2",
     "title": "This cavern collapsed thousands of years ago.",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "This cavern collapsed thousands of years ago. Your excavations reveal ritual carvings that you think correspond to modern cults (Observation-1). If you pass, you gain insight into the cult of Cthulhu; gain this Clue and 1 additional Clue. If you fail, you contemplate how long the worshipers of Cthulhu have waited for their master; lose 1 Sanity.",
     "effects": [
@@ -316,6 +326,7 @@
   {
     "id": "research_cthulhu_wilderness_3",
     "title": "You uncover an ancient stone statue of Cthulhu carved...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You uncover an ancient stone statue of Cthulhu carved from an unknown green stone. Just looking at it threatens your mental stability (Will). If you pass, you examine the statue thoroughly; gain this Clue. If you fail, you stare at the horrific carving in horror; gain a Hallucinations Condition.",
     "effects": [
@@ -349,6 +360,7 @@
   {
     "id": "research_cthulhu_wilderness_4",
     "title": "You try to track down an old hermit who supposedly...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You try to track down an old hermit who supposedly knows the secrets of Cthulhu's cults (Observation). If you pass, the man is insane, but his stories prove accurate; gain this Clue. If you fail, the man has been taken by pirates; move this Clue to the nearest Sea space;",
     "effects": [
@@ -378,6 +390,7 @@
   {
     "id": "research_cthulhu_wilderness_5",
     "title": "You try to interpret the strange constellations in the...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You try to interpret the strange constellations in the night sky above you (Lore-1). If you pass, you understand the occult phenomenon that is coming to pass; gain this Clue and retreat Doom by 1. If you fail, the stars tell you nothing; move this Clue to the nearest Sea space.",
     "effects": [
@@ -411,6 +424,7 @@
   {
     "id": "research_cthulhu_wilderness_6",
     "title": "Cultists have snuck into your camp, trying to steal...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "Cultists have snuck into your camp, trying to steal your equipment (Observation). If you pass, you catch one of them and get a chance to question him; gain this Clue. If you fail, discard 2 Item Assets and move this Clue to the nearest Sea space.",
     "effects": [
@@ -445,6 +459,7 @@
   {
     "id": "research_cthulhu_wilderness_7",
     "title": "You have a vivid dream of R'lyeh and fear that you...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "You have a vivid dream of R'lyeh and fear that you won't be able to wake up if you can't find your way out of the city (Observation). If you pass, the dream provides you insight into R'lyeh; gain this Clue and 1 additional Clue. If you fail, you remain unconscious for a day; lose 2 Sanity and become Delayed.",
     "effects": [
@@ -485,6 +500,7 @@
   {
     "id": "research_cthulhu_wilderness_8",
     "title": "The mi-go have lured you into the wild to put an end...",
+    "expansion": "CORE",
     "terrain": "wilderness",
     "text": "The mi-go have lured you into the wild to put an end to your investigation. You try to drive the creatures off before they can do any lasting damage (Strength). If you pass, gain this Clue. If you fail, become Delayed and move this Clue to the nearest Sea space.",
     "effects": [
@@ -517,6 +533,7 @@
   {
     "id": "research_cthulhu_sea_1",
     "title": "You wake up on a reef with no sign of your ship.",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "You wake up on a reef with no sign of your ship. An enormous star spawn rises from the sea and places its thought into your mind. You may gain a Dark Pact Condition to gain this Clue and a Mists of Releh Spell. If you do not, discard this Clue and a Star Spawn Monster ambushes you.",
     "effects": [
@@ -536,6 +553,7 @@
   {
     "id": "research_cthulhu_sea_2",
     "title": "Looking across the water, you see visions of an...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "Looking across the water, you see visions of an ancient island city populated by horrible creatures. The city is horrible to behold (Will). If you pass, you learn about R'lyeh; gain this Clue and 1 additional Clue. If you fail, your mind cannot stand the sight; gain a Hallucinations Condition.",
     "effects": [
@@ -573,6 +591,7 @@
   {
     "id": "research_cthulhu_sea_3",
     "title": "In the middle of the night you see an army of deep...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "In the middle of the night you see an army of deep ones climbing in and out of the water (Observation-1). If you pass, you wait until they're gone and then search the area; gain the Grotesque Statue Artifact. If you fail, lose 3 Sanity and a Deep One Monster ambushes you.",
     "effects": [
@@ -607,6 +626,7 @@
   {
     "id": "research_cthulhu_sea_4",
     "title": "Your ship encounters another vessel engaged in...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "Your ship encounters another vessel engaged in deep-sea excavation. You sneak aboard their craft to see what they've found (Observation). If you pass, you see strangely-crafted golden jewelry; gain this Clue. If you fail, the divers catch you and throw you into their brig; gain a Detained Condition.",
     "effects": [
@@ -640,6 +660,7 @@
   {
     "id": "research_cthulhu_sea_5",
     "title": "Some dark shape is moving under the waves (Observation).",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "Some dark shape is moving under the waves (Observation). If you pass, you avoid the creature; gain this Clue. If you fail, your ship is thrown into the air; a Star Spawn Monster ambushes you! If you defeat it, retreat Doom by 1.",
     "effects": [
@@ -677,6 +698,7 @@
   {
     "id": "research_cthulhu_sea_6",
     "title": "You listen intently as the island natives tell a...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "You listen intently as the island natives tell a folktale (Observation-1). If you pass, you recognize it as a description of how the elder things fought Cthulhu; gain this Clue and retreat Doom by 1. If you fail, the story has a damaging effect on your mind; gain a Hallucinations Condition.",
     "effects": [
@@ -714,6 +736,7 @@
   {
     "id": "research_cthulhu_sea_7",
     "title": "As you stare across the water, a webbed hand reaches...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "As you stare across the water, a webbed hand reaches from below the surface and grabs your leg! A Deep One Monster ambushes you. If you defeat it, gain this Clue and 1 additional Clue. If you do not defeat it, gain a Leg Injury Condition.",
     "effects": [
@@ -737,6 +760,7 @@
   {
     "id": "research_cthulhu_sea_8",
     "title": "During the night, you hear the sounds of the crew...",
+    "expansion": "CORE",
     "terrain": "sea",
     "text": "During the night, you hear the sounds of the crew battleing some unseen enemy. Suddenly, you are face-to-face with one of the fish-like monstrosities! Gain this Clue and lose 1 Sanity. A Deep One Monster ambushes you. If you defeat it, you find an odd relic; gain the Ruby of R'lyeh Artifact.",
     "effects": [

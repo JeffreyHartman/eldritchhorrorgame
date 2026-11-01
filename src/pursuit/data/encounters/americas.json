@@ -2,6 +2,7 @@
   {
     "id": "americas_1",
     "title": "In the restricted section of Miskatonic University's...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -73,6 +74,7 @@
   {
     "id": "americas_2",
     "title": "During the night, you have a nightmare about the old...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -158,6 +160,7 @@
   {
     "id": "americas_3",
     "title": "The Silver Twilight Lodge members ask you several...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -253,6 +256,7 @@
   {
     "id": "americas_4",
     "title": "An anonymous patient in the asylum pleads with you to...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -301,6 +305,7 @@
   {
     "id": "americas_5",
     "title": "Some ritual had been performed in the Black Cave, but...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -367,6 +372,7 @@
   {
     "id": "americas_6",
     "title": "Inside Ye Olde Magick Shoppe, Miriam Beecher talks to...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -451,6 +457,7 @@
   {
     "id": "americas_7",
     "title": "The administrators of Arkham's Historical Society take...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",
@@ -502,6 +509,7 @@
   {
     "id": "americas_8",
     "title": "A fortune teller in Independence Square warns you of...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "arkham",

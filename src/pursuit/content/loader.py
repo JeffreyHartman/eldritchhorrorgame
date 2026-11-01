@@ -20,6 +20,7 @@ from pursuit.content.defs import (
     ACTIVE_EXPEDITION,
     ASSET_KINDS,
     BLOCKABLE_ACTIONS,
+    EXPANSIONS,
     EXPEDITION_LOCATIONS,
     GATE_COLORS,
     LOCATION_DECKS,
@@ -220,6 +221,7 @@ class _Loader:
             loc = LocationDef(
                 id=_id(lr),
                 name=lr.get_str("name"),
+                expansion=lr.get_enum("expansion", EXPANSIONS),
                 code=lr.get_str("code"),
                 terrain=lr.get_enum("terrain", TERRAINS),
                 region=lr.get_enum("region", REGIONS),
@@ -274,6 +276,7 @@ class _Loader:
             inv = InvestigatorDef(
                 id=_id(r),
                 name=r.get_str("name"),
+                expansion=r.get_enum("expansion", EXPANSIONS),
                 occupation=r.get_str("occupation"),
                 bio=r.get_str("bio"),
                 quote=r.get_str("quote"),
@@ -302,6 +305,7 @@ class _Loader:
         m = MonsterDef(
             id="cultist" if cultist else _id(r),
             name="Cultist" if cultist else r.get_str("name"),
+            expansion=r.get_enum("expansion", EXPANSIONS),
             form="humanoid" if cultist else r.get_enum("form", MONSTER_FORMS),
             count=5 if cultist else r.get_int("count", 1),
             text=r.get_str("text", ""),
@@ -354,6 +358,7 @@ class _Loader:
                 a = AssetDef(
                     id=_id(r),
                     name=r.get_str("name"),
+                    expansion=r.get_enum("expansion", EXPANSIONS),
                     kind=kind,
                     traits=r.get_str_tuple("traits"),
                     cost=r.get_int("cost", 0),
@@ -406,6 +411,7 @@ class _Loader:
             c = ConditionDef(
                 id=_id(r),
                 name=r.get_str("name"),
+                expansion=r.get_enum("expansion", EXPANSIONS),
                 traits=r.get_str_tuple("traits"),
                 text=r.get_str("text"),
                 modifiers=read_modifiers(r, "modifiers"),
@@ -428,6 +434,7 @@ class _Loader:
             m = MythosDef(
                 id=_id(r),
                 name=r.get_str("name"),
+                expansion=r.get_enum("expansion", EXPANSIONS),
                 color=r.get_enum("color", MYTHOS_COLORS),
                 traits=r.get_str_tuple("traits", MYTHOS_TRAITS),
                 icons=r.get_str_tuple("icons", MYTHOS_ICONS),
@@ -455,6 +462,7 @@ class _Loader:
         m = MysteryDef(
             id=_id(r),
             name=r.get_str("name"),
+            expansion=r.get_enum("expansion", EXPANSIONS),
             flavor=r.get_str("flavor", ""),
             text=r.get_str("text"),
             kind=r.get_enum("kind", MYSTERY_KINDS),
@@ -514,6 +522,7 @@ class _Loader:
             o = OldOneDef(
                 id=_id(r),
                 name=r.get_str("name"),
+                expansion=r.get_enum("expansion", EXPANSIONS),
                 title=r.get_str("title"),
                 difficulty=r.get_enum("difficulty", ("low", "medium", "high")),
                 description=r.get_str("description"),
@@ -575,6 +584,7 @@ class _Loader:
                     id=_id(r),
                     deck=deck,
                     title=r.get_str("title"),
+                    expansion=r.get_enum("expansion", EXPANSIONS),
                     text=r.get_str("text", ""),
                     effects=read_effects(r, "effects"),
                     terrain=r.get_enum("terrain", TERRAINS, None),

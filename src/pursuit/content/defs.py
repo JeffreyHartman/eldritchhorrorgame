@@ -60,6 +60,7 @@ CONTEXTS = (
     "mystery",
     "other_world",
 )
+EXPANSIONS = ("CORE",)
 ASSET_KINDS = ("item", "ally", "service", "trinket", "spell", "artifact")
 RESERVE_KINDS = ("item", "ally", "service", "trinket")
 PERKS = (
@@ -539,6 +540,7 @@ def read_backs(r: Reader, key: str = "backs") -> tuple[CardBack, ...]:
 class LocationDef:
     id: str
     name: str
+    expansion: str
     code: str
     terrain: str
     region: str
@@ -559,6 +561,7 @@ class RouteDef:
 class AssetDef:
     id: str
     name: str
+    expansion: str
     kind: str
     traits: tuple[str, ...]
     cost: int
@@ -599,6 +602,7 @@ class ConditionDef:
 
     id: str
     name: str
+    expansion: str
     traits: tuple[str, ...]
     text: str
     modifiers: tuple[Modifier, ...]
@@ -614,6 +618,7 @@ class ConditionDef:
 class MonsterDef:
     id: str
     name: str
+    expansion: str
     form: str
     count: int
     text: str
@@ -674,6 +679,7 @@ class EncounterDef:
     id: str
     deck: str
     title: str
+    expansion: str
     text: str
     effects: tuple[Effect, ...]
     terrain: str | None = None
@@ -685,6 +691,7 @@ class EncounterDef:
 class MythosDef:
     id: str
     name: str
+    expansion: str
     color: str
     traits: tuple[str, ...]
     icons: tuple[str, ...]
@@ -707,6 +714,7 @@ class MythosDef:
 class MysteryDef:
     id: str
     name: str
+    expansion: str
     flavor: str
     text: str
     kind: str
@@ -760,6 +768,7 @@ class AwakeningDef:
 class OldOneDef:
     id: str
     name: str
+    expansion: str
     title: str
     difficulty: str
     description: str
@@ -792,6 +801,7 @@ class DefeatedEncounterDef:
 class InvestigatorDef:
     id: str
     name: str
+    expansion: str
     occupation: str
     bio: str
     quote: str

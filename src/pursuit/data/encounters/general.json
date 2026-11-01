@@ -2,6 +2,7 @@
   {
     "id": "general_1",
     "title": "You make sure no one is watching before sneaking out...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -89,6 +90,7 @@
   {
     "id": "general_2",
     "title": "Corrupt members of the police force pressure you for a...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -173,6 +175,7 @@
   {
     "id": "general_3",
     "title": "The shop is robbed while you are browsing!",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -268,6 +271,7 @@
   {
     "id": "general_4",
     "title": "A group of intimidating Syndicate member demand you...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -361,6 +365,7 @@
   {
     "id": "general_5",
     "title": "A shady figure offers to sell you a weapon, no...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -425,6 +430,7 @@
   {
     "id": "general_6",
     "title": "You wander through the aisles of an antique book store.",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -505,6 +511,7 @@
   {
     "id": "general_7",
     "title": "A friendly game of cards ends with a very high-stakes...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -585,6 +592,7 @@
   {
     "id": "general_8",
     "title": "A night of drinking and good cheer helps raise your...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -678,6 +686,7 @@
   {
     "id": "general_9",
     "title": "The police report that people are being abducted by a...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -776,6 +785,7 @@
   {
     "id": "general_10",
     "title": "The police ask for your help investigating a series of...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -859,6 +869,7 @@
   {
     "id": "general_11",
     "title": "Legends say that this cemetery is haunted.",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",
@@ -943,6 +954,7 @@
   {
     "id": "general_12",
     "title": "The Syndicate is engaged in a gang war with local...",
+    "expansion": "CORE",
     "sections": [
       {
         "terrain": "city",

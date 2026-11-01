@@ -12,7 +12,7 @@ import pytest
 
 from conftest import Script, clear_board
 from pursuit.bots import RandomBot
-from pursuit.content.defs import SKILLS
+from pursuit.content.defs import EXPANSIONS, SKILLS
 from pursuit.content.loader import DEFAULT_DATA_DIR, Content, load_content
 from pursuit.content.reader import ContentError, Reader
 from pursuit.effects.base import Ctx, run_effects
@@ -144,6 +144,22 @@ def load_from(path: Path) -> Content:
     return load_content.__wrapped__(str(path))
 
 
+def test_every_content_record_names_an_expansion(content: Content) -> None:
+    groups = (
+        content.locations,
+        content.investigators,
+        content.monsters,
+        content.assets,
+        content.conditions,
+        content.mythos,
+        content.encounters,
+        content.old_ones,
+    )
+    records = [record for group in groups for record in group.values()]
+    records += [mystery for old in content.old_ones.values() for mystery in old.mysteries]
+    assert all(record.expansion in EXPANSIONS for record in records)
+
+
 def test_unknown_effect_type_names_the_path(data_copy: Path) -> None:
     edit_json(
         data_copy / "encounters" / "general.json",
@@ -153,6 +169,19 @@ def test_unknown_effect_type_names_the_path(data_copy: Path) -> None:
         ContentError, match=r"general\.json\[0\]\.sections\[0\]\.effects\[1\]: unknown effect type 'summon_cake'"
     ):
         load_from(data_copy)
+
+
+@pytest.mark.parametrize("value", [None, "NOT_A_SET"])
+def test_a_card_needs_a_known_expansion(data_copy: Path, value: str | None) -> None:
+    path = data_copy / "spells.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if value is None:
+        del data[0]["expansion"]
+    else:
+        data[0]["expansion"] = value
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ContentError, match=r"spells\.json\[0\].*expansion"):
+        load_content(str(data_copy))
 
 
 def test_typo_in_a_field_name_is_rejected(data_copy: Path) -> None:

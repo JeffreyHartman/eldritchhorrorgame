@@ -2,6 +2,7 @@
   {
     "id": "wither",
     "name": "Wither",
+    "expansion": "CORE",
     "traits": [
       "incantation"
     ],
@@ -135,6 +136,7 @@
   {
     "id": "flesh_ward",
     "name": "Flesh Ward",
+    "expansion": "CORE",
     "traits": [
       "incantation"
     ],
@@ -245,6 +247,7 @@
   {
     "id": "mists_of_relah",
     "name": "Mists of Releh",
+    "expansion": "CORE",
     "traits": [
       "incantation"
     ],
@@ -341,6 +344,7 @@
   {
     "id": "shrivelling",
     "name": "Shriveling",
+    "expansion": "CORE",
     "traits": [
       "incantation"
     ],
@@ -471,6 +475,7 @@
   {
     "id": "blessing_of_isis",
     "name": "Blessing of Isis",
+    "expansion": "CORE",
     "traits": [
       "ritual"
     ],
@@ -601,6 +606,7 @@
   {
     "id": "clairvoyance",
     "name": "Clairvoyance",
+    "expansion": "CORE",
     "traits": [
       "ritual"
     ],
@@ -717,6 +723,7 @@
   {
     "id": "plumb_the_void",
     "name": "Plumb the Void",
+    "expansion": "CORE",
     "traits": [
       "ritual"
     ],
@@ -833,6 +840,7 @@
   {
     "id": "conjuration",
     "name": "Conjuration",
+    "expansion": "CORE",
     "traits": [
       "ritual"
     ],
@@ -966,6 +974,7 @@
   {
     "id": "feed_the_mind",
     "name": "Feed the Mind",
+    "expansion": "CORE",
     "traits": [
       "ritual"
     ],
@@ -1075,6 +1084,7 @@
   {
     "id": "instill_bravery",
     "name": "Instill Bravery",
+    "expansion": "CORE",
     "traits": [
       "incantation"
     ],

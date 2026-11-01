@@ -2,6 +2,7 @@
   {
     "id": "cultist",
     "name": "Cultist",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 5,
     "text": "Varies depending on Ancient One",
@@ -17,6 +18,7 @@
   {
     "id": "ghoul",
     "name": "Ghoul",
+    "expansion": "CORE",
     "form": "beast",
     "count": 2,
     "text": "If you lose Health from the Strength test, gain a Paranoia Condition.",
@@ -38,6 +40,7 @@
   {
     "id": "goat_spawn",
     "name": "Goat Spawn",
+    "expansion": "CORE",
     "form": "beast",
     "count": 2,
     "text": "If you defeat this Monster during a Combat Encounter, you may gain a Dark Pact Condition to discard 1 Monster from any space.",
@@ -79,6 +82,7 @@
   {
     "id": "dark_young",
     "name": "Dark Young",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.",
@@ -114,6 +118,7 @@
   {
     "id": "deep_one",
     "name": "Deep One",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "Reckoning: Each investigator on this space loses 1 Sanity.",
@@ -141,6 +146,7 @@
   {
     "id": "star_spawn",
     "name": "Star Spawn",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.",
@@ -176,6 +182,7 @@
   {
     "id": "hound_of_tindalos",
     "name": "Hound of Tindalos",
+    "expansion": "CORE",
     "form": "spirit",
     "count": 1,
     "text": "Reckoning: Move this Monster to the nearest space containing an investigator. Then an investigator on that space immediately encounters it.",
@@ -197,6 +204,7 @@
   {
     "id": "byakhee",
     "name": "Byakhee",
+    "expansion": "CORE",
     "form": "beast",
     "count": 1,
     "text": "If you defeat this Monster during a Combat Encounter, you may lose 1 Sanity and move 3 spaces instead of resolving another encounter.",
@@ -226,6 +234,7 @@
   {
     "id": "mi_go",
     "name": "Mi-Go",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "If you defeat this Monster during a Combat Encounter, gain 1 Artifact. Reckoning: Discard the nearest Clue and move this Monster to that space.",
@@ -252,6 +261,7 @@
   {
     "id": "nightgaunt",
     "name": "Nightgaunt",
+    "expansion": "CORE",
     "form": "beast",
     "count": 1,
     "text": "Reckoning: If there is an investigator on this space, move him and this Monster 1 space and he becomes Delayed. Otherwise, move this Monster 2 spaces toward the nearest investigator.",
@@ -272,6 +282,7 @@
   {
     "id": "cthonian",
     "name": "Chthonian",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "When this Monster is spawned, move it to The Heart of Africa.",
@@ -293,6 +304,7 @@
   {
     "id": "vampire",
     "name": "Vampire",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you fail the Will test, do not resolve the Strength test. If you lose Health from the Strength test and this Monster is not defeated, it recovers 2 Health.",
@@ -315,6 +327,7 @@
   {
     "id": "warlock",
     "name": "Warlock",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you fail the Will test, lose 1 Health. Reckoning: Roll 1 die. On a 1 or 2, the nearest investigator gains a Cursed Condition.",
@@ -361,6 +374,7 @@
   {
     "id": "zombie",
     "name": "Zombie",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "Reckoning: Spawn the Zombie Horde Epic Monster on this space. If you do, discard this Monster.",
@@ -384,6 +398,7 @@
   {
     "id": "shoggoth",
     "name": "Shoggoth",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Reckoning: This Monster recovers all Health.",
@@ -405,6 +420,7 @@
   {
     "id": "wind_walker",
     "name": "Wind-Walker",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Before resolving the Will test, lose 1 Health and 1 Sanity unless you spend 1 Clue.",
@@ -443,6 +459,7 @@
   {
     "id": "dunwich_horror",
     "name": "The Dunwich Horror",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Reckoning: Roll 1 die. If the result is less than or equal to investigators, spawn 1 Gate.",
@@ -471,6 +488,7 @@
   {
     "id": "shub_niggurath_epic",
     "name": "Shub-Niggurath",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "This Epic Monster cannot lose Health unless 3 Mysteries have been solved.",
@@ -489,6 +507,7 @@
   {
     "id": "cthulhu_epic",
     "name": "Cthulhu",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "If you lose Sanity from the Will test, place the lost Sanity on the Ancient One sheet.",
@@ -507,6 +526,7 @@
   {
     "id": "nug_epic",
     "name": "Nug",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Reckoning: Spawn 1 Ghoul Monster on this space.",
@@ -531,6 +551,7 @@
   {
     "id": "cthylla_epic",
     "name": "Cthylla",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "Reckoning: A Deep One Monster ambushes the nearest investigator.",
@@ -559,6 +580,7 @@
   {
     "id": "spinner_of_webs",
     "name": "Spinner of Webs",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "If you fail the Will test, do not resolve the Strength test.",
@@ -577,6 +599,7 @@
   {
     "id": "colour_out_of_space",
     "name": "Colour Out of Space",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "When this Monster is spawned, move it to Tunguska. After resolving the Will test, roll 1 die. On a 5 or 6, defeat this Monster.",
@@ -617,6 +640,7 @@
   {
     "id": "elder_thing",
     "name": "Elder Thing",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "When this Monster is spawned, move it to Antarctica.",
@@ -638,6 +662,7 @@
   {
     "id": "ghost",
     "name": "Ghost",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you pass the Will test, this Monster loses Health equal to the test result.",
@@ -658,6 +683,7 @@
   {
     "id": "gnoph_keh",
     "name": "Gnoph-Keh",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "When this Monster is spawned, move it to The Himalayas. Reckoning: Each investigator on this space loses 1 Health.",
@@ -691,6 +717,7 @@
   {
     "id": "gug",
     "name": "Gug",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you defeat this Monster during a Combat Encounter, you do not resolve an additional encounter.",
@@ -707,6 +734,7 @@
   {
     "id": "lloigor",
     "name": "Lloigor",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "Reckoning: Each investigator on this space or an adjacent space loses 1 Health and 1 Sanity.",
@@ -738,6 +766,7 @@
   {
     "id": "maniac",
     "name": "Maniac",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you fail the Strength test, you may discard 1 Ally Asset instead of losing Health. If you defeat this Monster during a Combat Encounter, gain 1 Axe Asset.",
@@ -760,6 +789,7 @@
   {
     "id": "mummy",
     "name": "Mummy",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "When this Monster is spawned, move it to The Pyramids.",
@@ -781,6 +811,7 @@
   {
     "id": "riot",
     "name": "Riot",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "Before resolving the Strength test, you may attempt to disperse the mob (Influence - 1). If you pass, defeat this Monster.",
@@ -823,6 +854,7 @@
   {
     "id": "serpent_people",
     "name": "Serpent People",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "When this Monster is spawned, move it to The Amazon. Reckoning: Roll 1 die. On a 1 or 2, the nearest investigator moves 1 space toward this Monster.",
@@ -863,6 +895,7 @@
   {
     "id": "skeleton",
     "name": "Skeleton",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you defeat this Monster during a Combat Encounter, recover 1 Sanity.",
@@ -884,6 +917,7 @@
   {
     "id": "tick_tock_men",
     "name": "Tick Tock Men",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "You cannot spend Clues to reroll dice during this Combat Encounter.",
@@ -902,6 +936,7 @@
   {
     "id": "witch",
     "name": "Witch",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "If you fail the Will test, gain a Cursed Condition. Reckoning: Each investigator who has a Cursed Condition loses 1 Health.",
@@ -937,6 +972,7 @@
   {
     "id": "wraith",
     "name": "Wraith",
+    "expansion": "CORE",
     "form": "humanoid",
     "count": 1,
     "text": "When this Monster is spawned, the Lead Investigator gains a Cursed Condition. When this Monster is defeated, an investigator may discard a Cursed Condition.",
@@ -979,6 +1015,7 @@
   {
     "id": "zombie_horde",
     "name": "Zombie Horde",
+    "expansion": "CORE",
     "form": "horror",
     "count": 1,
     "text": "If you lose Health from the Strength test, discard 1 Ally Asset. Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.",

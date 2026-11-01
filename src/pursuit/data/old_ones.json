@@ -2,6 +2,7 @@
   {
     "id": "azathoth",
     "name": "Azathoth",
+    "expansion": "CORE",
     "title": "The Daemon Sultan",
     "difficulty": "medium",
     "art": "king_in_yellow",
@@ -38,6 +39,7 @@
     ],
     "reckoning": [],
     "cultist": {
+      "expansion": "CORE",
       "toughness": 1,
       "horror": 1,
       "damage_test": false,
@@ -57,6 +59,7 @@
       {
         "id": "az_occult_research",
         "name": "Occult Research",
+        "expansion": "CORE",
         "flavor": "The shan are controlling innocent victims everywhere, using them to call forth Azathoth.",
         "text": "After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
         "kind": "research",
@@ -65,6 +68,7 @@
       {
         "id": "az_omen_of_devastation",
         "name": "Omen of Devastation",
+        "expansion": "CORE",
         "flavor": "The Nemesis Moon appears in the night sky, visible to all and heralding an imminent doom.",
         "text": "When an investigator closes a Gate that corresponds to the current Omen, he may spend 1 Clue to place 1 Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to half investigators, solve this Mystery.",
         "kind": "gate",
@@ -75,6 +79,7 @@
       {
         "id": "az_seed_of_the_daemon_sultan",
         "name": "Seed of the Daemon Sultan",
+        "expansion": "CORE",
         "flavor": "A strange green comet has fallen from the sky. Even after the impact, the meteorite continues to slowly burrow itself deeper into the earth.",
         "text": "When this card enters play, place the mystery token on Tunguska. As an encounter, an investigator on Tunguska may attempt to search for signs of the impact in the dead forest (Observation). If he passes, he discovers the strange green meteorite; he may spend 2 Clues to place 1 Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch Tokens on this card equal to half investigators, solve this Mystery.",
         "kind": "encounter",
@@ -88,6 +93,7 @@
       {
         "id": "az_the_true_name",
         "name": "The True Name",
+        "expansion": "CORE",
         "flavor": "Fragments of Azathoth's true name exist in long forgotten tomes. It is said that if a person speaks his name aloud three times, the blasphemous sound will grant the speaker great power.",
         "text": "When this card enters play, place a number of eldritch tokens equal to half investigators each on a random space. As an encounter, an investigator on a space containing an Eldritch token may attempt to find information about Azathoth's true name; he may spend 2 Clues to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to half investigators, solve this Mystery.",
         "kind": "spend",
@@ -118,6 +124,7 @@
   {
     "id": "yog_sothoth",
     "name": "Yog-Sothoth",
+    "expansion": "CORE",
     "title": "The Lurker at the Threshold",
     "difficulty": "low",
     "art": "yog_sothoth",
@@ -197,6 +204,7 @@
       }
     ],
     "cultist": {
+      "expansion": "CORE",
       "toughness": 1,
       "horror_test": false,
       "damage": 1,
@@ -217,6 +225,7 @@
       {
         "id": "ys_arcane_understanding",
         "name": "Arcane Understanding",
+        "expansion": "CORE",
         "flavor": "Humanity must not tamper with arcane energies. Yog-Sothoth is the very essence of magic, and a person under the influence of sorcery will inescapably become the Ancient One's puppet.",
         "text": "When an investigator passes a Lore test while resolving a Spell effect, he may spend 1 Clue and discard that Spell after he has finished resolving its effects. If he does, place 1 Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to investigators, solve this Mystery.",
         "kind": "spell",
@@ -226,6 +235,7 @@
       {
         "id": "ys_spawn_of_yog_sothoth",
         "name": "Spawn of Yog-Sothoth",
+        "expansion": "CORE",
         "flavor": "Lavinia Whateley has given birth to something horrible, and now the creature calls for its father...",
         "text": "When this card enters play, spawn the Dunwich Horror Epic Monster on Arkham. At the end of the Mythos Phase, if the Dunwich Horror Epic Monster has been defeated, solve this Mystery.",
         "kind": "defeat",
@@ -236,6 +246,7 @@
       {
         "id": "ys_the_beyond_one",
         "name": "The Beyond One",
+        "expansion": "CORE",
         "flavor": "Yog-Sothoth exists in all places at all times. To any soul foolish enough to seek it, the Ancient One can unlock limitless knowledge and power, but it always comes at a price.",
         "text": "After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
         "kind": "research",
@@ -244,6 +255,7 @@
       {
         "id": "ys_where_the_old_ones_broke_through",
         "name": "Where the Old Ones Broke Through",
+        "expansion": "CORE",
         "flavor": "Yog-Sothoth struggles to free itself from the space between dimensions, tearing holes in our reality in the process.",
         "text": "When an investigator closes a Gate, he may discard 2 Spells to seal the rift and place that Gate on this card. At the end of the Mythos Phase, if there are Gates on this card equal to half investigators, return all Gate tokens on this card to the game box and solve this Mystery.",
         "kind": "gate",
@@ -314,6 +326,7 @@
       "final_mystery": {
         "id": "ys_final",
         "name": "The Key and the Gate",
+        "expansion": "CORE",
         "flavor": "The ancient horror tears apart the walls between worlds, pouring itself through the cracks in reality.",
         "text": "If 3 Mysteries have been solved, as an encounter, an investigator on a space containing a Gate may confront Yog-Sothoth by resolving a The Key and the Gate Special Encounter. When there are Eldritch tokens on this sheet equal to half investigators, the Final Mystery is solved and investigators win the game.",
         "kind": "special",
@@ -325,6 +338,7 @@
         "half_players": true
       },
       "cultist": {
+        "expansion": "CORE",
         "toughness": 1,
         "horror_test": false,
         "damage": 1,
@@ -342,6 +356,7 @@
   {
     "id": "shub_niggurath",
     "name": "Shub-Niggurath",
+    "expansion": "CORE",
     "title": "The Black Goat of the Woods",
     "difficulty": "medium",
     "art": "nyarlathotep",
@@ -387,6 +402,7 @@
       }
     ],
     "cultist": {
+      "expansion": "CORE",
       "toughness": 1,
       "horror_test": false,
       "damage": 1,
@@ -407,6 +423,7 @@
       {
         "id": "sn_hunting_the_thousand",
         "name": "Hunting the Thousand",
+        "expansion": "CORE",
         "flavor": "Shub-Niggurath's spawn, the Thousand Young, infest the planet in greater and greater numbers, threatening to overrun humanity.",
         "text": "When a non-Epic Monster is defeated, the active investigator may spend 2 Clues to place that Monster on this card. At the end of the Mythos Phase, if the total toughness of all Monsters on this card is equal to or greater than twice investigators, solve this Mystery.",
         "kind": "trophy",
@@ -417,6 +434,7 @@
       {
         "id": "sn_nature_of_the_all_mother",
         "name": "Nature of the All-Mother",
+        "expansion": "CORE",
         "flavor": "Shub-Niggurath naturally corrupts all life that encounters her. Everywhere her worshipers are found, all living things grow more vicious and feral.",
         "text": "When this card enters play, move each Clue on the game board to the nearest Wilderness space. After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
         "kind": "research",
@@ -431,6 +449,7 @@
       {
         "id": "sn_rituals_in_the_wild",
         "name": "Rituals in the Wild",
+        "expansion": "CORE",
         "flavor": "Bonfires roar in the wildest corners of the planet as the Cult of the Black Goat performs their bestial rituals. The cultists howl to Shub-Niggurath to let loose her children upon the Earth.",
         "text": "When this card enters play, place 1 Eldritch token on each of the following Wilderness spaces: 4, 10, 21, and Tunguska. As an encounter, an investigator on a space containing an Eldritch token may attempt to determine the ritual's purpose (Observation). If he passes, he may spend 2 Clues to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to half investigators, solve this Mystery and discard all Eldritch tokens from the game board.",
         "kind": "encounter",
@@ -467,6 +486,7 @@
       {
         "id": "sn_spawn_of_the_black_goat",
         "name": "Spawn of the Black Goat",
+        "expansion": "CORE",
         "flavor": "Shub-Niggurath's twin blasphemies will prepare the world for the Black Goat, destroying any potential challenge to their mother's reign. One of the pair, Nug, has begun its dreadful task.",
         "text": "When this card enters play, spawn the Nug Epic Monster on The Amazon. At the end of the Mythos Phase, if the Nug Epic Monster has been defeated, solve this Mystery.",
         "kind": "defeat",
@@ -509,6 +529,7 @@
       "final_mystery": {
         "id": "sn_final",
         "name": "Battle in the Woods",
+        "expansion": "CORE",
         "flavor": "She is an enormous cloud from which dozens of tentacles extend and retract.",
         "text": "When the Shub-Niggurath Epic Monster is defeated, the Final Mystery is solved and investigators win the game.",
         "kind": "defeat",
@@ -517,6 +538,7 @@
         "spawn_at": "the_heart_of_africa"
       },
       "cultist": {
+        "expansion": "CORE",
         "toughness": 2,
         "horror_test": false,
         "damage": 1,
@@ -541,6 +563,7 @@
   {
     "id": "cthulhu",
     "name": "Cthulhu",
+    "expansion": "CORE",
     "title": "The Madness from the Sea",
     "difficulty": "high",
     "art": "cthulhu",
@@ -588,6 +611,7 @@
       }
     ],
     "cultist": {
+      "expansion": "CORE",
       "toughness": 1,
       "horror_test": false,
       "damage": 1,
@@ -604,6 +628,7 @@
       {
         "id": "cth_ryleh_risen",
         "name": "R'lyeh Risen",
+        "expansion": "CORE",
         "flavor": "Eons ago, the city of R'lyeh was plunged to the bottom of the ocean by some forgotten disaster. It has remained trapped there, waiting for the right time to resurface. Now, that moment has finally arrived.",
         "text": "When this card enters play, place the mystery token on space 3. As an encounter, an investigator on space 3 may explore the island city of R'lyeh by resolving a R'lyeh Risen Special Encounter. At the end of the Mythos Phase, if there are eldritch tokens on this card equal to half investigators, solve this Mystery.",
         "kind": "special",
@@ -616,6 +641,7 @@
       {
         "id": "cth_the_deep_ones_attack",
         "name": "The Deep Ones Attack!",
+        "expansion": "CORE",
         "flavor": "Terrible storms have battered fishing villages across the globe, but it's merely the prelude to an invading army of deep ones!",
         "text": "When this card enters play, each investigator places 1 Eldritch token on the nearest Sea space that does not contain an Eldritch token. As an encounter, an investigator on a space containing an Eldritch token may attempt to fend off the deep one invasion; a Deep One Monster ambushes him! If he defeats it, he may spend 1 Clue to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to investigators, solve this Mystery.",
         "kind": "ambush",
@@ -641,6 +667,7 @@
       {
         "id": "cth_the_stars_are_right",
         "name": "The Stars Are Right!",
+        "expansion": "CORE",
         "flavor": "All around the world, Cthulhu's worshipers and those sensitive to his dreams have been plagued by madness. They rush to the sea to witness the Ancient One's return.",
         "text": "When this card enters play, move each Clue on the game board to the nearest Sea space. After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
         "kind": "research",
@@ -655,6 +682,7 @@
       {
         "id": "cth_watching_the_stars",
         "name": "Watching the Stars",
+        "expansion": "CORE",
         "flavor": "From the sunken city of Yhe, Cthylla rises to fulfill her destiny. Daughter of Cthulhu, she will give birth to the reincarnation of her father should his body ever be destroyed.",
         "text": "When this card enters play, spawn the Cthylla Epic Monster on space 12. At the end of the Mythos Phase, if the Cthylla Epic Monster has been defeated, solve this Mystery.",
         "kind": "defeat",
@@ -686,6 +714,7 @@
       "final_mystery": {
         "id": "cth_final",
         "name": "Risen From the Sea",
+        "expansion": "CORE",
         "flavor": "At last the time has come, the deep ones have broken the elder sign that kept their master asleep. Cthulhu rises again, and madness fills the dreams of every living thing.",
         "text": "When 3 Mysteries have been solved, Cthulhu rises from the sea; spawn the Cthulhu Epic Monster on Space 3. When the Cthulhu Epic Monster is defeated, the Final Mystery is solved and investigators win the game.",
         "kind": "defeat",
@@ -695,6 +724,7 @@
         "spawn_when_solved": true
       },
       "cultist": {
+        "expansion": "CORE",
         "toughness": 2,
         "horror_test": false,
         "damage": 1,

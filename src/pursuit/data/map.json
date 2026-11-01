@@ -4,6 +4,7 @@
     {
       "id": "arkham",
       "name": "Arkham",
+      "expansion": "CORE",
       "code": "AK",
       "terrain": "city",
       "region": "americas",
@@ -17,6 +18,7 @@
     {
       "id": "san_francisco",
       "name": "San Francisco",
+      "expansion": "CORE",
       "code": "SF",
       "terrain": "city",
       "region": "americas",
@@ -30,6 +32,7 @@
     {
       "id": "buenos_aires",
       "name": "Buenos Aires",
+      "expansion": "CORE",
       "code": "BA",
       "terrain": "city",
       "region": "americas",
@@ -43,6 +46,7 @@
     {
       "id": "london",
       "name": "London",
+      "expansion": "CORE",
       "code": "LN",
       "terrain": "city",
       "region": "europe",
@@ -56,6 +60,7 @@
     {
       "id": "rome",
       "name": "Rome",
+      "expansion": "CORE",
       "code": "RM",
       "terrain": "city",
       "region": "europe",
@@ -69,6 +74,7 @@
     {
       "id": "istanbul",
       "name": "Istanbul",
+      "expansion": "CORE",
       "code": "IS",
       "terrain": "city",
       "region": "europe",
@@ -82,6 +88,7 @@
     {
       "id": "shanghai",
       "name": "Shanghai",
+      "expansion": "CORE",
       "code": "SH",
       "terrain": "city",
       "region": "asia_australia",
@@ -95,6 +102,7 @@
     {
       "id": "tokyo",
       "name": "Tokyo",
+      "expansion": "CORE",
       "code": "TK",
       "terrain": "city",
       "region": "asia_australia",
@@ -108,6 +116,7 @@
     {
       "id": "sydney",
       "name": "Sydney",
+      "expansion": "CORE",
       "code": "SY",
       "terrain": "city",
       "region": "asia_australia",
@@ -121,6 +130,7 @@
     {
       "id": "the_amazon",
       "name": "The Amazon",
+      "expansion": "CORE",
       "code": "AM",
       "terrain": "wilderness",
       "region": "americas",
@@ -134,6 +144,7 @@
     {
       "id": "the_pyramids",
       "name": "The Pyramids",
+      "expansion": "CORE",
       "code": "PY",
       "terrain": "wilderness",
       "region": "europe",
@@ -147,6 +158,7 @@
     {
       "id": "the_heart_of_africa",
       "name": "The Heart of Africa",
+      "expansion": "CORE",
       "code": "HA",
       "terrain": "wilderness",
       "region": "europe",
@@ -160,6 +172,7 @@
     {
       "id": "tunguska",
       "name": "Tunguska",
+      "expansion": "CORE",
       "code": "TG",
       "terrain": "wilderness",
       "region": "europe",
@@ -173,6 +186,7 @@
     {
       "id": "the_himalayas",
       "name": "The Himalayas",
+      "expansion": "CORE",
       "code": "HM",
       "terrain": "wilderness",
       "region": "asia_australia",
@@ -186,6 +200,7 @@
     {
       "id": "antarctica",
       "name": "Antarctica",
+      "expansion": "CORE",
       "code": "AN",
       "terrain": "wilderness",
       "region": "general",
@@ -199,6 +214,7 @@
     {
       "id": "space_1",
       "name": "Space 1",
+      "expansion": "CORE",
       "code": "S1",
       "terrain": "city",
       "region": "americas",
@@ -211,6 +227,7 @@
     {
       "id": "space_2",
       "name": "Space 2",
+      "expansion": "CORE",
       "code": "S2",
       "terrain": "sea",
       "region": "general",
@@ -223,6 +240,7 @@
     {
       "id": "space_3",
       "name": "Space 3",
+      "expansion": "CORE",
       "code": "S3",
       "terrain": "sea",
       "region": "general",
@@ -235,6 +253,7 @@
     {
       "id": "space_4",
       "name": "Space 4",
+      "expansion": "CORE",
       "code": "S4",
       "terrain": "wilderness",
       "region": "americas",
@@ -247,6 +266,7 @@
     {
       "id": "space_5",
       "name": "Space 5",
+      "expansion": "CORE",
       "code": "S5",
       "terrain": "city",
       "region": "americas",
@@ -259,6 +279,7 @@
     {
       "id": "space_6",
       "name": "Space 6",
+      "expansion": "CORE",
       "code": "S6",
       "terrain": "city",
       "region": "americas",
@@ -271,6 +292,7 @@
     {
       "id": "space_7",
       "name": "Space 7",
+      "expansion": "CORE",
       "code": "S7",
       "terrain": "city",
       "region": "americas",
@@ -283,6 +305,7 @@
     {
       "id": "space_8",
       "name": "Space 8",
+      "expansion": "CORE",
       "code": "S8",
       "terrain": "sea",
       "region": "general",
@@ -295,6 +318,7 @@
     {
       "id": "space_9",
       "name": "Space 9",
+      "expansion": "CORE",
       "code": "S9",
       "terrain": "wilderness",
       "region": "americas",
@@ -307,6 +331,7 @@
     {
       "id": "space_10",
       "name": "Space 10",
+      "expansion": "CORE",
       "code": "10",
       "terrain": "wilderness",
       "region": "europe",
@@ -319,6 +344,7 @@
     {
       "id": "space_11",
       "name": "Space 11",
+      "expansion": "CORE",
       "code": "11",
       "terrain": "sea",
       "region": "general",
@@ -331,6 +357,7 @@
     {
       "id": "space_12",
       "name": "Space 12",
+      "expansion": "CORE",
       "code": "12",
       "terrain": "sea",
       "region": "general",
@@ -343,6 +370,7 @@
     {
       "id": "space_13",
       "name": "Space 13",
+      "expansion": "CORE",
       "code": "13",
       "terrain": "sea",
       "region": "general",
@@ -355,6 +383,7 @@
     {
       "id": "space_14",
       "name": "Space 14",
+      "expansion": "CORE",
       "code": "14",
       "terrain": "city",
       "region": "europe",
@@ -367,6 +396,7 @@
     {
       "id": "space_15",
       "name": "Space 15",
+      "expansion": "CORE",
       "code": "15",
       "terrain": "city",
       "region": "europe",
@@ -379,6 +409,7 @@
     {
       "id": "space_16",
       "name": "Space 16",
+      "expansion": "CORE",
       "code": "16",
       "terrain": "city",
       "region": "europe",
@@ -391,6 +422,7 @@
     {
       "id": "space_17",
       "name": "Space 17",
+      "expansion": "CORE",
       "code": "17",
       "terrain": "city",
       "region": "asia_australia",
@@ -403,6 +435,7 @@
     {
       "id": "space_18",
       "name": "Space 18",
+      "expansion": "CORE",
       "code": "18",
       "terrain": "sea",
       "region": "general",
@@ -415,6 +448,7 @@
     {
       "id": "space_19",
       "name": "Space 19",
+      "expansion": "CORE",
       "code": "19",
       "terrain": "wilderness",
       "region": "asia_australia",
@@ -427,6 +461,7 @@
     {
       "id": "space_20",
       "name": "Space 20",
+      "expansion": "CORE",
       "code": "20",
       "terrain": "city",
       "region": "asia_australia",
@@ -439,6 +474,7 @@
     {
       "id": "space_21",
       "name": "Space 21",
+      "expansion": "CORE",
       "code": "21",
       "terrain": "wilderness",
       "region": "asia_australia",

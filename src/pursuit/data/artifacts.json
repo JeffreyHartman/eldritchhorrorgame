@@ -2,6 +2,7 @@
   {
     "id": "cultes_des_goules",
     "name": "Cultes des Goules",
+    "expansion": "CORE",
     "traits": [
       "item",
       "tome"
@@ -37,6 +38,7 @@
   {
     "id": "de_vermis_mysteriis",
     "name": "De Vermis Mysteriis",
+    "expansion": "CORE",
     "traits": [
       "item",
       "tome"
@@ -72,6 +74,7 @@
   {
     "id": "flute_of_the_outer_gods",
     "name": "Flute of the Outer Gods",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical"
@@ -93,6 +96,7 @@
   {
     "id": "gate_box",
     "name": "Gate Box",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical"
@@ -116,6 +120,7 @@
   {
     "id": "glass_of_mortlan",
     "name": "Glass of Mortlan",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical"
@@ -139,6 +144,7 @@
   {
     "id": "grotesque_statue",
     "name": "Grotesque Statue",
+    "expansion": "CORE",
     "traits": [
       "item"
     ],
@@ -161,6 +167,7 @@
   {
     "id": "lightning_gun",
     "name": "Lightning Gun",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical",
@@ -193,6 +200,7 @@
   {
     "id": "mi_go_brain_case",
     "name": "Mi-go Brain Case",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical",
@@ -211,6 +219,7 @@
   {
     "id": "necronomicon",
     "name": "Necronomicon",
+    "expansion": "CORE",
     "traits": [
       "item",
       "tome"
@@ -247,6 +256,7 @@
   {
     "id": "pallid_mask_artifact",
     "name": "Pallid Mask",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical"
@@ -260,6 +270,7 @@
   {
     "id": "ruby_of_rlyeh",
     "name": "Ruby of R'lyeh",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical"
@@ -282,6 +293,7 @@
   {
     "id": "sword_of_st_jerome",
     "name": "Sword of Saint Jerome",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical",
@@ -311,6 +323,7 @@
   {
     "id": "t_tka_halot",
     "name": "T'tka Halot",
+    "expansion": "CORE",
     "traits": [
       "item",
       "tome"
@@ -349,6 +362,7 @@
   {
     "id": "silver_key",
     "name": "The Silver Key",
+    "expansion": "CORE",
     "traits": [
       "item",
       "magical"

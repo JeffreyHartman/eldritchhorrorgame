@@ -2,6 +2,7 @@
   {
     "id": "debt",
     "name": "Debt",
+    "expansion": "CORE",
     "traits": [
       "deal",
       "common"
@@ -171,6 +172,7 @@
   {
     "id": "dark_pact",
     "name": "Dark Pact",
+    "expansion": "CORE",
     "traits": [
       "deal"
     ],
@@ -232,6 +234,7 @@
   {
     "id": "detained",
     "name": "Detained",
+    "expansion": "CORE",
     "traits": [
       "restriction"
     ],
@@ -355,6 +358,7 @@
   {
     "id": "amnesia",
     "name": "Amnesia",
+    "expansion": "CORE",
     "traits": [
       "madness"
     ],
@@ -405,6 +409,7 @@
   {
     "id": "paranoia",
     "name": "Paranoia",
+    "expansion": "CORE",
     "traits": [
       "madness"
     ],
@@ -477,6 +482,7 @@
   {
     "id": "hallucinations",
     "name": "Hallucinations",
+    "expansion": "CORE",
     "traits": [
       "madness"
     ],
@@ -528,6 +534,7 @@
   {
     "id": "leg_injury",
     "name": "Leg Injury",
+    "expansion": "CORE",
     "traits": [
       "injury"
     ],
@@ -622,6 +629,7 @@
   {
     "id": "back_injury",
     "name": "Back Injury",
+    "expansion": "CORE",
     "traits": [
       "injury"
     ],
@@ -675,6 +683,7 @@
   {
     "id": "internal_injury",
     "name": "Internal Injury",
+    "expansion": "CORE",
     "traits": [
       "injury"
     ],
@@ -729,6 +738,7 @@
   {
     "id": "blessed",
     "name": "Blessed",
+    "expansion": "CORE",
     "traits": [
       "boon"
     ],
@@ -804,6 +814,7 @@
   {
     "id": "cursed",
     "name": "Cursed",
+    "expansion": "CORE",
     "traits": [
       "bane",
       "curse"

@@ -2,6 +2,7 @@
   {
     "id": "special_rlyeh_1",
     "title": "At the very peak of the island, you encounter a...",
+    "expansion": "CORE",
     "text": "At the very peak of the island, you encounter a massive stone door featuring a horrific bas-relief of a dragon-like creature. Strange symbols are carved along the edge of the door. Some of the icons resemble drawings you've seen in books (Lore-1).",
     "effects": [
       {
@@ -51,6 +52,7 @@
   {
     "id": "special_rlyeh_2",
     "title": "As you approach the uncharted island, you hear...",
+    "expansion": "CORE",
     "text": "As you approach the uncharted island, you hear the sound of a cannon and feel the deck shudder. You ship is badly damaged, and if you hope to survive, you must overpower the crew aboard the gunship Alert, the source of the cannon fire (Strength-1).",
     "effects": [
       {
@@ -91,6 +93,7 @@
   {
     "id": "special_rlyeh_3",
     "title": "You swim up to the slimy rocks and walk into...",
+    "expansion": "CORE",
     "text": "You swim up to the slimy rocks and walk into the corpse city of R'lyeh. Inside, cyclopean, green, stone blocks meet at non-Euclidean angles. The very sight of this alien construction threatens to shatter your mind (Will-1).",
     "effects": [
       {
@@ -131,6 +134,7 @@
   {
     "id": "special_rlyeh_4",
     "title": "Enormous silhouettes of flying creatures...",
+    "expansion": "CORE",
     "text": "Enormous silhouettes of flying creatures descend from the clouds. The star spawn have arrived! They attack with blood-chilling ferocity (Strength-1).",
     "effects": [
       {
@@ -176,6 +180,7 @@
   {
     "id": "special_rlyeh_5",
     "title": "Hundreds of deep ones surface from the water,...",
+    "expansion": "CORE",
     "text": "Hundreds of deep ones surface from the water, crawling up the green stones. You hide yourself and watch their priest perform a strange ritual (Observation-1).",
     "effects": [
       {
@@ -225,6 +230,7 @@
   {
     "id": "special_rlyeh_6",
     "title": "You recognize the alien landscape from a dream...",
+    "expansion": "CORE",
     "text": "You recognize the alien landscape from a dream you've had. Lose 1 Sanity. You try to remember as many details as you can from the dream to navigate through the city (Observation-1).",
     "effects": [
       {

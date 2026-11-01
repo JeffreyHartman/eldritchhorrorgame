@@ -2,6 +2,7 @@
   {
     "id": "asia_australia_1",
     "title": "You search through old copies of The Shanghai Courier...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -100,6 +101,7 @@
   {
     "id": "asia_australia_2",
     "title": "If you can convince Chu Min to help, he will use New...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -170,6 +172,7 @@
   {
     "id": "asia_australia_3",
     "title": "The shrine holds an abundance of ancient relics.",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -235,6 +238,7 @@
   {
     "id": "asia_australia_4",
     "title": "The Shanghai Museum recommends you speak to Mu Hsien,...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -324,6 +328,7 @@
   {
     "id": "asia_australia_5",
     "title": "The decadent crime lord, Lin Tang-Yu, offers, you...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -378,6 +383,7 @@
   {
     "id": "asia_australia_6",
     "title": "You break into a warehouse filled with ancient wonders...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -475,6 +481,7 @@
   {
     "id": "asia_australia_7",
     "title": "The old man offers to make tea for you.",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
@@ -532,6 +539,7 @@
   {
     "id": "asia_australia_8",
     "title": "You spot an odd, fish-like man pull a young monk...",
+    "expansion": "CORE",
     "sections": [
       {
         "location": "shanghai",
