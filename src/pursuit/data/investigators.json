@@ -377,7 +377,7 @@
       "double_improve": 1
     },
     "action": {
-      "text": "Spend 1 Health or Sanity to recover 1 Health or Sanity.",
+      "text": "Spend any number of Health or Sanity, then recover an equal number of Health or Sanity.",
       "effects": [
         {
           "type": "swap_health_sanity"
@@ -572,8 +572,8 @@
     "occupation": "The Sailor",
     "bio": "Even as a child in Innsmouth, Silas had a special connection to the sea. He's an able and well-reasoned man on land, but on the ocean he possesses a singular strength and wit. It's earned him a sterling reputation in every port across the globe, particularly in Sydney, where Silas set ashore last night. But this morning, the smell of the briny air carries dread as well as joy. There is something in his past, something in Innsmouth, that he knows will some day catch up to him.",
     "quote": "Leave your fears on the docks, lads. I'll not carry that cargo. The wind is up! Full sail!",
-    "health": 7,
-    "sanity": 5,
+    "health": 8,
+    "sanity": 4,
     "skills": {
       "lore": 1,
       "influence": 3,

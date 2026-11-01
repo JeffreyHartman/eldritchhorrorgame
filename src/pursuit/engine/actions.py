@@ -23,7 +23,7 @@ def actions_left(game: Game, inv: Investigator) -> int:
 
 
 def _ability_ok(game: Game, inv: Investigator, ability: ActionAbility) -> bool:
-    if not ability.cost.can_pay(inv):
+    if not rules.can_pay(game, inv, ability.cost):
         return False
     return ability.requires is None or ability.requires.matches(game, inv)
 
@@ -40,10 +40,20 @@ def action_options(game: Game, inv: Investigator) -> list[Option]:
     left = actions_left(game, inv)
     opts: list[Option] = []
 
-    def action(key: str, value: Any, label: str, detail: str, ok: bool = True, why: str = "") -> None:
+    def action(
+        key: str,
+        value: Any,
+        label: str,
+        detail: str,
+        ok: bool = True,
+        why: str = "",
+        *,
+        exempt: str | None = None,
+        free: bool = False,
+    ) -> None:
         base_key = key.split(":")[0]
-        block = rules.blocked(game, inv, base_key)
-        if left <= 0:
+        block = rules.blocked(game, inv, base_key, exempt=exempt)
+        if left <= 0 and not free:
             ok, why = False, "no actions left"
         elif key in inv.actions_taken:
             ok, why = False, "already done this round"
@@ -53,14 +63,15 @@ def action_options(game: Game, inv: Investigator) -> list[Option]:
 
     action("travel", ("travel",), "Travel", "Move 1 space along any path, then spend travel tickets.")
 
-    rest_amount = 1 + rules.perk(game, inv, "rest_bonus")
+    rest_sanity = 1 + rules.perk(game, inv, "rest_sanity")
+    rest_barred = rules.mythos_blocks(game, "rest")
     action(
         "rest",
         ("rest",),
         "Rest",
-        f"Recover {rest_amount} Health and {rest_amount} Sanity.",
-        not state.monsters,
-        "monsters are on your space",
+        f"Recover 1 Health and {rest_sanity} Sanity.",
+        not state.monsters and not rest_barred,
+        "a Mythos card forbids Rest actions" if rest_barred else "monsters are on your space",
     )
 
     ticket_kinds = _available_ticket_kinds(game, inv.location)
@@ -126,6 +137,7 @@ def action_options(game: Game, inv: Investigator) -> list[Option]:
             adef.action.text,
             not card.exhausted and _ability_ok(game, inv, adef.action),
             "already used this round" if card.exhausted else "requirements not met",
+            free=adef.action.free,
         )
 
     for person in game.investigators_at(inv.location):
@@ -143,6 +155,7 @@ def action_options(game: Game, inv: Investigator) -> list[Option]:
                 cdef.action.text,
                 _ability_ok(game, inv, cdef.action),
                 "requirements not met",
+                exempt=cdef.id if person is inv else None,
             )
 
     opts.append(Option("End turn", ("end",), f"{left} action(s) left."))
@@ -185,7 +198,8 @@ def perform(game: Game, inv: Investigator, value: tuple) -> None:
             inv.actions_taken.append("component:ability")
     elif key == "asset":
         card = next(c for c in inv.assets if c.uid == value[1])
-        if _use_asset(game, inv, card):
+        ability = game.asset_def(card).action
+        if _use_asset(game, inv, card) and ability is not None and not ability.free:
             inv.actions_taken.append(f"component:asset:{card.uid}")
     elif key == "condition":
         owner = next(i for i in game.investigators if i.seat == value[1])
@@ -236,22 +250,24 @@ def _travel(game: Game, inv: Investigator) -> bool:
 
 
 def _rest(game: Game, inv: Investigator) -> bool:
-    amount = 1 + rules.perk(game, inv, "rest_bonus")
     rules.emit(game, "info", f"{inv.name} rests.")
-    rules.change_health(game, inv, amount)
-    rules.change_sanity(game, inv, amount)
+    rules.change_health(game, inv, 1)
+    rules.change_sanity(game, inv, 1 + rules.perk(game, inv, "rest_sanity"))
+    for inst in list(inv.conditions):
+        cdef = game.content.conditions[inst.def_id]
+        if cdef.rest_roll:
+            die = game.roll_die()
+            rules.emit(game, "info", f"{inv.name} rolls {die} for {cdef.name}.")
+            if die >= 5:
+                rules.remove_condition(game, inv, inst)
+    for person in game.investigators_at(inv.location):
+        for card in list(person.assets):
+            adef = game.asset_def(card)
+            run_effects(adef.rest_aura, Ctx(game, inv, f"asset:{adef.id}", asset=card))
     for card in list(inv.assets):
-        if (
-            card.def_id == "arcane_tome"
-            and not card.exhausted
-            and rules.confirm(game, "Use Arcane Tome (test Lore -1 to gain 1 Spell)?", kind="rest_tome", inv=inv)
-        ):
-            card.exhausted = True
-            res = run_test(game, inv, "lore", -1, contexts=("encounter",), label="Arcane Tome")
-            if res.passed:
-                spell = rules.draw_matching(game, kind="spell")
-                if spell is not None:
-                    rules.gain_card(game, inv, spell)
+        adef = game.asset_def(card)
+        if adef.on_rest and not inv.defeated and rules.confirm(game, adef.rest_prompt, kind="rest_card", inv=inv):
+            run_effects(adef.on_rest, Ctx(game, inv, f"asset:{adef.id}", asset=card))
     return True
 
 
@@ -343,6 +359,11 @@ def _trade(game: Game, inv: Investigator) -> bool:
         return False
     options = [Option(o.name, o.seat) for o in others]
     other = others[rules.choose(game, "Trade with whom?", options, kind="trade_partner", inv=inv, auto_single=True)]
+    return trade_with(game, inv, other)
+
+
+def trade_with(game: Game, inv: Investigator, other: Investigator) -> bool:
+    """Trade possessions with `other` until the player stops. Returns True if anything moved."""
     traded = False
     while True:
         options = [
@@ -419,7 +440,9 @@ def _use_asset(game: Game, inv: Investigator, card: AssetCard) -> bool:
     rules.emit(game, "info", f"{inv.name} uses {adef.name}.")
     card.exhausted = True
     game.spell_lore_passed = False
+    game.casting = adef.kind == "spell"
     _run_ability(game, inv, adef.action, f"asset:{adef.id}", asset=card)
+    game.casting = False
     if adef.action.discard and card in inv.assets:
         rules.discard_asset(game, inv, card)
     if game.spell_lore_passed and adef.kind == "spell" and card in inv.assets:

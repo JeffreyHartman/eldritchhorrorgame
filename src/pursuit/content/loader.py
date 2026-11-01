@@ -17,6 +17,7 @@ from typing import Any
 
 import pursuit.effects.library  # noqa: F401  (registers every effect type)
 from pursuit.content.defs import (
+    ACTIVE_EXPEDITION,
     ASSET_KINDS,
     BLOCKABLE_ACTIONS,
     EXPEDITION_LOCATIONS,
@@ -24,10 +25,11 @@ from pursuit.content.defs import (
     LOCATION_DECKS,
     MONSTER_FORMS,
     MYSTERY_KINDS,
+    MYTHOS_BLOCKS,
     MYTHOS_COLORS,
+    MYTHOS_DIFFICULTIES,
     MYTHOS_ICONS,
     MYTHOS_TRAITS,
-    OTHER_WORLD_TYPES,
     REGIONS,
     RESERVE_KINDS,
     ROUTE_KINDS,
@@ -38,6 +40,7 @@ from pursuit.content.defs import (
     ActionAbility,
     AssetDef,
     AwakeningDef,
+    Boost,
     ConditionDef,
     DefeatedEncounterDef,
     DifficultyDef,
@@ -49,10 +52,12 @@ from pursuit.content.defs import (
     MysteryDef,
     MythosDef,
     OldOneDef,
+    Prevent,
     ReferenceRow,
     RerollAbility,
     RouteDef,
     RulesDef,
+    SixRule,
     StageComp,
     read_action,
     read_backs,
@@ -64,8 +69,7 @@ from pursuit.content.reader import ContentError, Reader
 from pursuit.effects.base import Effect, read_effects, walk
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-BASE_ENCOUNTER_DECKS = (*LOCATION_DECKS, "general", "expedition")
-OTHER_WORLD_DECKS = tuple(f"other_world_{name}" for name in OTHER_WORLD_TYPES)
+BASE_ENCOUNTER_DECKS = (*LOCATION_DECKS, "general", "expedition", "other_world")
 
 
 @dataclass(frozen=True)
@@ -82,7 +86,6 @@ class Content:
     mythos: dict[str, MythosDef]
     encounters: dict[str, EncounterDef]
     decks: dict[str, tuple[str, ...]]
-    other_worlds: tuple[str, ...] = ()
 
 
 def data_dir() -> Path:
@@ -153,7 +156,6 @@ class _Loader:
             mythos=_index(self.mythos(), lambda d: d.id, "mythos"),
             encounters={},
             decks={},
-            other_worlds=OTHER_WORLD_TYPES,
         )
         encounters, decks = self.encounters(old_ones)
         content.encounters.update(encounters)
@@ -171,8 +173,7 @@ class _Loader:
                 id=_id(d),
                 label=d.get_str("label"),
                 text=d.get_str("text"),
-                doom_mod=d.get_int("doom_mod", 0),
-                start_gates_mod=d.get_int("start_gates_mod", 0),
+                removes=d.get_enum("removes", MYTHOS_DIFFICULTIES, None),
             )
             d.done()
             diffs[diff.id] = diff
@@ -367,8 +368,18 @@ class _Loader:
                     damage_reduction=r.get_int("damage_reduction", 0),
                     sanity_reduction=r.get_int("sanity_reduction", 0),
                     perks=read_perks(r, "perks"),
+                    boosts=tuple(Boost.parse(b) for b in r.objects("boosts", [])),
+                    prevents=tuple(Prevent.parse(p) for p in r.objects("prevents", [])),
+                    double_sixes=tuple(SixRule.parse(d) for d in r.objects("double_sixes", [])),
+                    rest_prompt=r.get_str("rest_prompt", ""),
+                    on_rest=read_effects(r, "on_rest"),
+                    rest_aura=read_effects(r, "rest_aura"),
+                    on_close_gate=read_effects(r, "on_close_gate"),
+                    on_combat_win=read_effects(r, "on_combat_win"),
                 )
                 r.done()
+                if bool(a.on_rest) != bool(a.rest_prompt):
+                    raise ContentError(f"{r.path}: on_rest and rest_prompt go together")
                 if a.count < 1 or a.cost < 0:
                     raise ContentError(f"{r.path}: count must be at least 1 and cost at least 0")
                 if a.kind == "service" and not a.on_gain and a.action is None and a.id != "bank_loan":
@@ -391,6 +402,8 @@ class _Loader:
                 action=read_action(r, "action"),
                 reckoning=read_effects(r, "reckoning"),
                 backs=read_backs(r, "backs"),
+                rest_roll=r.get_bool("rest_roll", False),
+                replaces_encounter=r.get_bool("replaces_encounter", False),
             )
             r.done()
             if not c.backs:
@@ -416,12 +429,14 @@ class _Loader:
                 encounter_text=r.get_str("encounter_text", ""),
                 encounter_effects=read_effects(r, "encounter_effects"),
                 on_zero_eldritch=read_effects(r, "on_zero_eldritch"),
+                difficulty=r.get_enum("difficulty", MYTHOS_DIFFICULTIES),
+                blocks=r.get_str_tuple("blocks", MYTHOS_BLOCKS),
+                rumor_monster=r.get_str("rumor_monster", None),
+                trophy_space=r.get_str("trophy_space", None),
             )
             r.done()
             if not m.traits:
                 raise ContentError(f"{r.path}: mythos card needs at least one trait")
-            if "rumor" in m.traits and not m.rumor_space:
-                raise ContentError(f"{r.path}: a rumor mythos card needs 'rumor_space'")
             out.append(m)
         return out
 
@@ -537,7 +552,7 @@ class _Loader:
         encounters: dict[str, EncounterDef] = {}
         decks: dict[str, tuple[str, ...]] = {}
         research_decks = {f"research_{oid}" for oid in old_ones}
-        valid = {*BASE_ENCOUNTER_DECKS, *research_decks, *OTHER_WORLD_DECKS, *SPECIAL_DECKS}
+        valid = {*BASE_ENCOUNTER_DECKS, *research_decks, *SPECIAL_DECKS}
         for path in sorted(folder.glob("*.json")):
             deck = path.stem
             name = f"encounters/{path.name}"
@@ -698,8 +713,12 @@ class _Checker:
     def check_mythos(self) -> None:
         c = self.c
         for m in c.mythos.values():
-            if m.rumor_space and m.rumor_space not in c.locations:
+            if m.rumor_space and m.rumor_space != ACTIVE_EXPEDITION and m.rumor_space not in c.locations:
                 self.fail(f"mythos.json '{m.id}': unknown rumor_space '{m.rumor_space}'")
+            if m.trophy_space and m.trophy_space not in c.locations:
+                self.fail(f"mythos.json '{m.id}': unknown trophy_space '{m.trophy_space}'")
+            if m.rumor_monster and m.rumor_monster not in c.monsters:
+                self.fail(f"mythos.json '{m.id}': unknown rumor_monster '{m.rumor_monster}'")
 
     def check_encounters(self) -> None:
         c = self.c
@@ -777,6 +796,10 @@ class _Checker:
         for a in c.assets.values():
             yield f"asset '{a.id}' on_gain", a.on_gain, False
             yield f"asset '{a.id}' reckoning", a.reckoning, False
+            yield f"asset '{a.id}' on_rest", a.on_rest, False
+            yield f"asset '{a.id}' rest_aura", a.rest_aura, False
+            yield f"asset '{a.id}' on_close_gate", a.on_close_gate, False
+            yield f"asset '{a.id}' on_combat_win", a.on_combat_win, False
             if a.action:
                 yield f"asset '{a.id}' action", a.action.effects, False
             for i, back in enumerate(a.backs):

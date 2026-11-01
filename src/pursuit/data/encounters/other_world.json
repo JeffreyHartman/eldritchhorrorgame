@@ -1,0 +1,1455 @@
+[
+  {
+    "id": "other_world_city_of_the_great_race_1",
+    "title": "On a high, stone shelf you find books containing the...",
+    "text": "On a high, stone shelf you find books containing the wisdom of both the distant past and the far-flung future. Unfortunately, the tomes were written using a series of strange curvilinear symbols. You do your best to translate the alien language (Lore-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You decipher the means to return yourself to your own time; close this Gate. After you return, you forget your time with the Great Race, but a plagued by strange dreams (Will). If you pass, you explore these visions during your sleep; gain 1 Clue."
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you explore these visions during your sleep; gain 1 Clue."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The symbols make no sense to you. You fear that you will be stuck here forever and search for a way home. You feel despair eating at you; lose 2 Sanity and gain a Paranoia Condition unless you spend 1 Clue."
+          },
+          {
+            "type": "sanity",
+            "amount": -2
+          },
+          {
+            "type": "gain_condition",
+            "id": "paranoia"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_city_of_the_great_race_2",
+    "title": "You are horrified to realize that the body you are...",
+    "text": "You are horrified to realize that the body you are inhabiting in this world is not your own. The shock of seeing yourself in an alien, conical shell threatens to shatter your mind (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You steel yourself against the horror of this alien body and try to recall the knowledge necessary to build a device that will return you to your body (Lore). If you pass, the machine works; close this Gate. If you fail, the machine malfunctions; lose 2 Health."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the machine works; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the machine malfunctions; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The horrible truth shakes the foundations of your mind. You try to banish any knowledge of the arcane from your thoughts, but you lose your grip on reality. Gain a Hallucinations Condition unless you spend 1 Clue."
+          },
+          {
+            "type": "gain_condition",
+            "id": "hallucinations"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_city_of_the_great_race_3",
+    "title": "You hear the sound of a terrible gust of wind and...",
+    "text": "You hear the sound of a terrible gust of wind and listen carefully to determine the origin of the sound. You may spend 1 Clue to resolve the pass effect. If you do not spend the Clue, resolve the fail effect.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you resolve to fend off the terrible beast and, with the help of the Yithians, you close this Gate."
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you flee in terror from approaching threat; lose 1 Sanity."
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "the grateful Yithians help you; close this Gate."
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "the encounter leaves you bruised and shaken; lose 1 Health and 1 Sanity."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_city_of_the_great_race_4",
+    "title": "You find others who, like you, have had their...",
+    "text": "You find others who, like you, have had their consciousness pulled into alien bodies from throughout time. You try to convince them to share their knowledge (Influence).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Their stories are highly illuminating. Gain 2 Clues. They remind you of a ritual you researched that may provide you with a solution (Lore-1). If you pass, close this Gate. If you fail, your attempts only meet with failure; lose 1 Sanity."
+          },
+          {
+            "type": "clues",
+            "amount": 2
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "your attempts only meet with failure; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You gain nothing from speaking to them. Just being around them sets you on edge. Your mind might unhinge if you continue to push yourself without resting. Gain a Paranoia Condition and lose 1 Sanity unless you become Delayed."
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "paranoia"
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_great_hall_of_celaeno_1",
+    "title": "You are stunned to see a familiar face reading through...",
+    "text": "You are stunned to see a familiar face reading through tomes of dark sorcery. You try to catch a glimpse of what he's reading without alerting him to your presence (Observation-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You learn what he's been reading and realize that he has opened a portal between worlds; close this Gate. Afterward, you examine the book that he was reading (Lore). If you pass, gain 1 Clue or 1 Spell. If you fail, you've never encountered such horrors before; lose 2 Sanity."
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Clue or 1 Spell."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you've never encountered such horrors before; lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "He spots you and unleashes a torrent of arcane energy that tears at your mind. Lose 3 Sanity unless you spend 1 Clue."
+          },
+          {
+            "type": "sanity",
+            "amount": -3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_great_hall_of_celaeno_2",
+    "title": "You are forbidden to enter the library unless you bear...",
+    "text": "You are forbidden to enter the library unless you bear the necessary sigil. You draw the symbol to the best of your knowledge (Lore).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "After you enter the Great Hall, you realize you must have confidence in your actions so others do not suspect you of trespassing (Will). If you pass, you recover the book you are looking for; close this Gate. If you fail, your fear gives you away and you are held captive; become Delayed."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you recover the book you are looking for; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "your fear gives you away and you are held captive; become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Your drawing proves insufficient and you find yourself back on Earth, struggling to retain your memories of what happened. Gain an Amnesia Condition unless you spend 1 Clue."
+          },
+          {
+            "type": "gain_condition",
+            "id": "amnesia"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_great_hall_of_celaeno_3",
+    "title": "The book you are looking for is not on its proper shelf.",
+    "text": "The book you are looking for is not on its proper shelf. You search the surrounding area, but after long hours you have lost the will to keep searching (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The tome was hidden at the back of the shelf. Opening it up you find a series of handwritten instructions scrawled in the margin. You follow the instructions to the best of your understanding (Lore). If you pass, close this Gate. If you fail, you become frustrated; lose 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you become frustrated; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You cannot find the book, but perhaps you unknowingly already have the information you need. You may spend 1 Clue to close this Gate. If you do not spend the Clue, you become Delayed."
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_great_hall_of_celaeno_4",
+    "title": "The book you are reading describes complex rituals in...",
+    "text": "The book you are reading describes complex rituals in very abstract terms. You do your best to comprehend the dense material (Lore).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You gradually begin to see a pattern emerge. Gain 1 Spell. After staring so long at the book, however, you've forgotten how to get back home. You ask others in the library for help (Influence-1). If you pass, an alien creature comes to your aid; close this Gate. If you fail, you wander the Great Hall; become Delayed."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "spell"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "an alien creature comes to your aid; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you wander the Great Hall; become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The opaque descriptions twist your mind with horrid imagery. Gain a Hallucinations Condition. In your unsteady state, you are overcome by vertigo as you descend the stairs to leave. You must focus to keep your footing (Will). If you fail, lose 2 Health."
+          },
+          {
+            "type": "gain_condition",
+            "id": "hallucinations"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_1",
+    "title": "Turning the corner, you suddenly find yourself on stage.",
+    "text": "Turning the corner, you suddenly find yourself on stage. Other actors speak their dialogue and look at you expectantly. Someone offstage passes you a script, but the text is difficult to interpret (Lore-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The audience applauds your performance and curtain falls. Close this Gate. You consider sticking around for the second show in hopes of picking up details you missed the first time. You may become Delayed to gain 2 Clues."
+          },
+          {
+            "type": "clues",
+            "amount": 2
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The other actors glare at you, waiting for you to speak. You hope that by simple acting with confidence they'll believe it's someone else's line (Influence). If you fail, the show comes to a stop, and everyone silently leaves the theater; advance Doom by 1."
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the show comes to a stop, and everyone silently leaves the theater; advance Doom by 1."
+              },
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_2",
+    "title": "You grow frustrated walking through the empty streets,...",
+    "text": "You grow frustrated walking through the empty streets, able to hear people talking and laughing nearby, but unable to catch up to them. You try to focus and distinguish specific words from the mingling conversations (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The words you hear sound familiar to something you've read. You try to recall their significance (Lore). If you pass, you use the words to close this Gate. If you fail, the words insinuate themselves into every conversation you hear; gain a Paranoia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you use the words to close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the words insinuate themselves into every conversation you hear; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The words remain unintelligible, and you realize that you've become lost in the city while chasing after these voices. You walk, lost, through Carcosa's darkest alleyways and consider timestakingly retracing your steps. Lose 2 Sanity unless you become Delayed."
+          },
+          {
+            "type": "sanity",
+            "amount": -2
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_3",
+    "title": "Staring out at the cloudy water of Lake Hali, you are...",
+    "text": "Staring out at the cloudy water of Lake Hali, you are horrified to see the entire lake rippling, as if something at the bottom is about to surface. You are seized by a terrible panic that paralyzes you (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Through sheer will, you force yourself to run toward the door you entered through. You find the doorway has been replaced by a blank wall. You try to recall an incantation from your studies that will open the lost portal (Lore). If you pass, close this Gate. If you fail, you frantically scratch at the wallpaper; lose 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you frantically scratch at the wallpaper; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Suddenly, a flurry of tentacles bursts out of the water. One of the flailing limbs grabs you and tries to pull you into the water. You attempt to bind the creature with powerful magic (Lore-1). If you pass, you run for your life; close this Gate. If you fail, you are dragged into the water; lose 2 Health."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you run for your life; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are dragged into the water; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_4",
+    "title": "At an elaborate masquerade, you talk to decadent...",
+    "text": "At an elaborate masquerade, you talk to decadent party-goers who are all maneuvering to be declared as the proper heir to the crown (Influence).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Believing that you can help him, a guest attempts to bribe you. Gain 1 Artifact. Seeing this, the Queen demands that you unmask. She questions you relentlessly in an attempt to discover what you've learned. Become Delayed unless you spend 2 Clues. If you spend the Clues, you gain her favor; close this Gate."
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You suddenly realize you are speaking to the Phantom of Truth. Lose 1 Sanity. Fear threatens to overwhelm you when you realize he is not wearing a mask (Will). If you fail, gain a Paranoia Condition."
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_abyss_1",
+    "title": "The nightgaunts seem intent on keeping you here in the...",
+    "text": "The nightgaunts seem intent on keeping you here in the darkness. You do your best to continue climbing out of these terrible depths without alerting them to your presence (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You reach the trap door that leads from the Abyss to Sarkomand. The journey has only strengthened your resolve. Improve Will. Now it will require all of your strength to push open the door (Strength-1). If you pass, you are able to escape; close this Gate. If you fail, gain a Back Injury Condition."
+          },
+          {
+            "type": "improve_skill",
+            "skill": "will"
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you are able to escape; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Back Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "back_injury"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The nightgaunts pick you up and toss you back to the bottom of the Abyss. Gain a Leg Injury Condition. In this dark stony landscape, you struggle to resist fear and hunger (Will). If you fail, lose 1 Health and 1 Sanity."
+          },
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health and 1 Sanity."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_dreamlands_1",
+    "title": "In the cavern of flame, the bearded priests Nasht and...",
+    "text": "In the cavern of flame, the bearded priests Nasht and Kaman-Thah warn you that it is too dangerous to continue. You insist that you possess the knowledge you need and are resolved to enter the Dreamlands (Will-1). Roll 1 additional die for each Clue you have.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "After gaining access to the Dreamlands, you find yourself fighting moonbeasts on a black galley sailing to the moon (Strength). If you pass, you steal their treasure and area able to barter with it; close this Gate. If you fail, you become lost in a forest on the moon; lose 2 Health and become Delayed."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you steal their treasure and area able to barter with it; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you become lost in a forest on the moon; lose 2 Health and become Delayed."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The gods of dreams exile you back to the waking world and punish you for your overreaching ambition. Your dream and the waking world become indistinguishable. Become Delayed and gain a Hallucinations Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "hallucinations"
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_dreamlands_2",
+    "title": "You are strictly admonished that in the city of...",
+    "text": "You are strictly admonished that in the city of Ulthar, no man may kill a cat. As a result, you see the city is filled with cats. If you know the language, you can communicate with these highly intelligent creatures (Lore).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The cats are pleased to chat and share useful secrets. Gain 1 Clue. When the topic of food is brought up, dozens of cats take an interest. A crowd of hungry felines surround you. Become Delayed unless you spend 1 Health. If you spend the Health, you feed the cats your rations and go hungry yourself; close this Gate."
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The cats flee from you, making the people of Ulthar suspicious and they force you into the Enchanted Wood. Lose 1 Health. While you're out there, you must keep a careful watch to prevent the zoogs from stealing your belongings (Observation). If you fail, discard 1 Item possession."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "discard 1 Item possession."
+              },
+              {
+                "type": "lose_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_future_1",
+    "title": "You stand in Times Square, New York, but not as you...",
+    "text": "You stand in Times Square, New York, but not as you know it. The streets are empty, and the buildings have crumbled to dust. It appears that you will fail to save the world, and you try desperately not to fall into despair (Will-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You get to your feet and find what is left of the central library. The books you find there prove useful; close this Gate. Deep in the basement of the library, you dig through the archives, searching for clues about the downfall of man (Observation). If you pass, gain 2 Clues."
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": []
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "As you kneel sobbing on the cracked pavement, a shadow of a man falls over you. \"You caused this,\" the man says calmly. His gold headdress looks somehow familiar (Lore). If you fail, you accept the truth in his words; lose 6 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you accept the truth in his words; lose 6 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -6
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_future_2",
+    "title": "You find yourself in a familiar city, but there's no...",
+    "text": "You find yourself in a familiar city, but there's no electricity. The only light comes from the greenish moon, and the only sound is distant screaming. You can feel your reason being overrun by fear (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Resisting the urge to panic, you find a large metal and glass machine that has electricity sparking across its surface. You try to learn how to operate the device (Lore). If you pass, you return to your own time; close this Gate. If you fail, you receive an electrical shock; lose 2 Health."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you return to your own time; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you receive an electrical shock; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Without thinking, you start walking with a long line of people. You hear screams from the people ahead of you. You try to escape, but the area is being guarded (Strength). If you fail, you return home with no memory of what happened; gain an Amnesia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you return home with no memory of what happened; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_past_1",
+    "title": "Through the slits in the closet door you see yourself...",
+    "text": "Through the slits in the closet door you see yourself as a small child, sitting up in bed. \"Who's there?\" asks a frightened voice. You try to calmly persuade your younger self that you're a friend (Influence-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The child calms down, but eyes you suspiciously. \"Listen carefully to what I say,\" you tell yourself. \"It might save your life...\" You may become Delayed to gain 2 Clues. Whether you become Delayed or not, close this Gate."
+          },
+          {
+            "type": "clues",
+            "amount": 2
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The child screams out for help, and a man bursts into your bedroom. Your father aims his shotgun at your chest, and you attempt to wrestle it away (Strength). If you fail, you are peppered with buckshot; lose 6 Health."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are peppered with buckshot; lose 6 Health."
+              },
+              {
+                "type": "health",
+                "amount": -6
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_past_2",
+    "title": "You find yourself standing in front of antique...",
+    "text": "You find yourself standing in front of antique scientific equipment. According to the papers the year is 1771. You read through the notes and try to interpret the nature of the experiments (Lore).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Joseph Curwen was using this lab to revive dead wizards from their ashes and interrogate them for arcane knowledge. Using his notes, you close this Gate. The rest of his results may also prove useful. You may become Delayed to gain 1 Spell."
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "spell"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "These notes make no sense to you. Your reading is interrupted by a terrible moaning sound, and you find malformed creatures trapped in deep wells under the stone floor. The sight of them tears at your mind (Will). If you fail, lose 3 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 3 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_underworld_1",
+    "title": "You find yourself surrounded by ghouls.",
+    "text": "You find yourself surrounded by ghouls. However, they don't seem to be antagonistic toward you. In fact, you believe you could persuade them to help you (Influence).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The ghouls direct you into the Tower of Koth in the City of the Gugs. As you ascend the tower's stairs, an enormous gug chases after you. The sound of the monstrosity rattles your nerves (Will). If you pass, close this Gate. If you fail, you hide, waiting for it to go away; lost 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you hide, waiting for it to go away; lost 1 Sanity."
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Your well-reasoned arguments seem to have no impact, but bribery might. You may discard 1 Item possession to close this Gate. If you do not discard the possession, the ghouls attack you; lose 1 Health and gain an Injury Condition."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "lose_asset",
+            "count": 1,
+            "kind": "item"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_yuggoth_1",
+    "title": "You find a room filled with strange metal cylinders.",
+    "text": "You find a room filled with strange metal cylinders. Inside of each cylinder is a living brain that can communicate through a speaker box. You ask them for help (Influence).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "They describe how to operate the mi-go's machinery to travel between worlds. Based on what they say, you try to operate the alien devices (Lore). If you pass, you return home; close this Gate. If you fail, the machine shows you horrid vistas you would never want to visit; lose 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you return home; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the machine shows you horrid vistas you would never want to visit; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The disembodied brains demand that you stay. They tell you terrible secrets they've learned about the fate of the Earth. Lose 2 Sanity unless you spend 1 Clue."
+          },
+          {
+            "type": "sanity",
+            "amount": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_yuggoth_2",
+    "title": "You discover a waxen mask and artificial hands.",
+    "text": "You discover a waxen mask and artificial hands. Your mind reels as you realize that the old man you had spoken to earlier was actually some terrible creature disguised as a human (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You realize now that the old man's words carry a secondary meaning. You attempt to decrypt what he said (Lore). If you pass, you understand the man's implied instructions; close this Gate. If you fail, his words lead you in circles; become Delayed."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you understand the man's implied instructions; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "his words lead you in circles; become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "What was the nature of that blasphemous horror behind the mask? You consult your notes, trying to find what might disguise itself this way (Lore-1). If you pass, you find the data you need; close this Gate. If you fail, fear of the unknowable eats at your thoughts; lose 3 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find the data you need; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "fear of the unknowable eats at your thoughts; lose 3 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_yuggoth_3",
+    "title": "You discover a fetid creature with wings and webbed feet.",
+    "text": "You discover a fetid creature with wings and webbed feet. The beast is strange, like something from your wildest dreams. You may spend 1 Clue to resolve the pass effect. If you do not spend the Clue, resolve the fail effect.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you remember that by drinking space-mead you can safely use this byakhee to return home; close this Gate."
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you drink something you shouldn't have; gain a Hallucinations Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "hallucinations"
+          }
+        ]
+      },
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you subdue the creature and use it to return home; close this Gate."
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "lose 1 Health."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_yuggoth_4",
+    "title": "The mi-go refuse to go near the city of green pyramids.",
+    "text": "The mi-go refuse to go near the city of green pyramids. You summon your courage and explore this abandoned area (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You find lost treasure! Gain 1 Artifact. You hear sounds coming from within the pyramids and look for a place to hide (Observation-1). If you pass, you stay out of sight until the threat is gone; close this Gate. If you fail, you wake up uncertain of what's happened; gain an Amnesia Condition."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you stay out of sight until the threat is gone; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you wake up uncertain of what's happened; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You run from the pyramids as fast as you can. Until the mi-go return, you need to rely on your own means of survival (Strength). If you fail, you succumb to the harsh elements of this strange world; lose 1 Health and 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you succumb to the harsh elements of this strange world; lose 1 Health and 1 Sanity."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

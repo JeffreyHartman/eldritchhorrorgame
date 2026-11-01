@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from collections import deque
+from dataclasses import replace
 from typing import Any
 
-from pursuit.content.defs import OMEN_TRACK, RESERVE_KINDS, CardBack, Cost
+from pursuit.content.defs import ACTIVE_EXPEDITION, OMEN_TRACK, RESERVE_KINDS, CardBack, Cost, Prevent
 from pursuit.controller import Event, Option
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine.state import (
@@ -111,7 +112,40 @@ def lose(game: Game, reason: str) -> None:
 # --- health, sanity, clues, tickets, and defeat ---------------------------------------
 
 
-def change_health(game: Game, inv: Investigator, amount: int) -> None:
+def _take_prevention(game: Game, inv: Investigator, holder: Investigator, card: AssetCard, p: Prevent) -> bool:
+    """Ask `holder` to use one prevention ability on `card`. Returns True if they pay for it."""
+    adef = game.asset_def(card)
+    if (
+        (holder is not inv and not p.local)
+        or (p.spell_only and not game.casting)
+        or (p.once_per_round and card.exhausted)
+        or holder.clues < p.clue_cost
+    ):
+        return False
+    what = f"all {p.stat} loss" if p.amount == 0 else f"up to {p.amount} {p.stat} loss"
+    if not confirm(game, f"Use {adef.name} to prevent {what} for {inv.name}?", kind="prevent", inv=holder):
+        return False
+    if p.clue_cost:
+        change_clues(game, holder, -p.clue_cost)
+    if p.once_per_round:
+        card.exhausted = True
+    if p.discard:
+        discard_asset(game, holder, card)
+    return True
+
+
+def _after_prevention(game: Game, inv: Investigator, stat: str, loss: int) -> int:
+    """The loss left after each possession that can prevent it is offered."""
+    for holder in game.investigators_at(inv.location):
+        for card in list(holder.assets):
+            for p in game.asset_def(card).prevents:
+                if p.stat == stat and loss > 0 and _take_prevention(game, inv, holder, card, p):
+                    loss = 0 if p.amount == 0 else max(0, loss - p.amount)
+    return loss
+
+
+def change_health(game: Game, inv: Investigator, amount: int, *, preventable: bool = True) -> None:
+    """Spent Health passes `preventable=False`, because prevention cannot apply to a cost."""
     if amount == 0 or inv.defeated:
         return
     if amount > 0:
@@ -120,13 +154,17 @@ def change_health(game: Game, inv: Investigator, amount: int) -> None:
         if gained:
             emit(game, "gain", f"{inv.name} recovers {gained} Health.", stat="health")
         return
+    amount = -_after_prevention(game, inv, "health", -amount) if preventable else amount
+    if amount == 0:
+        return
     inv.health = max(0, inv.health + amount)
     emit(game, "loss", f"{inv.name} loses {-amount} Health.", stat="health")
     if inv.health == 0:
         mark_defeated(game, inv, "wounds")
 
 
-def change_sanity(game: Game, inv: Investigator, amount: int) -> None:
+def change_sanity(game: Game, inv: Investigator, amount: int, *, preventable: bool = True) -> None:
+    """Spent Sanity passes `preventable=False`, because prevention cannot apply to a cost."""
     if amount == 0 or inv.defeated:
         return
     if amount > 0:
@@ -134,6 +172,9 @@ def change_sanity(game: Game, inv: Investigator, amount: int) -> None:
         inv.sanity += gained
         if gained:
             emit(game, "gain", f"{inv.name} recovers {gained} Sanity.", stat="sanity")
+        return
+    amount = -_after_prevention(game, inv, "sanity", -amount) if preventable else amount
+    if amount == 0:
         return
     inv.sanity = max(0, inv.sanity + amount)
     emit(game, "loss", f"{inv.name} loses {-amount} Sanity.", stat="sanity")
@@ -172,6 +213,14 @@ def enforce_ticket_limit(game: Game, inv: Investigator) -> None:
         )
         dropped = inv.tickets.pop(pick)
         emit(game, "loss", f"{inv.name} discards a {dropped.title()} Ticket.")
+
+
+def delay(game: Game, inv: Investigator, *, chosen: bool = False) -> None:
+    if not chosen and perk(game, inv, "no_delay") > 0:
+        emit(game, "info", f"{inv.name} cannot become Delayed.")
+        return
+    inv.delayed = True
+    emit(game, "loss", f"{inv.name} becomes Delayed.")
 
 
 def mark_defeated(game: Game, inv: Investigator, cause: str) -> None:
@@ -328,6 +377,16 @@ def advance_doom(game: Game, amount: int, reason: str = "", *, gate: str | None 
         awaken(game)
 
 
+def rewind_omen(game: Game) -> None:
+    """Move the Omen counterclockwise, then advance Doom for matching Gates."""
+    game.omen_index = (game.omen_index - 1) % len(OMEN_TRACK)
+    color = game.omen_color
+    emit(game, "omen", f"The Omen moves back to {color} ({game.omen_space}).", omen=game.omen_space, color=color)
+    gates = game.matching_gates()
+    if gates:
+        advance_doom(game, len(gates), f"{len(gates)} {color} Gate(s) match the Omen")
+
+
 def retreat_doom(game: Game, amount: int) -> None:
     if amount <= 0 or game.outcome or game.awakened:
         return
@@ -423,6 +482,15 @@ def solve_mystery(game: Game, mys: MysteryState) -> None:
         draw_mystery(game)
 
 
+def unsolve_mystery(game: Game, mys_id: str) -> None:
+    """Shuffle a solved Mystery back into the deck. It no longer counts as solved."""
+    game.solved_mysteries.remove(mys_id)
+    game.mystery_deck.append(mys_id)
+    game.rng.shuffle(game.mystery_deck)
+    name = next(m.name for m in game.old_one.mysteries if m.id == mys_id)
+    emit(game, "mystery", f"The solved Mystery '{name}' is shuffled back into the deck.", mystery=mys_id)
+
+
 def solve_ready_mystery(game: Game) -> None:
     """Every Core Game Mystery card solves at the end of the Mythos Phase."""
     mys = game.active_mystery
@@ -449,20 +517,18 @@ def spawn_gate(game: Game, loc_id: str | None = None) -> str | None:
         for _ in range(len(game.gate_deck)):
             drawn = game.gate_deck.draw(game.rng)
             if drawn is None:
-                return None
+                break
             if not game.locations[drawn].gate:
                 loc_id = drawn
                 break
             game.gate_deck.discard(drawn)
         if loc_id is None:
+            advance_doom(game, 1, "no Gate can spawn")
             return None
     state = game.locations[loc_id]
     if state.gate:
         return loc_id
     state.gate = True
-    state.other_world = game.other_world_deck.draw(game.rng)
-    if state.other_world is None and game.content.other_worlds:
-        state.other_world = game.rng.choice(list(game.content.other_worlds))
     game.bump("gates_spawned")
     color = game.content.locations[loc_id].gate_color or "red"
     emit(game, "gate", f"A {color} Gate opens at {loc_name(game, loc_id)}!", location=loc_id, color=color)
@@ -476,9 +542,6 @@ def discard_gate(game: Game, loc_id: str, *, to_stack: bool = True) -> bool:
     if not state.gate:
         return False
     state.gate = False
-    if state.other_world is not None:
-        game.other_world_deck.discard(state.other_world)
-        state.other_world = None
     if to_stack:
         game.gate_deck.discard(loc_id)
     return True
@@ -487,6 +550,9 @@ def discard_gate(game: Game, loc_id: str, *, to_stack: bool = True) -> bool:
 def close_gate(game: Game, inv: Investigator, loc_id: str) -> None:
     state = game.locations[loc_id]
     if not state.gate:
+        return
+    if mythos_blocks(game, "close_gate"):
+        emit(game, "gate", "An active Rumor keeps the Gate open. Gates cannot be closed.", location=loc_id)
         return
     game.bump("gates_closed")
     emit(game, "gate", f"{inv.name} closes the Gate at {loc_name(game, loc_id)}!", location=loc_id, closed=True)
@@ -525,12 +591,12 @@ def close_gate(game: Game, inv: Investigator, loc_id: str) -> None:
 
 def _pay_mystery(game: Game, inv: Investigator, name: str, clues: int, spells: int) -> bool:
     held = [c for c in inv.assets if game.asset_def(c).kind == "spell"]
-    if inv.clues < clues or len(held) < spells:
+    if not can_pay(game, inv, Cost(clues=clues)) or len(held) < spells:
         return False
     cost = " and ".join(p for p in (f"{clues} Clue(s)" if clues else "", f"{spells} Spell(s)" if spells else "") if p)
     if not confirm(game, f"Spend {cost or 'nothing'} to advance '{name}'?", kind="mystery_spend", inv=inv):
         return False
-    change_clues(game, inv, -clues)
+    pay_cost(game, inv, Cost(clues=clues))
     for _ in range(spells):
         cards = [c for c in inv.assets if game.asset_def(c).kind == "spell"]
         options = [Option(game.asset_def(c).name, c.uid) for c in cards]
@@ -638,6 +704,29 @@ def defeat_monster(game: Game, inv: Investigator | None, loc_id: str, monster: M
             if _pay_mystery(game, inv, mys_def.name, mys_def.clue_cost, 0):
                 game.monster_cup.remove(mdef.id)
                 add_mystery_progress(game, mys, health)
+    for active in list(game.active_mythos):
+        _rumor_sees_defeat(game, inv, loc_id, mdef.id, active)
+
+
+def _rumor_sees_defeat(
+    game: Game, inv: Investigator | None, loc_id: str, monster_id: str, active: ActiveMythos
+) -> None:
+    rumor = game.content.mythos[active.def_id]
+    if rumor.rumor_monster == monster_id:
+        solve_rumor(game, active)
+        return
+    if rumor.trophy_space != loc_id or inv is None or inv.location != loc_id or inv.defeated:
+        return
+    if monster_id not in game.monster_cup or game.content.monsters[monster_id].epic:
+        return
+    prompt = f"Spend 1 Clue to place the Monster on '{rumor.name}'?"
+    if not can_pay(game, inv, Cost(clues=1)) or not confirm(game, prompt, kind="pay", inv=inv):
+        return
+    pay_cost(game, inv, Cost(clues=1))
+    game.monster_cup.remove(monster_id)
+    active.trophies.append(monster_id)
+    if sum(toughness(game, m) for m in active.trophies) >= len(game.investigators):
+        solve_rumor(game, active)
 
 
 def discard_monster(game: Game, loc_id: str, monster: MonsterInst) -> None:
@@ -776,11 +865,10 @@ def new_card(game: Game, def_id: str) -> AssetCard:
     return AssetCard(game.uid(), def_id)
 
 
-def take_starting_card(game: Game, def_id: str) -> AssetCard:
+def take_starting_card(game: Game, def_id: str) -> AssetCard | None:
+    """Take a starting possession. An investigator gets nothing if no copy is available."""
     adef = game.content.assets[def_id]
-    deck = deck_for(game, adef.kind)
-    found = deck.draw_where(game.rng, lambda c: c.def_id == def_id)
-    return found if found is not None else new_card(game, def_id)
+    return deck_for(game, adef.kind).draw_where(game.rng, lambda c: c.def_id == def_id)
 
 
 def gain_card(game: Game, inv: Investigator, card: AssetCard) -> None:
@@ -808,7 +896,7 @@ def draw_matching(
         adef = content.assets[card.def_id]
         return (
             (asset_id is None or adef.id == asset_id)
-            and (kind is None or adef.kind == kind)
+            and (kind is None or adef.is_a(kind))
             and (trait is None or trait in adef.traits)
         )
 
@@ -828,6 +916,8 @@ def draw_matching(
 
 
 def refill_reserve(game: Game) -> None:
+    if mythos_blocks(game, "reserve"):
+        return
     size = game.content.rules.reserve_size
     while len(game.reserve) < size:
         card = game.asset_deck.draw(game.rng)
@@ -866,7 +956,10 @@ def flip_asset(game: Game, inv: Investigator, card: AssetCard, successes: int | 
         return
     back = _pick_back(game, adef.backs, successes)
     emit(game, "info", f"{inv.name} flips {adef.name}: {back.text}")
+    casting = game.casting
+    game.casting = casting or adef.kind == "spell"
     run_effects(back.effects, Ctx(game, inv, f"asset_back:{adef.id}", asset=card))
+    game.casting = casting
 
 
 # --- conditions -----------------------------------------------------------------------
@@ -877,6 +970,9 @@ def has_condition(inv: Investigator, cond_id: str) -> bool:
 
 
 def gain_condition(game: Game, inv: Investigator, cond_id: str) -> bool:
+    if cond_id in ("blessed", "cursed") and has_condition(inv, cond_id):
+        flip_condition(game, inv, next(i for i in inv.conditions if i.def_id == cond_id))
+        return False
     if cond_id == "blessed" and has_condition(inv, "cursed"):
         for inst in list(inv.conditions):
             if inst.def_id == "cursed":
@@ -896,6 +992,14 @@ def gain_condition(game: Game, inv: Investigator, cond_id: str) -> bool:
     return True
 
 
+def gain_condition_trait(game: Game, inv: Investigator, trait: str) -> bool:
+    """Gain a random Condition with `trait` that the investigator does not already have."""
+    pool = sorted(
+        c.id for c in game.content.conditions.values() if trait in c.traits and not has_condition(inv, c.id)
+    )
+    return gain_condition(game, inv, game.rng.choice(pool)) if pool else False
+
+
 def remove_condition(game: Game, inv: Investigator, inst: ConditionInst) -> None:
     if inst in inv.conditions:
         inv.conditions.remove(inst)
@@ -910,16 +1014,25 @@ def flip_condition(game: Game, inv: Investigator, inst: ConditionInst, successes
     back = _pick_back(game, cdef.backs, successes)
     emit(game, "condition", f"{inv.name} flips {cdef.name}: {back.text}", condition=cdef.id)
     run_effects(back.effects, Ctx(game, inv, f"condition:{cdef.id}", condition=inst))
-    if inst in inv.conditions:
+    if inst in inv.conditions and not back.keep:
         remove_condition(game, inv, inst)
 
 
-def blocked(game: Game, inv: Investigator, action: str) -> str | None:
+def blocked(game: Game, inv: Investigator, action: str, *, exempt: str | None = None) -> str | None:
+    """The name of a Condition that blocks `action`. A card never blocks its own action."""
     for inst in inv.conditions:
         cdef = game.content.conditions[inst.def_id]
-        if action in cdef.blocks:
+        if action in cdef.blocks and cdef.id != exempt:
             return cdef.name
     return None
+
+
+def mythos_blocks(game: Game, what: str) -> bool:
+    return any(what in game.content.mythos[a.def_id].blocks for a in game.active_mythos)
+
+
+def rumor_location(game: Game, active: ActiveMythos) -> str | None:
+    return game.active_expedition if active.rumor_space == ACTIVE_EXPEDITION else active.rumor_space
 
 
 # --- reckoning ------------------------------------------------------------------------
@@ -935,13 +1048,7 @@ def resolve_reckoning(game: Game) -> None:
     emit(game, "reckoning", "Reckoning effects resolve!")
 
     # 1. Monsters
-    for _loc, monster in list(game.all_monsters()):
-        if game.outcome:
-            return
-        effects = game.monster_def(monster.def_id).reckoning
-        if effects and monster_location(game, monster) is not None:
-            run_effects(effects, Ctx(game, None, f"reckoning_monster:{monster.def_id}", monster=monster))
-            process_defeats(game)
+    reckon_monsters(game)
 
     # 2. Ancient One sheet
     if not game.outcome:
@@ -951,13 +1058,7 @@ def resolve_reckoning(game: Game) -> None:
             process_defeats(game)
 
     # 3. Ongoing Mythos cards
-    for active in list(game.active_mythos):
-        if game.outcome:
-            return
-        mdef = game.content.mythos[active.def_id]
-        if mdef.reckoning:
-            run_effects(mdef.reckoning, Ctx(game, None, f"reckoning_mythos:{mdef.id}", mythos=active))
-            process_defeats(game)
+    reckon_mythos(game)
 
     # 4. Investigator possessions and Conditions (in turn order starting from Lead)
     for inv in game.turn_order():
@@ -974,16 +1075,43 @@ def resolve_reckoning(game: Game) -> None:
         for inst in list(inv.conditions):
             if inv.defeated or game.outcome:
                 break
-            cdef = game.content.conditions[inst.def_id]
-            if cdef.reckoning:
-                run_effects(cdef.reckoning, Ctx(game, inv, f"reckoning_condition:{cdef.id}", condition=inst))
+            reckon_condition(game, inv, inst)
         process_defeats(game)
+
+
+def reckon_monsters(game: Game) -> None:
+    for _loc, monster in list(game.all_monsters()):
+        if game.outcome:
+            return
+        effects = game.monster_def(monster.def_id).reckoning
+        if effects and monster_location(game, monster) is not None:
+            run_effects(effects, Ctx(game, None, f"reckoning_monster:{monster.def_id}", monster=monster))
+            process_defeats(game)
+
+
+def reckon_mythos(game: Game) -> None:
+    for active in list(game.active_mythos):
+        if game.outcome:
+            return
+        mdef = game.content.mythos[active.def_id]
+        if mdef.reckoning and active in game.active_mythos:
+            run_effects(mdef.reckoning, Ctx(game, None, f"reckoning_mythos:{mdef.id}", mythos=active))
+            process_defeats(game)
+
+
+def reckon_condition(game: Game, inv: Investigator, inst: ConditionInst, *, ones: bool = False) -> None:
+    """Resolve the Reckoning effect on one Condition. With `ones`, every die rolls a 1."""
+    cdef = game.content.conditions[inst.def_id]
+    game.force_ones = ones
+    run_effects(cdef.reckoning, Ctx(game, inv, f"reckoning_condition:{cdef.id}", condition=inst))
+    game.force_ones = False
 
 
 def solve_rumor(game: Game, active: ActiveMythos, *, solved: bool = True) -> None:
     if active in game.active_mythos:
         game.active_mythos.remove(active)
         game.mythos_discards.append(active.def_id)
+        game.monster_cup.extend(active.trophies)
         mdef = game.content.mythos[active.def_id]
         word = "solved" if solved else "discarded"
         emit(game, "mythos", f"Rumor '{mdef.name}' is {word}!")
@@ -1003,6 +1131,10 @@ def perk(game: Game, inv: Investigator, name: str) -> int:
 def move_investigator(game: Game, inv: Investigator, loc_id: str, how: str = "") -> None:
     if inv.location == loc_id:
         return
+    block = blocked(game, inv, "move")
+    if block:
+        emit(game, "info", f"{block} stops {inv.name} from moving.")
+        return
     inv.location = loc_id
     suffix = f" by {how}" if how else ""
     emit(game, "travel", f"{inv.name} moves{suffix} to {loc_name(game, loc_id)}.", location=loc_id)
@@ -1012,15 +1144,36 @@ def move_investigator(game: Game, inv: Investigator, loc_id: str, how: str = "")
         run_effects(effects, Ctx(game, inv, f"eldritch_move:{old.id}"))
 
 
+def _discount_card(game: Game, inv: Investigator) -> AssetCard | None:
+    return next(
+        (c for c in inv.assets if game.asset_def(c).perks.get("clue_discount") and not c.exhausted),
+        None,
+    )
+
+
+def can_pay(game: Game, inv: Investigator, cost: Cost) -> bool:
+    if cost.clues and _discount_card(game, inv) is not None:
+        return replace(cost, clues=cost.clues - 1).can_pay(inv)
+    return cost.can_pay(inv)
+
+
 def pay_cost(game: Game, inv: Investigator, cost: Cost) -> None:
-    if cost.clues:
-        change_clues(game, inv, -cost.clues)
+    clues = cost.clues
+    card = _discount_card(game, inv) if clues else None
+    if card is not None and (
+        inv.clues < clues
+        or confirm(game, f"Use {game.asset_def(card).name} to spend 1 less Clue?", kind="clue_discount", inv=inv)
+    ):
+        card.exhausted = True
+        clues -= 1
+    if clues:
+        change_clues(game, inv, -clues)
     if cost.tickets:
         for _ in range(min(cost.tickets, len(inv.tickets))):
             inv.tickets.pop(0)
         emit(game, "loss", f"{inv.name} spends {cost.tickets} Ticket(s).", stat="tickets")
     if cost.sanity:
-        change_sanity(game, inv, -cost.sanity)
+        change_sanity(game, inv, -cost.sanity, preventable=False)
     if cost.health:
-        change_health(game, inv, -cost.health)
+        change_health(game, inv, -cost.health, preventable=False)
 

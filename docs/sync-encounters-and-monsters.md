@@ -2,7 +2,7 @@
 
 Status: implemented. Monster stats and test flags come from the wiki templates, the
 encounter decks hold one card per physical card, Location and General cards use sections,
-and each Gate is paired with one of the nine Other Worlds. The Core Special Encounters are in
+and the Other World deck holds all 24 cards. The Core Special Encounters are in
 `special_cthulhu.json` and `special_yog_sothoth.json`.
 
 ## Monster stats
@@ -78,7 +78,7 @@ General card carries three sections, one per space type or named city:
 | General | 12 | one card, city / wilderness / sea sections |
 | Expedition | 18 | one card per location, initial / pass / fail text |
 | Research | 24 per Ancient One | one card per terrain |
-| Other World | about 24 across 9 types | one card per type, pass / fail text |
+| Other World | 24 | one deck, pass / fail text |
 
 The current `EncounterDef` holds one `text` and one `effects` list, so it cannot represent
 the three sections of a Location or General card.
@@ -116,14 +116,8 @@ Changes:
 
 ### Other World
 
-The real game pairs each Gate with one of nine Other Worlds. The current model only stores
-a map location, and `encounter_turn` draws from one shared `other_world` deck. To match:
-
-- Draw an Other World type when a Gate spawns and store it on `LocationState` (this changes
-  the save format, so bump `SAVE_VERSION`).
-- Build one encounter deck per Other World (`other_world_yuggoth`, ...) and draw from the
-  type on the Gate's space.
-- Until then, the shared deck can be kept as a documented simplification.
+The rulebook uses one 24-card deck. `encounter_turn` draws from `other_world.json`, and a Gate
+holds no world.
 
 ### Effect vocabulary
 
@@ -144,7 +138,7 @@ Most encounter prose maps to existing effects (`test`, `pay`, `choice`, `move`, 
 3. **General encounters** (12 cards): add `sections`, then replace `general.json`.
 4. **Location encounters** (24 cards, 72 sections): add `sections`, then replace the three
    region files.
-5. **Other World encounters**: add gate-to-Other-World mapping, then the per-type decks.
+5. **Other World encounters**: replace `other_world.json`.
 6. **Special, mystery, and rumor encounters** last; they are referenced by Mysteries and
    need per-card wiring.
 

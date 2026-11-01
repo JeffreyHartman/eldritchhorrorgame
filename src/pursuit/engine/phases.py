@@ -6,7 +6,7 @@ at the same investigator's turn.
 
 from __future__ import annotations
 
-from pursuit.content.defs import LOCATION_DECKS, EncounterDef, EncounterSection
+from pursuit.content.defs import LOCATION_DECKS, EncounterDef, EncounterSection, MythosDef
 from pursuit.controller import Option
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine import actions, combat, dice, rules
@@ -64,6 +64,9 @@ def action_turn(game: Game, inv: Investigator) -> None:
         if value[0] == "end":
             return
         actions.perform(game, inv, value)
+    if inv.delayed:
+        inv.delayed = False
+        rules.emit(game, "info", f"{inv.name} loses all remaining actions instead of becoming Delayed.")
 
 
 day_turn = action_turn
@@ -87,9 +90,18 @@ def encounter_phase(game: Game) -> None:
 
 def encounter_turn(game: Game, inv: Investigator) -> None:
     rules.emit(game, "turn", f"{inv.name}'s encounter.", investigator=inv.name, phase="encounter")
-    if not combat.resolve_monsters(game, inv, encounter_phase=True):
-        return
     content = game.content
+    for inst in list(inv.conditions):
+        if content.conditions[inst.def_id].replaces_encounter:
+            rules.flip_condition(game, inv, inst)
+            return
+    ignore_monsters = (
+        bool(game.locations[inv.location].monsters)
+        and rules.perk(game, inv, "ignore_monsters") > 0
+        and rules.confirm(game, "Choose an encounter as if no Monsters are here?", kind="ignore_monsters", inv=inv)
+    )
+    if not ignore_monsters and not combat.resolve_monsters(game, inv, encounter_phase=True):
+        return
     state = game.locations[inv.location]
     ldef = content.locations[inv.location]
 
@@ -107,12 +119,12 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
         options.append(
             Option("Other World Encounter (Gate token)", ("other_world",), "Step through the Gate to try to close it.")
         )
-    if game.active_expedition == inv.location:
+    if game.active_expedition == inv.location and not rules.mythos_blocks(game, "expedition"):
         options.append(
             Option("Expedition Encounter", ("expedition",), "Explore the Active Expedition for an Artifact or reward.")
         )
     for active in game.active_mythos:
-        if active.rumor_space == inv.location:
+        if rules.rumor_location(game, active) == inv.location:
             mdef = content.mythos[active.def_id]
             options.append(Option(f"Rumor Encounter: {mdef.name}", ("rumor", active.def_id), mdef.encounter_text))
     for mys in game.active_mysteries():
@@ -144,11 +156,7 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
         if game.stats.get("clues_gained", 0) > gained_before and not inv.defeated:
             _offer_research_mystery(game, inv)
     elif tag == "other_world":
-        other_world = state.other_world
-        if other_world is None:
-            other_world = game.rng.choice(list(content.other_worlds))
-            state.other_world = other_world
-        _draw_and_run_encounter(game, inv, f"other_world_{other_world}")
+        _draw_and_run_encounter(game, inv, "other_world")
     elif tag == "expedition":
         _draw_and_run_encounter(game, inv, "expedition")
         rules.update_expedition(game)
@@ -176,7 +184,9 @@ def _encounter_section(game: Game, inv: Investigator, edef: EncounterDef) -> Enc
     return None
 
 
-def _draw_and_run_encounter(game: Game, inv: Investigator, deck_name: str) -> None:
+def _draw_and_run_encounter(
+    game: Game, inv: Investigator, deck_name: str, *, mythos: ActiveMythos | None = None
+) -> None:
     content = game.content
     deck = game.encounter_decks[deck_name]
     if deck_name.startswith("research_"):
@@ -199,8 +209,13 @@ def _draw_and_run_encounter(game: Game, inv: Investigator, deck_name: str) -> No
         encounter=edef.id,
         location=inv.location,
     )
-    run_effects(effects, Ctx(game, inv, f"encounter:{edef.id}"))
+    tag = "other_world" if deck_name == "other_world" else None
+    run_effects(effects, Ctx(game, inv, f"encounter:{edef.id}", mythos=mythos, tag=tag))
     deck.discard(enc_id)
+
+
+def other_world_encounter(game: Game, inv: Investigator, mythos: ActiveMythos | None) -> None:
+    _draw_and_run_encounter(game, inv, "other_world", mythos=mythos)
 
 
 def _mystery_encounter_open(game: Game, inv: Investigator, mys: MysteryState) -> bool:
@@ -283,7 +298,38 @@ def mythos_phase(game: Game) -> None:
         return
 
     mythos_id = game.mythos_deck.pop(0)
-    mdef = game.content.mythos[mythos_id]
+    resolve_mythos(game, game.content.mythos[mythos_id])
+    if game.outcome:
+        return
+
+    rules.solve_ready_mystery(game)
+    if game.outcome:
+        return
+
+    rules.replace_defeated_investigators(game)
+    if game.outcome:
+        return
+
+    active_invs = [i for i in game.investigators if not i.eliminated and not i.defeated]
+    if len(active_invs) > 1:
+        options = [Option(i.name, i.seat, f"in {rules.loc_name(game, i.location)}") for i in active_invs]
+        pick = rules.choose(
+            game,
+            "Pass the Lead Investigator token to whom?",
+            options,
+            kind="pass_lead",
+            inv=game.lead_investigator(),
+        )
+        game.lead_seat = active_invs[pick].seat
+
+    start_round(game)
+
+
+night_phase = mythos_phase
+
+
+def resolve_mythos(game: Game, mdef: MythosDef) -> None:
+    """Resolve one Mythos card: its icons in rulebook order, then its text."""
     game.bump("mythos_drawn")
     rules.emit(
         game,
@@ -333,7 +379,6 @@ def mythos_phase(game: Game) -> None:
 
     # 6. Place Rumor Token
     if "place_rumor" in mdef.icons and active_card is not None and mdef.rumor_space and not game.outcome:
-        active_card.rumor_space = mdef.rumor_space
         rules.emit(game, "mythos", f"A Rumor token is placed at {rules.loc_name(game, mdef.rumor_space)}.")
 
     # 7. Place Eldritch Tokens
@@ -350,34 +395,6 @@ def mythos_phase(game: Game) -> None:
 
     if active_card is None:
         game.mythos_discards.append(mdef.id)
-
-    if game.outcome:
-        return
-
-    rules.solve_ready_mystery(game)
-    if game.outcome:
-        return
-
-    rules.replace_defeated_investigators(game)
-    if game.outcome:
-        return
-
-    active_invs = [i for i in game.investigators if not i.eliminated and not i.defeated]
-    if len(active_invs) > 1:
-        options = [Option(i.name, i.seat, f"in {rules.loc_name(game, i.location)}") for i in active_invs]
-        pick = rules.choose(
-            game,
-            "Pass the Lead Investigator token to whom?",
-            options,
-            kind="pass_lead",
-            inv=game.lead_investigator(),
-        )
-        game.lead_seat = active_invs[pick].seat
-
-    start_round(game)
-
-
-night_phase = mythos_phase
 
 
 def start_round(game: Game) -> None:

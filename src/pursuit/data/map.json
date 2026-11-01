@@ -137,7 +137,6 @@
       "code": "PY",
       "terrain": "wilderness",
       "region": "europe",
-      "gate_color": "blue",
       "expedition": true,
       "pos": [
         58,
@@ -151,7 +150,6 @@
       "code": "HA",
       "terrain": "wilderness",
       "region": "europe",
-      "gate_color": "red",
       "expedition": true,
       "pos": [
         56,
@@ -178,7 +176,6 @@
       "code": "HM",
       "terrain": "wilderness",
       "region": "asia_australia",
-      "gate_color": "red",
       "expedition": true,
       "pos": [
         74,

@@ -61,7 +61,7 @@ def resolve_monsters(game: Game, inv: Investigator, *, encounter_phase: bool = F
     if (
         encounter_phase
         and replacement is not None
-        and replacement.cost.can_pay(inv)
+        and rules.can_pay(game, inv, replacement.cost)
         and rules.confirm(game, replacement.text, kind="replace_encounter", inv=inv)
     ):
         rules.pay_cost(game, inv, replacement.cost)
@@ -79,6 +79,13 @@ def ambush(game: Game, inv: Investigator, def_id: str | None = None) -> str | No
 
 
 def combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool = False) -> str:
+    game.boosts.clear()
+    result = _combat(game, inv, monster, ambush=ambush)
+    game.boosts.clear()
+    return result
+
+
+def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool) -> str:
     mdef = game.monster_def(monster.def_id)
     ctx = Ctx(game, inv, f"monster:{mdef.id}", monster=monster)
     rules.emit(
@@ -96,6 +103,8 @@ def combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool 
     def finish() -> str:
         if gone():
             run_effects(mdef.on_combat_defeat, ctx)
+            for card in list(inv.assets):
+                run_effects(game.asset_def(card).on_combat_win, replace(ctx, asset=card))
             return FELL if inv.defeated else DEFEATED
         if ambush:
             _return_ambush_monster(game, inv.location, monster)

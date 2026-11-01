@@ -116,10 +116,11 @@ def test_acquire_assets_with_no_purchases_can_discard_one_reserve_card(make_game
 
 def test_component_actions_from_different_components_can_both_run(make_game: MakeGame, script: Script) -> None:
     game = make_game()
-    inv = first(game)  # Mark has Kerosene (component action) and his Investigator sheet action
-    kerosene = next(c for c in inv.assets if c.def_id == "kerosene")
-    actions.perform(game, inv, ("asset", kerosene.uid))
-    assert kerosene not in inv.assets
+    inv = first(game)
+    dynamite = rules.new_card(game, "dynamite")
+    inv.assets.append(dynamite)
+    actions.perform(game, inv, ("asset", dynamite.uid))
+    assert dynamite not in inv.assets
     assert "ability" in kinds(options(game, inv))
 
 

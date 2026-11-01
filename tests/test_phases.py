@@ -43,7 +43,7 @@ def test_gate_offers_an_other_world_encounter(make_game: MakeGame, script: Scrip
     script.add("encounter", "Other World")
     phases.encounter_turn(game, inv)
     deck = next(e.data["deck"] for e in script.events if e.kind == "encounter")
-    assert deck.startswith("other_world_")
+    assert deck == "other_world"
 
 
 def test_location_encounter_uses_the_section_for_the_current_city(make_game: MakeGame, script: Script) -> None:

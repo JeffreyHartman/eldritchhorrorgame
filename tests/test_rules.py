@@ -104,6 +104,7 @@ def test_azathoth_green_omen_advances_doom_by_eldritch_tokens(make_game: MakeGam
 
 def test_spawning_a_gate_spawns_a_monster(make_game: MakeGame) -> None:
     game = make_game()
+    game.monster_cup = ["ghost"]
     game.gate_deck.cards.insert(0, "arkham")
     rules.spawn_gate(game)
     assert game.locations["arkham"].gate

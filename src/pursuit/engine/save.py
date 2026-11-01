@@ -26,7 +26,7 @@ from pursuit.engine.state import (
     Phase,
 )
 
-SAVE_VERSION = 4
+SAVE_VERSION = 5
 
 
 class SaveError(Exception):
@@ -85,10 +85,10 @@ def to_dict(game: Game) -> dict[str, Any]:
         "encounter_decks": {k: _deck(v) for k, v in game.encounter_decks.items()},
         "mythos_deck": list(game.mythos_deck),
         "mythos_discards": list(game.mythos_discards),
+        "mythos_box": list(game.mythos_box),
         "active_mythos": [asdict(m) for m in game.active_mythos],
         "gate_deck": _deck(game.gate_deck),
         "clue_deck": _deck(game.clue_deck),
-        "other_world_deck": _deck(game.other_world_deck),
         "monster_cup": list(game.monster_cup),
         "set_aside": list(game.set_aside),
         "epics_gone": list(game.epics_gone),
@@ -172,10 +172,10 @@ def from_dict(content: Content, data: dict[str, Any]) -> Game:
             encounter_decks={k: _load_deck(v) for k, v in data["encounter_decks"].items()},
             mythos_deck=list(data["mythos_deck"]),
             mythos_discards=list(data.get("mythos_discards", [])),
+            mythos_box=list(data.get("mythos_box", [])),
             active_mythos=[ActiveMythos(**m) for m in data.get("active_mythos", [])],
             gate_deck=_load_deck(data["gate_deck"]),
             clue_deck=_load_deck(data["clue_deck"]),
-            other_world_deck=_load_deck(data["other_world_deck"]) if "other_world_deck" in data else Deck(),
             monster_cup=list(data["monster_cup"]),
             set_aside=list(data.get("set_aside", [])),
             epics_gone=list(data.get("epics_gone", [])),
@@ -210,22 +210,17 @@ def _check_refs(content: Content, game: Game) -> None:
             need(content.conditions, cond.def_id, "condition")
     for loc_id, state in game.locations.items():
         need(content.locations, loc_id, "location")
-        if state.other_world is not None and state.other_world not in content.other_worlds:
-            missing.append(f"Other World '{state.other_world}'")
         for monster in state.monsters:
             need(content.monsters, monster.def_id, "monster")
         for fallen in state.fallen:
             need(content.investigators, fallen.def_id, "investigator")
             for card in fallen.assets:
                 need(content.assets, card.def_id, "asset")
-    for world in game.other_world_deck.cards + game.other_world_deck.discards:
-        if world not in content.other_worlds:
-            missing.append(f"Other World '{world}'")
     for name in game.encounter_decks:
         need(content.decks, name, "encounter deck")
         for enc in game.encounter_decks[name].cards + game.encounter_decks[name].discards:
             need(content.encounters, enc, "encounter")
-    for mid in game.mythos_deck + game.mythos_discards + [m.def_id for m in game.active_mythos]:
+    for mid in game.mythos_deck + game.mythos_discards + game.mythos_box + [m.def_id for m in game.active_mythos]:
         need(content.mythos, mid, "mythos")
     if missing:
         raise SaveError("the save refers to content that no longer exists: " + ", ".join(missing[:5]))

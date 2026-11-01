@@ -31,7 +31,7 @@ def new_game(content: Content, config: GameConfig, ctl: Controller | None = None
     rng = random.Random(seed)
     old = content.old_ones[config.old_one]
     diff = content.rules.difficulties[config.difficulty]
-    doom = max(1, old.doom + diff.doom_mod)
+    doom = old.doom
     game = Game(
         content=content,
         rng=rng,
@@ -46,7 +46,7 @@ def new_game(content: Content, config: GameConfig, ctl: Controller | None = None
     if ctl is not None:
         game.ctl = ctl
 
-    _build_decks(game)
+    _build_decks(game, solo=len(config.investigators) == 1, removes=diff.removes)
     game.unused_investigators = sorted(
         (i for i in content.investigators if i not in config.investigators),
         key=lambda i: content.investigators[i].name,
@@ -57,8 +57,7 @@ def new_game(content: Content, config: GameConfig, ctl: Controller | None = None
     rules.update_expedition(game)
 
     ref = game.reference
-    gates = max(0, ref.spawn_gates + diff.start_gates_mod)
-    for _ in range(gates):
+    for _ in range(ref.spawn_gates):
         rules.spawn_gate(game)
     for _ in range(ref.spawn_clues):
         rules.spawn_clue(game)
@@ -83,7 +82,7 @@ def _validate(content: Content, config: GameConfig) -> None:
             raise SetupError(f"unknown investigator '{inv_id}'")
 
 
-def _build_decks(game: Game) -> None:
+def _build_decks(game: Game, *, solo: bool, removes: str | None) -> None:
     content = game.content
     rng = game.rng
     old = game.old_one
@@ -91,6 +90,8 @@ def _build_decks(game: Game) -> None:
     def cards(kinds: tuple[str, ...]) -> list[AssetCard]:
         out: list[AssetCard] = []
         for adef in content.assets.values():
+            if solo and "teamwork" in adef.traits:
+                continue
             if adef.kind in kinds and adef.id != "bank_loan":
                 out.extend(AssetCard(game.uid(), adef.id) for _ in range(adef.count))
         rng.shuffle(out)
@@ -106,7 +107,8 @@ def _build_decks(game: Game) -> None:
 
     by_color: dict[str, list[str]] = {c: [] for c in MYTHOS_COLORS}
     for mdef in content.mythos.values():
-        by_color[mdef.color].append(mdef.id)
+        if mdef.difficulty != removes:
+            by_color[mdef.color].append(mdef.id)
     for c in MYTHOS_COLORS:
         rng.shuffle(by_color[c])
     mythos_deck: list[str] = []
@@ -118,6 +120,7 @@ def _build_decks(game: Game) -> None:
         rng.shuffle(stage_cards)
         mythos_deck.extend(stage_cards)
     game.mythos_deck = mythos_deck
+    game.mythos_box = sorted(set(content.mythos) - set(mythos_deck))
 
     mysteries = [m.id for m in old.mysteries]
     rng.shuffle(mysteries)
@@ -130,10 +133,6 @@ def _build_decks(game: Game) -> None:
     clues = list(content.locations)
     rng.shuffle(clues)
     game.clue_deck = Deck(clues)
-
-    other_worlds = list(content.other_worlds)
-    rng.shuffle(other_worlds)
-    game.other_world_deck = Deck(other_worlds)
 
     cup = []
     for mon_def in content.monsters.values():
@@ -161,7 +160,7 @@ def create_investigator(game: Game, def_id: str, seat: int) -> Investigator:
         clues=d.clues,
         tickets=list(d.tickets)[: content.rules.max_tickets],
     )
-    inv.assets = [rules.take_starting_card(game, a) for a in d.assets]
+    inv.assets = [card for a in d.assets if (card := rules.take_starting_card(game, a)) is not None]
     inv.conditions = [ConditionInst(game.uid(), c) for c in d.conditions]
     return inv
 

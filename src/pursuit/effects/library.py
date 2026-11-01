@@ -9,6 +9,7 @@ from typing import ClassVar
 from pursuit.content.defs import (
     ASSET_KINDS,
     CONTEXTS,
+    OMEN_TRACK,
     RESERVE_KINDS,
     SKILLS,
     TERRAINS,
@@ -21,9 +22,9 @@ from pursuit.content.defs import (
 from pursuit.content.reader import ContentError, Reader
 from pursuit.controller import Option
 from pursuit.effects.base import Ctx, Effect, read_effects, register, run_effects, walk
-from pursuit.engine import actions, combat, rules
+from pursuit.engine import actions, combat, phases, rules
 from pursuit.engine.dice import run_test
-from pursuit.engine.state import Investigator
+from pursuit.engine.state import AssetCard, Investigator
 
 
 def _nonzero(r: Reader, key: str) -> int:
@@ -38,6 +39,9 @@ def _positive(r: Reader, key: str, default: int = 1) -> int:
     if value < 1:
         raise ContentError(f"{r.at(key)}: must be at least 1")
     return value
+
+
+OPEN_ENDED = ("flip_self", "clues_per_success")
 
 
 # --- narrative and tests --------------------------------------------------------------
@@ -90,14 +94,14 @@ class Test(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
-        counts_successes = any(e.kind == "flip_self" for lst in self.children() for e in walk(lst))
+        counts_successes = any(e.kind in OPEN_ENDED for lst in self.children() for e in walk(lst))
         mod = self.mod - self._penalty(ctx, inv) + self._buy_dice(ctx, inv)
         result = run_test(
             ctx.game,
             inv,
             self.skill,
             mod,
-            contexts=(self.context,),
+            contexts=(self.context, ctx.tag) if ctx.tag else (self.context,),
             needed=self.needed,
             open_ended=counts_successes,
         )
@@ -125,7 +129,7 @@ class Test(Effect):
                 break
             bought += 1
         if bought:
-            rules.change_sanity(ctx.game, inv, -bought)
+            rules.change_sanity(ctx.game, inv, -bought, preventable=False)
         return bought
 
     def _spend_clues(self, ctx: Ctx, inv: Investigator, successes: int) -> int:
@@ -201,6 +205,17 @@ class Clues(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         rules.change_clues(ctx.game, ctx.need_inv(self.kind), self.amount)
+
+
+@register("clues_per_success")
+@dataclass(frozen=True)
+class CluesPerSuccess(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.change_clues(ctx.game, ctx.need_inv(self.kind), ctx.test_successes or 0)
 
 
 @register("claim_clue")
@@ -307,6 +322,7 @@ class GainAsset(Effect):
     trait: str | None
     source: str
     count: int
+    any_of: tuple[str, ...]
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
@@ -316,6 +332,7 @@ class GainAsset(Effect):
             trait=r.get_str("trait", None),
             source=r.get_enum("source", ("deck", "reserve", "choice"), "deck"),
             count=_positive(r, "count"),
+            any_of=r.get_str_tuple("any_of"),
         )
         if e.source == "reserve" and (e.asset_id or (e.asset_kind and e.asset_kind not in RESERVE_KINDS)):
             raise ContentError(f"{r.path}: a reserve gain can only filter by a reserve kind and a trait")
@@ -345,6 +362,7 @@ class GainAsset(Effect):
                     for c in game.reserve
                     if (self.asset_kind is None or game.asset_def(c).kind == self.asset_kind)
                     and (self.trait is None or self.trait in game.asset_def(c).traits)
+                    and (not self.any_of or any(game.asset_def(c).is_a(k) for k in self.any_of))
                 ]
                 if not cards:
                     rules.emit(game, "info", "No matching Asset is in the reserve.")
@@ -395,7 +413,7 @@ class LoseAsset(Effect):
                 c
                 for c in inv.assets
                 if (self.asset_id is None or c.def_id == self.asset_id)
-                and (self.asset_kind is None or game.asset_def(c).kind == self.asset_kind)
+                and (self.asset_kind is None or game.asset_def(c).is_a(self.asset_kind))
                 and (self.trait is None or self.trait in game.asset_def(c).traits)
             ]
 
@@ -422,17 +440,25 @@ class LoseAsset(Effect):
 @register("gain_condition")
 @dataclass(frozen=True)
 class GainCondition(Effect):
-    condition: str
+    condition: str | None
+    trait: str | None
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(r.get_str("id"))
+        e = cls(r.get_str("id", None), r.get_str("trait", None))
+        if bool(e.condition) == bool(e.trait):
+            raise ContentError(f"{r.path}: gain_condition needs exactly one of 'id' or 'trait'")
+        return e
 
     def apply(self, ctx: Ctx) -> None:
-        rules.gain_condition(ctx.game, ctx.need_inv(self.kind), self.condition)
+        inv = ctx.need_inv(self.kind)
+        if self.condition:
+            rules.gain_condition(ctx.game, inv, self.condition)
+        elif self.trait:
+            rules.gain_condition_trait(ctx.game, inv, self.trait)
 
     def refs(self) -> Iterable[tuple[str, str]]:
-        return [("condition", self.condition)]
+        return [("condition", self.condition)] if self.condition else []
 
 
 @register("remove_condition")
@@ -641,14 +667,14 @@ class NearestTerrain(Effect):
 @register("delay")
 @dataclass(frozen=True)
 class Delay(Effect):
+    chosen: bool
+
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls()
+        return cls(r.get_bool("chosen", False))
 
     def apply(self, ctx: Ctx) -> None:
-        inv = ctx.need_inv(self.kind)
-        inv.delayed = True
-        rules.emit(ctx.game, "loss", f"{inv.name} becomes Delayed.")
+        rules.delay(ctx.game, ctx.need_inv(self.kind), chosen=self.chosen)
 
 
 @register("devour")
@@ -673,20 +699,26 @@ class SwapHealthSanity(Effect):
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         inv = ctx.need_inv(self.kind)
-        options: list[Option] = []
-        if inv.health > 1 and inv.sanity < inv.max_sanity:
-            options.append(Option("Spend 1 Health to recover 1 Sanity", "h_to_s"))
-        if inv.sanity > 1 and inv.health < inv.max_health:
-            options.append(Option("Spend 1 Sanity to recover 1 Health", "s_to_h"))
-        options.append(Option("Done", None))
-        pick = rules.choose(game, "Martial Arts focus:", options, kind="effect_choice", inv=inv)
-        val = options[pick].value
-        if val == "h_to_s":
-            rules.change_health(game, inv, -1)
-            rules.change_sanity(game, inv, 1)
-        elif val == "s_to_h":
-            rules.change_sanity(game, inv, -1)
-            rules.change_health(game, inv, 1)
+        most_h_to_s = min(inv.health - 1, inv.max_sanity - inv.sanity)
+        most_s_to_h = min(inv.sanity - 1, inv.max_health - inv.health)
+        options = [
+            Option("Spend Health to recover Sanity", "h_to_s", enabled=most_h_to_s > 0),
+            Option("Spend Sanity to recover Health", "s_to_h", enabled=most_s_to_h > 0),
+            Option("Done", None),
+        ]
+        way = options[rules.choose(game, "Martial Arts focus:", options, kind="effect_choice", inv=inv)].value
+        if way is None:
+            return
+        most = most_h_to_s if way == "h_to_s" else most_s_to_h
+        amounts = [Option(str(n), n) for n in range(1, most + 1)]
+        pick = rules.choose(game, "Spend how many?", amounts, kind="amount", inv=inv, auto_single=True)
+        amount = amounts[pick].value
+        if way == "h_to_s":
+            rules.change_health(game, inv, -amount, preventable=False)
+            rules.change_sanity(game, inv, amount)
+        else:
+            rules.change_sanity(game, inv, -amount, preventable=False)
+            rules.change_health(game, inv, amount)
 
 
 @register("condition_penalty")
@@ -807,18 +839,31 @@ class SheetToken(Effect):
 @register("mythos_eldritch")
 @dataclass(frozen=True)
 class MythosEldritch(Effect):
+    """Change the Eldritch tokens on this card. `per` scales a discard: half the Gates on the
+    board, or the Madness Conditions of the Lead Investigator."""
+
     amount: int
+    per: str | None
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(_nonzero(r, "amount"))
+        return cls(_nonzero(r, "amount"), r.get_enum("per", ("half_gates", "lead_madness"), None))
+
+    def _scale(self, ctx: Ctx) -> int:
+        game = ctx.game
+        if self.per == "half_gates":
+            return (len(game.open_gates()) + 1) // 2
+        if self.per == "lead_madness":
+            lead = game.lead_investigator()
+            return sum("madness" in game.content.conditions[c.def_id].traits for c in lead.conditions)
+        return 1
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         active = ctx.mythos
         if active is None or active not in game.active_mythos:
             return
-        active.eldritch = max(0, active.eldritch + self.amount)
+        active.eldritch = max(0, active.eldritch + self.amount * self._scale(ctx))
         mdef = game.content.mythos[active.def_id]
         rules.emit(game, "mythos", f"'{mdef.name}' now has {active.eldritch} Eldritch token(s).")
         if active.eldritch == 0 and mdef.on_zero_eldritch:
@@ -855,9 +900,12 @@ class SolveRumorInPlay(Effect):
         return cls()
 
     def apply(self, ctx: Ctx) -> None:
-        active = next((a for a in ctx.game.active_mythos if a.rumor_space), None)
-        if active is not None:
-            rules.solve_rumor(ctx.game, active)
+        game = ctx.game
+        rumors = [a for a in game.active_mythos if "rumor" in game.content.mythos[a.def_id].traits]
+        if rumors:
+            options = [Option(game.content.mythos[a.def_id].name, a.def_id) for a in rumors]
+            pick = rules.choose(game, "Solve which Rumor?", options, kind="pick_rumor", auto_single=True)
+            rules.solve_rumor(game, rumors[pick])
 
     def needs_investigator(self) -> bool:
         return False
@@ -940,7 +988,8 @@ class Pay(Effect):
             half_n = max(1, (len(game.investigators) + 1) // 2)
             actual = Cost(clues=half_n, sanity=actual.sanity, health=actual.health, tickets=actual.tickets)
         prompt = self.prompt or f"Pay {actual.describe()}?"
-        if actual.can_pay(inv) and rules.confirm(game, f"{prompt} ({actual.describe()})", kind="pay", inv=inv):
+        full_prompt = f"{prompt} ({actual.describe()})"
+        if rules.can_pay(game, inv, actual) and rules.confirm(game, full_prompt, kind="pay", inv=inv):
             rules.pay_cost(game, inv, actual)
             run_effects(self.then, ctx)
         else:
@@ -1018,6 +1067,8 @@ class EachInvestigator(Effect):
     here: bool
     near_monster: int | None
     effects: tuple[Effect, ...]
+    near_expedition: int | None = None
+    others: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
@@ -1026,6 +1077,8 @@ class EachInvestigator(Effect):
             r.get_bool("here", False),
             r.get_int("near_monster", None),
             read_effects(r, "effects"),
+            r.get_int("near_expedition", None),
+            r.get_bool("others", False),
         )
 
     def apply(self, ctx: Ctx) -> None:
@@ -1038,6 +1091,10 @@ class EachInvestigator(Effect):
             if center is not None:
                 dist = rules.distances(game, center)
                 spaces = {loc for loc, d in dist.items() if d <= self.near_monster}
+        near_exp: set[str] = set()
+        if self.near_expedition is not None and game.active_expedition:
+            dist = rules.distances(game, game.active_expedition)
+            near_exp = {loc for loc, d in dist.items() if d <= self.near_expedition}
         targets = [
             i
             for i in game.turn_order()
@@ -1045,6 +1102,8 @@ class EachInvestigator(Effect):
             and not i.defeated
             and (not self.here or (ctx.inv is not None and i.location == ctx.inv.location))
             and (self.near_monster is None or i.location in spaces)
+            and (self.near_expedition is None or i.location in near_exp)
+            and (not self.others or i is not ctx.inv)
             and (self.where is None or self.where.matches(game, i))
         ]
         for inv in targets:
@@ -1072,17 +1131,26 @@ class OneInvestigator(Effect):
     pick: str
     where: InvestigatorFilter | None
     effects: tuple[Effect, ...]
+    others: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(r.get_enum("pick", PICKS), read_investigator_filter(r, "where"), read_effects(r, "effects"))
+        return cls(
+            r.get_enum("pick", PICKS),
+            read_investigator_filter(r, "where"),
+            read_effects(r, "effects"),
+            r.get_bool("others", False),
+        )
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         pool = [
             i
             for i in game.turn_order()
-            if not i.eliminated and not i.defeated and (self.where is None or self.where.matches(game, i))
+            if not i.eliminated
+            and not i.defeated
+            and (not self.others or i is not ctx.inv)
+            and (self.where is None or self.where.matches(game, i))
         ]
         if not pool:
             return
@@ -1142,13 +1210,23 @@ class SpawnGate(Effect):
 @register("close_gate")
 @dataclass(frozen=True)
 class CloseGate(Effect):
+    """Close the Gate here. An Other World Encounter run from a Rumor solves that Rumor instead."""
+
     @classmethod
     def parse(cls, r: Reader) -> Effect:
         return cls()
 
     def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
         inv = ctx.need_inv(self.kind)
-        rules.close_gate(ctx.game, inv, inv.location)
+        if ctx.tag == "other_world" and ctx.mythos is not None:
+            rules.solve_rumor(game, ctx.mythos)
+            return
+        had_gate = game.locations[inv.location].gate
+        rules.close_gate(game, inv, inv.location)
+        if ctx.tag == "other_world" and had_gate and not game.locations[inv.location].gate:
+            for card in list(inv.assets):
+                run_effects(game.asset_def(card).on_close_gate, replace(ctx, asset=card))
 
 
 @register("discard_matching_gates")
@@ -1379,10 +1457,13 @@ class MoveMonsterHere(Effect):
 class DamageMonsters(Effect):
     amount: int
     where: str
+    one: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(_positive(r, "amount"), r.get_enum("where", ("here", "choose_space"), "here"))
+        return cls(
+            _positive(r, "amount"), r.get_enum("where", ("here", "choose_space"), "here"), r.get_bool("one", False)
+        )
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
@@ -1397,7 +1478,12 @@ class DamageMonsters(Effect):
                 game, "Choose a space to damage Monsters:", options, kind="choose_space", inv=ctx.inv, auto_single=True
             )
             loc_id = with_monsters[pick]
-        for monster in list(game.locations[loc_id].monsters):
+        targets = list(game.locations[loc_id].monsters)
+        if self.one and targets:
+            options = [Option(game.monster_def(m.def_id).name, m.uid) for m in targets]
+            pick = rules.choose(game, "Choose a Monster.", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
+            targets = [targets[pick]]
+        for monster in targets:
             mdef = game.monster_def(monster.def_id)
             if not rules.wound_monster(game, ctx.inv, monster, self.amount):
                 rules.emit(game, "combat", f"The {mdef.name} loses {self.amount} Health.")
@@ -1483,9 +1569,9 @@ class MonstersHeal(Effect):
         return False
 
 
-@register("refresh_reserve")
+@register("clear_reserve")
 @dataclass(frozen=True)
-class RefreshReserve(Effect):
+class ClearReserve(Effect):
     @classmethod
     def parse(cls, r: Reader) -> Effect:
         return cls()
@@ -1495,8 +1581,21 @@ class RefreshReserve(Effect):
         for card in game.reserve:
             game.asset_deck.discard(card)
         game.reserve = []
-        rules.refill_reserve(game)
-        rules.emit(game, "info", "The reserve is refreshed.")
+        rules.emit(game, "info", "All cards in the reserve are discarded.")
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("refill_reserve")
+@dataclass(frozen=True)
+class RefillReserve(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.refill_reserve(ctx.game)
 
     def needs_investigator(self) -> bool:
         return False
@@ -1730,8 +1829,7 @@ class CarryOrChase(Effect):
             dest = near[rules.choose(game, "Move where?", options, kind="move", inv=victim, auto_single=True)][0]
             rules.move_investigator(game, victim, dest)
             rules.move_monster(game, monster, dest)
-            victim.delayed = True
-            rules.emit(game, "loss", f"{victim.name} becomes Delayed.")
+            rules.delay(game, victim)
             return
         target = rules.nearest_investigator(game, loc_id)
         if target is not None:
@@ -2055,3 +2153,684 @@ class SanityPerSheetToken(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         rules.change_sanity(ctx.game, ctx.need_inv(self.kind), -ctx.game.sheet_tokens)
+
+
+@dataclass(frozen=True)
+class RollOutcome:
+    low: int
+    high: int
+    text: str
+    effects: tuple[Effect, ...]
+
+
+@register("roll")
+@dataclass(frozen=True)
+class Roll(Effect):
+    """Roll 1 die that is not a test, so Clues and card rerolls cannot change it."""
+
+    outcomes: tuple[RollOutcome, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        outcomes = []
+        for o in r.objects("outcomes"):
+            outcomes.append(
+                RollOutcome(o.get_int("low"), o.get_int("high"), o.get_str("text", ""), read_effects(o, "effects"))
+            )
+            o.done()
+        return cls(tuple(outcomes))
+
+    def apply(self, ctx: Ctx) -> None:
+        die = ctx.game.roll_die()
+        rules.emit(ctx.game, "info", f"The die shows {die}.")
+        for outcome in self.outcomes:
+            if outcome.low <= die <= outcome.high:
+                if outcome.text:
+                    rules.emit(ctx.game, "info", outcome.text)
+                run_effects(outcome.effects, ctx)
+                return
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return [o.effects for o in self.outcomes]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("group_spend")
+@dataclass(frozen=True)
+class GroupSpend(Effect):
+    """Investigators, as a group, spend Clues equal to half the investigators, or take `else`."""
+
+    then: tuple[Effect, ...]
+    otherwise: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(read_effects(r, "then"), read_effects(r, "else"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        need = (len(game.investigators) + 1) // 2
+        people = [i for i in game.turn_order() if not i.eliminated and not i.defeated]
+        lead = game.lead_investigator()
+        prompt = f"Spend {need} Clue(s) as a group?"
+        if sum(i.clues for i in people) < need or not rules.confirm(game, prompt, kind="group_spend", inv=lead):
+            run_effects(self.otherwise, ctx)
+            return
+        for _ in range(need):
+            payers = [i for i in people if i.clues > 0]
+            options = [Option(i.name, i.seat, f"{i.clues} Clue(s)") for i in payers]
+            pick = rules.choose(
+                game, "Who spends the next Clue?", options, kind="group_payer", inv=lead, auto_single=True
+            )
+            rules.change_clues(game, payers[pick], -1)
+        run_effects(self.then, ctx)
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.then, self.otherwise)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("reckon_twice")
+@dataclass(frozen=True)
+class ReckonTwice(Effect):
+    """Resolve the Reckoning of each Monster or Mythos card twice, or else advance Doom by 1."""
+
+    what: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_enum("what", ("monsters", "mythos")))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        if self.what == "monsters":
+            found = any(game.monster_def(m.def_id).reckoning for _loc, m in game.all_monsters())
+            reckon = rules.reckon_monsters
+        else:
+            found = any(game.content.mythos[a.def_id].reckoning for a in game.active_mythos)
+            reckon = rules.reckon_mythos
+        if not found:
+            rules.advance_doom(game, 1, f"no {self.what} have a Reckoning effect")
+            return
+        reckon(game)
+        reckon(game)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("reckon_conditions")
+@dataclass(frozen=True)
+class ReckonConditions(Effect):
+    """Resolve the Reckoning on this investigator's Conditions, treating all die rolls as 1's."""
+
+    condition: str | None
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("id", None))
+
+    def apply(self, ctx: Ctx) -> None:
+        inv = ctx.need_inv(self.kind)
+        for inst in list(inv.conditions):
+            if self.condition is None or inst.def_id == self.condition:
+                rules.reckon_condition(ctx.game, inv, inst, ones=True)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("condition", self.condition)] if self.condition else []
+
+
+@register("clear_fallen")
+@dataclass(frozen=True)
+class ClearFallen(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        for state in game.locations.values():
+            for fallen in state.fallen:
+                for card in fallen.assets:
+                    rules.deck_for(game, game.asset_def(card).kind).discard(card)
+            state.fallen = []
+        rules.emit(game, "loss", "The defeated investigators and their possessions are lost.")
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("sacrifice_monster")
+@dataclass(frozen=True)
+class SacrificeMonster(Effect):
+    """Discard 1 non-Epic Monster of the investigator's choice and lose Health equal to its toughness."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        found = [(loc, m) for loc, m in game.all_monsters() if not game.monster_def(m.def_id).epic]
+        if not found:
+            return
+        options = [
+            Option(f"{game.monster_def(m.def_id).name} at {rules.loc_name(game, loc)}", m.uid) for loc, m in found
+        ]
+        loc_id, monster = found[rules.choose(game, "Discard which Monster?", options, kind="discard_monster", inv=inv)]
+        health = rules.toughness(game, monster.def_id)
+        rules.discard_monster(game, loc_id, monster)
+        rules.change_health(game, inv, -health)
+
+
+@register("discard_chosen_gate")
+@dataclass(frozen=True)
+class DiscardChosenGate(Effect):
+    """Discard 1 Gate. Advance Doom by 1 if that Gate does not match the current Omen."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        gates = game.open_gates()
+        if not gates:
+            return
+        options = [Option(rules.loc_name(game, g), g, game.content.locations[g].gate_color or "") for g in gates]
+        pick = rules.choose(game, "Discard which Gate?", options, kind="pick_gate", auto_single=True)
+        matched = gates[pick] in game.matching_gates()
+        rules.discard_gate(game, gates[pick])
+        if not matched:
+            rules.advance_doom(game, 1, "the discarded Gate did not match the Omen")
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("torn_asunder")
+@dataclass(frozen=True)
+class TornAsunder(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        count = len(game.matching_gates())
+        if count == 0:
+            rules.advance_omen(game, 1)
+            return
+        for inv in game.turn_order():
+            if not inv.eliminated and not inv.defeated:
+                rules.change_health(game, inv, -count)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("choose_omen")
+@dataclass(frozen=True)
+class ChooseOmen(Effect):
+    """Move the Omen to any space without advancing Doom."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        options = [Option(space.replace("_", " ").title(), i) for i, space in enumerate(OMEN_TRACK)]
+        game.omen_index = rules.choose(game, "Move the Omen to which space?", options, kind="pick_omen", inv=ctx.inv)
+        rules.emit(game, "omen", f"The Omen moves to {game.omen_color}.", omen=game.omen_space, color=game.omen_color)
+
+
+@register("rewind_omen")
+@dataclass(frozen=True)
+class RewindOmen(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.rewind_omen(ctx.game)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("shuffle_back_mystery")
+@dataclass(frozen=True)
+class ShuffleBackMystery(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        solved = list(game.solved_mysteries)
+        options = [Option(next(m.name for m in game.old_one.mysteries if m.id == s), s) for s in solved]
+        pick = rules.choose(game, "Shuffle back which Mystery?", options, kind="pick_mystery", auto_single=True)
+        rules.unsolve_mystery(game, solved[pick])
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("if_solved_mystery")
+@dataclass(frozen=True)
+class IfSolvedMystery(Effect):
+    then: tuple[Effect, ...]
+    otherwise: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(read_effects(r, "then"), read_effects(r, "else"))
+
+    def apply(self, ctx: Ctx) -> None:
+        run_effects(self.then if ctx.game.solved_mysteries else self.otherwise, ctx)
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.then, self.otherwise)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("shed_possessions")
+@dataclass(frozen=True)
+class ShedPossessions(Effect):
+    """Discard any number of matching possessions, then pay `each` for every one still held."""
+
+    trait: str | None
+    asset_kind: str | None
+    each: tuple[Effect, ...]
+    if_any: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(
+            r.get_str("trait", None),
+            r.get_enum("kind", ASSET_KINDS, None),
+            read_effects(r, "each"),
+            read_effects(r, "if_any"),
+        )
+
+    def _held(self, ctx: Ctx, inv: Investigator) -> list:
+        defs = ctx.game.asset_def
+        return [
+            c
+            for c in inv.assets
+            if (self.trait is None or self.trait in defs(c).traits)
+            and (self.asset_kind is None or defs(c).kind == self.asset_kind)
+        ]
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        while held := self._held(ctx, inv):
+            options = [Option(f"Discard {game.asset_def(c).name}", c.uid) for c in held]
+            options.append(Option("Keep the rest", None))
+            uid = options[rules.choose(game, "Discard a possession?", options, kind="shed", inv=inv)].value
+            if uid is None:
+                break
+            rules.discard_asset(game, inv, next(c for c in held if c.uid == uid))
+        kept = len(self._held(ctx, inv))
+        for _ in range(kept):
+            run_effects(self.each, ctx)
+        if kept:
+            run_effects(self.if_any, ctx)
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.each, self.if_any)
+
+
+@register("keep_one_item")
+@dataclass(frozen=True)
+class KeepOneItem(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        items = [c for c in inv.assets if "item" in game.asset_def(c).traits]
+        if len(items) < 2:
+            return
+        options = [Option(game.asset_def(c).name, c.uid) for c in items]
+        keep = items[rules.choose(game, "Keep which Item?", options, kind="keep_item", inv=inv)]
+        for card in items:
+            if card is not keep:
+                rules.discard_asset(game, inv, card)
+
+
+@register("the_storm")
+@dataclass(frozen=True)
+class TheStorm(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        rumors = sum("rumor" in game.content.mythos[a.def_id].traits for a in game.active_mythos)
+        if rumors:
+            for inv in game.turn_order():
+                if not inv.eliminated and not inv.defeated:
+                    rules.change_clues(game, inv, -rumors)
+            return
+        boxed = [m for m in game.mythos_box if "rumor" in game.content.mythos[m].traits]
+        if boxed:
+            pick = game.rng.choice(boxed)
+            game.mythos_box.remove(pick)
+            phases.resolve_mythos(game, game.content.mythos[pick])
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("remove_expedition_cards")
+@dataclass(frozen=True)
+class RemoveExpeditionCards(Effect):
+    """Return each card of the Active Expedition to the game box."""
+
+    lose_if_empty: bool
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_bool("lose_if_empty", False))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        deck = game.encounter_decks["expedition"]
+        target = game.active_expedition
+
+        def other(card: str) -> bool:
+            return game.content.encounters[card].location != target
+
+        deck.cards = [c for c in deck.cards if other(c)]
+        deck.discards = [c for c in deck.discards if other(c)]
+        game.rng.shuffle(deck.cards)
+        rules.update_expedition(game)
+        if self.lose_if_empty and not len(deck):
+            rules.lose(game, "The Expedition Encounter deck is empty. The secrets of the past are lost.")
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("lose_game")
+@dataclass(frozen=True)
+class LoseGame(Effect):
+    text: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("text"))
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.lose(ctx.game, self.text)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("doom_per_gate")
+@dataclass(frozen=True)
+class DoomPerGate(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.advance_doom(ctx.game, len(ctx.game.open_gates()), "each Gate on the game board")
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("purge_assets")
+@dataclass(frozen=True)
+class PurgeAssets(Effect):
+    """Return Assets with value of at least the Eldritch tokens on this card to the game box."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        if ctx.mythos is None:
+            return
+        value = ctx.mythos.eldritch
+
+        def stays(card: AssetCard) -> bool:
+            return game.asset_def(card).cost < value
+
+        game.asset_deck.cards = [c for c in game.asset_deck.cards if stays(c)]
+        game.asset_deck.discards = [c for c in game.asset_deck.discards if stays(c)]
+        game.reserve = [c for c in game.reserve if stays(c)]
+        rules.refill_reserve(game)
+        rules.emit(game, "loss", f"Assets of value {value} or more are returned to the game box.")
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("other_world_encounter")
+@dataclass(frozen=True)
+class OtherWorldEncounter(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        phases.other_world_encounter(ctx.game, ctx.need_inv(self.kind), ctx.mythos)
+
+
+@register("sickness")
+@dataclass(frozen=True)
+class Sickness(Effect):
+    """Place a Health token on this card. Each investigator loses 1 Health per token."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        if ctx.mythos is None:
+            return
+        ctx.mythos.health_tokens += 1
+        for inv in game.turn_order():
+            if not inv.eliminated and not inv.defeated:
+                rules.change_health(game, inv, -ctx.mythos.health_tokens)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("cure_sickness")
+@dataclass(frozen=True)
+class CureSickness(Effect):
+    """Spend Clues equal to the investigators, less 1 per Health token, to solve this Rumor."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        if ctx.mythos is None:
+            return
+        cost = Cost(clues=max(0, len(game.investigators) - ctx.mythos.health_tokens))
+        prompt = f"Spend {cost.clues} Clue(s) to solve this Rumor?"
+        if rules.can_pay(game, inv, cost) and rules.confirm(game, prompt, kind="pay", inv=inv):
+            rules.pay_cost(game, inv, cost)
+            rules.solve_rumor(game, ctx.mythos)
+
+
+@register("crowded_space")
+@dataclass(frozen=True)
+class CrowdedSpace(Effect):
+    """With `count` or more Monsters on `at`, advance Doom to 0 and solve this Rumor."""
+
+    at: str
+    count: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("at"), _positive(r, "count"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        if len(game.locations[self.at].monsters) >= self.count:
+            rules.advance_doom(game, game.doom, f"{self.count} Monsters gather at {rules.loc_name(game, self.at)}")
+            if ctx.mythos is not None:
+                rules.solve_rumor(game, ctx.mythos)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("location", self.at)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("defeat_monsters_here")
+@dataclass(frozen=True)
+class DefeatMonstersHere(Effect):
+    """Defeat each non-Epic Monster here. Only lost Health can defeat an Epic Monster."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        for monster in list(game.locations[inv.location].monsters):
+            if not game.monster_def(monster.def_id).epic:
+                rules.defeat_monster(game, inv, inv.location, monster)
+
+
+@register("give_items")
+@dataclass(frozen=True)
+class GiveItems(Effect):
+    """Give any number of Item possessions to another investigator on any space."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        others = [i for i in game.turn_order() if i is not inv and not i.eliminated and not i.defeated]
+        if not others:
+            return
+        options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in others]
+        target = others[rules.choose(game, "Give Items to whom?", options, kind="ability_target", inv=inv)]
+        while items := [c for c in inv.assets if "item" in game.asset_def(c).traits]:
+            options = [Option(game.asset_def(c).name, c.uid) for c in items]
+            options.append(Option("Done giving", None))
+            uid = options[rules.choose(game, "Give which Item?", options, kind="give_item", inv=inv)].value
+            if uid is None:
+                return
+            card = next(c for c in items if c.uid == uid)
+            inv.assets.remove(card)
+            target.assets.append(card)
+            rules.emit(game, "info", f"{inv.name} gives {game.asset_def(card).name} to {target.name}.")
+
+
+@register("give_clues")
+@dataclass(frozen=True)
+class GiveClues(Effect):
+    """Give any number of Clues to another investigator on any space."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        others = [i for i in game.turn_order() if i is not inv and not i.eliminated and not i.defeated]
+        if not others or inv.clues == 0:
+            return
+        options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in others]
+        target = others[rules.choose(game, "Give Clues to whom?", options, kind="ability_target", inv=inv)]
+        amounts = [Option(str(n), n) for n in range(inv.clues + 1)]
+        amount = amounts[rules.choose(game, "Give how many Clues?", amounts, kind="amount", inv=inv)].value
+        inv.clues -= amount
+        target.clues += amount
+        if amount:
+            rules.emit(game, "info", f"{inv.name} gives {amount} Clue(s) to {target.name}.")
+
+
+@register("brain_case")
+@dataclass(frozen=True)
+class BrainCase(Effect):
+    """Mi-go Brain Case: trade with another investigator on any space, who may then swap spaces."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        others = [i for i in game.turn_order() if i is not inv and not i.eliminated and not i.defeated]
+        if not others:
+            return
+        options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in others]
+        other = others[rules.choose(game, "Trade with whom?", options, kind="trade_partner", inv=inv)]
+        actions.trade_with(game, inv, other)
+        if rules.confirm(game, f"Move {other.name} to your space and swap?", kind="swap_spaces", inv=other):
+            mine, theirs = inv.location, other.location
+            rules.move_investigator(game, other, mine)
+            if other.location == mine:
+                rules.move_investigator(game, inv, theirs)
+
+
+@register("kleptomania")
+@dataclass(frozen=True)
+class Kleptomania(Effect):
+    """Gain 1 random Item from the deck, then test Observation against the value of that Item."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        card = rules.draw_matching(game, kind="item")
+        if card is None:
+            return
+        rules.gain_card(game, inv, card)
+        result = run_test(game, inv, "observation", open_ended=True, label="Kleptomania")
+        if result.successes < game.asset_def(card).cost and card in inv.assets:
+            rules.discard_asset(game, inv, card)
+            rules.gain_condition(game, inv, "detained")
+
+
+@register("gate_per_spell")
+@dataclass(frozen=True)
+class GatePerSpell(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        for _ in range(sum(game.asset_def(c).kind == "spell" for c in inv.assets)):
+            if not game.outcome:
+                rules.spawn_gate(game)

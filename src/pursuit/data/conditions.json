@@ -7,72 +7,166 @@
       "common"
     ],
     "text": "Local Action: Test Influence. If you pass, discard this card. Reckoning: Some men have come to collect on your debt. Flip this card.",
-    "action": {
-      "text": "Settle your Debt: test Influence. If you pass, discard Debt.",
-      "local": true,
-      "effects": [
-        {
-          "type": "test",
-          "skill": "influence",
-          "pass": [
-            {
-              "type": "text",
-              "text": "Your contacts pay off the creditors."
-            },
-            {
-              "type": "remove_self"
-            }
-          ],
-          "fail": [
-            {
-              "type": "text",
-              "text": "The creditors refuse to wait much longer."
-            }
-          ]
-        }
-      ]
-    },
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "Thugs corner you in an alley to collect! Lose 2 Health.",
+        "text": "Beyond Riches: If you fail, a fragment of your soul is ripped away; lose 3 Sanity. Then discard this card.",
         "effects": [
           {
-            "type": "health",
-            "amount": -2
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "fail": [
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ]
           }
         ]
       },
       {
-        "weight": 1,
-        "text": "They seize your equipment as collateral! Discard 1 Item possession or lose 2 Sanity.",
+        "text": "Debt Collector: If you fail, discard 2 Item possessions. Then discard this card.",
         "effects": [
           {
-            "type": "if",
-            "has": {
-              "asset_kind": "item"
-            },
-            "then": [
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "fail": [
               {
                 "type": "lose_asset",
-                "kind": "item"
+                "kind": "item",
+                "count": 2
               }
-            ],
-            "else": [
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Hitmen: If you fail, lose 3 Health. Then discard this card.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "fail": [
               {
-                "type": "sanity",
-                "amount": -2
+                "type": "health",
+                "amount": -3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Local Authorities: If you fail, move to the nearest City space and gain a Detained Condition unless you discard 1 Ally asset. Then discard this card.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "fail": [
+              {
+                "type": "move",
+                "to": "nearest_city"
+              },
+              {
+                "type": "choice",
+                "prompt": "Discard 1 Ally to avoid arrest?",
+                "options": [
+                  {
+                    "label": "Gain a Detained Condition",
+                    "effects": [
+                      {
+                        "type": "gain_condition",
+                        "id": "detained"
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Discard 1 Ally",
+                    "effects": [
+                      {
+                        "type": "lose_asset",
+                        "kind": "ally"
+                      }
+                    ],
+                    "requires": {
+                      "asset_kind": "ally"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Make a Deal: You may gain a Dark Pact Condition. If you do not, the ticking noise begins to hypnotize you, advance Doom by 1. Then discard this card.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Gain a Dark Pact?",
+            "options": [
+              {
+                "label": "Advance Doom by 1",
+                "effects": [
+                  {
+                    "type": "advance_doom",
+                    "amount": 1
+                  }
+                ]
+              },
+              {
+                "label": "Gain a Dark Pact",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "dark_pact"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Unwilling Servant: If you fail, you have no recollection of your actions; gain an Amnesia Condition. Then discard this card.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "fail": [
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
               }
             ]
           }
         ]
       }
-    ]
+    ],
+    "reckoning": [
+      {
+        "type": "flip_self"
+      }
+    ],
+    "action": {
+      "text": "Test Influence. If you pass, discard this card.",
+      "local": true,
+      "effects": [
+        {
+          "type": "test",
+          "skill": "influence",
+          "mod": 0,
+          "pass": [
+            {
+              "type": "remove_self"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": "dark_pact",
@@ -81,48 +175,55 @@
       "deal"
     ],
     "text": "Reckoning: Roll 1 die. On a 1, it is time to fulfil your part of the bargain; flip this card.",
-    "reckoning": [
+    "backs": [
       {
-        "type": "random",
-        "outcomes": [
+        "text": "One of the Thousand: Another investigator of your choice is devoured. Then discard this card.",
+        "effects": [
           {
-            "weight": 5,
-            "text": "The shadows wait a little longer.",
-            "effects": []
+            "type": "one_investigator",
+            "pick": "choose",
+            "others": true,
+            "effects": [
+              {
+                "type": "devour"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Pact with the Dark Man: You are devoured.",
+        "effects": [
+          {
+            "type": "devour"
+          }
+        ]
+      },
+      {
+        "text": "Pact with Yog-Sothoth: Spawn 1 Gate for each Spell you have, then advance the Omen by 1. Then discard this card.",
+        "effects": [
+          {
+            "type": "gate_per_spell"
           },
           {
-            "weight": 1,
-            "text": "The bargain comes due!",
+            "type": "advance_omen",
+            "amount": 1
+          }
+        ]
+      }
+    ],
+    "reckoning": [
+      {
+        "type": "roll",
+        "outcomes": [
+          {
+            "low": 1,
+            "high": 1,
             "effects": [
               {
                 "type": "flip_self"
               }
             ]
-          }
-        ]
-      }
-    ],
-    "backs": [
-      {
-        "weight": 2,
-        "text": "Darkness claims its price from the world! Advance Doom by 1 and lose 2 Sanity.",
-        "effects": [
-          {
-            "type": "advance_doom",
-            "amount": 1
-          },
-          {
-            "type": "sanity",
-            "amount": -2
-          }
-        ]
-      },
-      {
-        "weight": 1,
-        "text": "Hounds from beyond the veil drag you into the dark! You are devoured!",
-        "effects": [
-          {
-            "type": "devour"
           }
         ]
       }
@@ -135,61 +236,121 @@
       "restriction"
     ],
     "text": "You cannot move or perform actions other than the action on this card. Instead of resolving an encounter, flip this card. Local Action: Test Influence. If you pass, discard this card.",
-    "blocks": [
-      "travel",
-      "prepare"
+    "backs": [
+      {
+        "text": "Cruel and Unusual: Spend 1 Clue or test Will-1. If you fail, lose 3 Sanity and gain a Paranoia Condition. Then, discard this card.",
+        "effects": [
+          {
+            "type": "pay",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "test",
+                "skill": "will",
+                "mod": -1,
+                "fail": [
+                  {
+                    "type": "sanity",
+                    "amount": -3
+                  },
+                  {
+                    "type": "gain_condition",
+                    "id": "paranoia"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Holding Cell: Spend 1 Clue or test Influence-1. If you fail, they beat you and leave you to die; lose 2 Health and 2 Sanity. Then, discard this card.",
+        "effects": [
+          {
+            "type": "pay",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "test",
+                "skill": "influence",
+                "mod": -1,
+                "fail": [
+                  {
+                    "type": "health",
+                    "amount": -2
+                  },
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Starvation: Spend 1 Clue or test Strength-1. If you fail, lose 3 Health and gain an Internal Injury Condition. Then, discard this card.",
+        "effects": [
+          {
+            "type": "pay",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "test",
+                "skill": "strength",
+                "mod": -1,
+                "fail": [
+                  {
+                    "type": "health",
+                    "amount": -3
+                  },
+                  {
+                    "type": "gain_condition",
+                    "id": "internal_injury"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
     ],
     "action": {
-      "text": "Talk or slip your way out: test Influence to discard Detained.",
+      "text": "Test Influence. If you pass, discard this card.",
       "local": true,
       "effects": [
         {
           "type": "test",
           "skill": "influence",
+          "mod": 0,
           "pass": [
             {
-              "type": "text",
-              "text": "The guards unlock the cell door."
-            },
-            {
               "type": "remove_self"
-            }
-          ],
-          "fail": [
-            {
-              "type": "text",
-              "text": "The warden denies your release."
             }
           ]
         }
       ]
     },
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
+    "blocks": [
+      "travel",
+      "rest",
+      "trade",
+      "prepare",
+      "acquire",
+      "component",
+      "move"
     ],
-    "backs": [
-      {
-        "weight": 1,
-        "text": "You are released after questioning, though your nerves are frayed. Become Delayed.",
-        "effects": [
-          {
-            "type": "delay"
-          }
-        ]
-      },
-      {
-        "weight": 1,
-        "text": "A sympathetic magistrate drops the charges and returns a piece of evidence. Gain 1 Clue.",
-        "effects": [
-          {
-            "type": "clues",
-            "amount": 1
-          }
-        ]
-      }
-    ]
+    "replaces_encounter": true
   },
   {
     "id": "amnesia",
@@ -198,21 +359,9 @@
       "madness"
     ],
     "text": "When you perform a Rest action, you may roll 1 die. On a 5 or 6, discard this card. Reckoning: Test Will. If you fail, flip this card.",
-    "modifiers": [
-      {
-        "amount": -1,
-        "skill": "lore"
-      }
-    ],
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "Forgotten Crimes: Evidence surfaces that you went on a crime spree during your blackout! Gain Detained.",
+        "text": "Forgotten Crimes: Gain a Detained Condition. Then discard this card.",
         "effects": [
           {
             "type": "gain_condition",
@@ -221,16 +370,33 @@
         ]
       },
       {
-        "weight": 1,
-        "text": "Sudden Clarity: Your memories rush back all at once! Gain 2 Clues and lose 1 Sanity.",
+        "text": "The Terrible Truth: Gain a Dark Pact Condition. Then discard this card.",
         "effects": [
           {
-            "type": "clues",
-            "amount": 2
-          },
+            "type": "gain_condition",
+            "id": "dark_pact"
+          }
+        ]
+      },
+      {
+        "text": "Unexplained Debts: Gain a Debt Condition. Then discard this card.",
+        "effects": [
           {
-            "type": "sanity",
-            "amount": -1
+            "type": "gain_condition",
+            "id": "debt"
+          }
+        ]
+      }
+    ],
+    "rest_roll": true,
+    "reckoning": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "fail": [
+          {
+            "type": "flip_self"
           }
         ]
       }
@@ -243,38 +409,66 @@
       "madness"
     ],
     "text": "When you perform a Rest action, you may roll 1 die. On a 5 or 6, discard this card. Reckoning: Test Will. If you fail, flip this card.",
-    "modifiers": [
-      {
-        "amount": -1,
-        "skill": "influence"
-      }
-    ],
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "You barricade your door and refuse to come out! Lose 1 Sanity and become Delayed.",
+        "text": "Agoraphobia: If you are on a City space, the presence of other people erodes your reason; lose 2 Sanity. Then flip this card.",
         "effects": [
           {
-            "type": "sanity",
-            "amount": -1
-          },
+            "type": "if",
+            "has": {
+              "at": {
+                "terrain": "city"
+              }
+            },
+            "then": [
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "keep": true
+      },
+      {
+        "text": "Kleptomania: Gain 1 random Item Asset from the deck. Then, you must hide from the authorities (Observation). If your test result is less than the value of the Asset you gained, discard that Asset and gain a Detained Condition. Then discard this card.",
+        "effects": [
           {
-            "type": "delay"
+            "type": "kleptomania"
           }
         ]
       },
       {
-        "weight": 1,
-        "text": "Someone really was following you! A Cultist ambushes you!",
+        "text": "Violent Outbursts: Each other investigator on your space loses 2 Health and you discard 1 Ally Asset. Then flip this card.",
         "effects": [
           {
-            "type": "ambush",
-            "id": "cultist"
+            "type": "each_investigator",
+            "effects": [
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ],
+            "here": true,
+            "others": true
+          },
+          {
+            "type": "lose_asset",
+            "kind": "ally"
+          }
+        ],
+        "keep": true
+      }
+    ],
+    "rest_roll": true,
+    "reckoning": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "fail": [
+          {
+            "type": "flip_self"
           }
         ]
       }
@@ -287,49 +481,45 @@
       "madness"
     ],
     "text": "When you perform a Rest action, you may roll 1 die. On a 5 or 6, discard this card. Reckoning: Test Will. If you fail, flip this card.",
-    "modifiers": [
-      {
-        "amount": -1,
-        "skill": "observation"
-      }
-    ],
-    "action": {
-      "text": "Ground yourself: test Will to discard Hallucinations.",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "will",
-          "pass": [
-            {
-              "type": "remove_self"
-            }
-          ]
-        }
-      ]
-    },
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "You fire wildly at phantoms in the dark! Lose 2 Sanity.",
+        "text": "Delusions: Discard all of your Clues. Then discard this card.",
         "effects": [
           {
-            "type": "sanity",
-            "amount": -2
+            "type": "clues",
+            "amount": -99
           }
         ]
       },
       {
-        "weight": 1,
-        "text": "The visions part to reveal a real truth. Gain 1 Clue.",
+        "text": "Swarming: Lose 3 Sanity. Then discard this card.",
         "effects": [
           {
-            "type": "clues",
-            "amount": 1
+            "type": "sanity",
+            "amount": -3
+          }
+        ]
+      },
+      {
+        "text": "The Voices: Lose 1 Sanity. Then flip this card.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ],
+        "keep": true
+      }
+    ],
+    "rest_roll": true,
+    "reckoning": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "fail": [
+          {
+            "type": "flip_self"
           }
         ]
       }
@@ -342,35 +532,90 @@
       "injury"
     ],
     "text": "When you perform a Rest action, you may roll 1 die. On a 5 or 6, discard this card. Reckoning: Test Strength. If you fail, flip this card.",
-    "modifiers": [
-      {
-        "amount": -1,
-        "skill": "strength"
-      }
-    ],
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "Your leg gives out on the road! Lose 1 Health and become Delayed.",
+        "text": "Stabbing Pain: Become Delayed. Then flip this card.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ],
+        "keep": true
+      },
+      {
+        "text": "Strange Remedy: Lose 1 Health. You may become Delayed to discard this card. If you do not discard it, flip this card.",
         "effects": [
           {
             "type": "health",
             "amount": -1
           },
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Become Delayed to discard this card?",
+            "options": [
+              {
+                "label": "Keep the card",
+                "effects": []
+              },
+              {
+                "label": "Become Delayed",
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              }
+            ]
           }
-        ]
+        ],
+        "keep": true
       },
       {
-        "weight": 1,
-        "text": "With rest and splints, the bone sets cleanly.",
-        "effects": []
+        "text": "Twisted Knee: Lose 2 Health unless you become Delayed. Then flip this card.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Lose 2 Health unless you become Delayed.",
+            "options": [
+              {
+                "label": "Lose 2 Health",
+                "effects": [
+                  {
+                    "type": "health",
+                    "amount": -2
+                  }
+                ]
+              },
+              {
+                "label": "Become Delayed",
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "keep": true
+      }
+    ],
+    "rest_roll": true,
+    "reckoning": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "fail": [
+          {
+            "type": "flip_self"
+          }
+        ]
       }
     ]
   },
@@ -381,33 +626,49 @@
       "injury"
     ],
     "text": "When you perform a Rest action, you may roll 1 die. On a 5 or 6, discard this card. Reckoning: Test Strength. If you fail, flip this card.",
-    "modifiers": [
-      {
-        "amount": -1,
-        "skill": "strength",
-        "context": "combat"
-      }
-    ],
-    "reckoning": [
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "A sharp spasm leaves you gasping! Lose 2 Health.",
+        "text": "Fractured Spine: Discard all but 1 of your Item possessions. Then discard this card.",
         "effects": [
           {
-            "type": "health",
-            "amount": -2
+            "type": "keep_one_item"
           }
         ]
       },
       {
-        "weight": 1,
-        "text": "The pain subsides at last.",
-        "effects": []
+        "text": "Muscle Spasms: Discard 1 Item possession and become Delayed. Then discard this card.",
+        "effects": [
+          {
+            "type": "lose_asset",
+            "kind": "item"
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "text": "Nerve Damage: Discard 1 Item possession. Then flip this card.",
+        "effects": [
+          {
+            "type": "lose_asset",
+            "kind": "item"
+          }
+        ],
+        "keep": true
+      }
+    ],
+    "rest_roll": true,
+    "reckoning": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "fail": [
+          {
+            "type": "flip_self"
+          }
+        ]
       }
     ]
   },
@@ -418,44 +679,50 @@
       "injury"
     ],
     "text": "When you perform a Rest action, you may roll 1 die. On a 5 or 6, discard this card. Reckoning: Test Strength. If you fail, flip this card.",
-    "action": {
-      "text": "Seek treatment: test Strength to discard Internal Injury.",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "strength",
-          "pass": [
-            {
-              "type": "remove_self"
-            }
-          ]
-        }
-      ]
-    },
-    "reckoning": [
-      {
-        "type": "health",
-        "amount": -1
-      },
-      {
-        "type": "flip_self"
-      }
-    ],
     "backs": [
       {
-        "weight": 1,
-        "text": "The bleeding worsens! Lose 2 Health.",
+        "text": "Cracked Rib: Lose 1 Health. Then flip this card.",
         "effects": [
           {
             "type": "health",
-            "amount": -2
+            "amount": -1
+          }
+        ],
+        "keep": true
+      },
+      {
+        "text": "Excruciating Pain: Lose 3 Health. Then discard this card.",
+        "effects": [
+          {
+            "type": "health",
+            "amount": -3
           }
         ]
       },
       {
-        "weight": 1,
-        "text": "The crisis passes and you begin to mend.",
-        "effects": []
+        "text": "Internal Bleeding: Lose 1 Health and become Delayed. Then discard this card.",
+        "effects": [
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ],
+    "rest_roll": true,
+    "reckoning": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "fail": [
+          {
+            "type": "flip_self"
+          }
+        ]
       }
     ]
   },
@@ -466,32 +733,71 @@
       "boon"
     ],
     "text": "4, 5, and 6's count as successes on your tests. If you would gain another Blessed Condition, flip this card instead. If you would gain a Cursed Condition, discard this card instead. Reckoning: Roll 1 die. On a 1 or 2, discard this card.",
-    "reckoning": [
+    "backs": [
       {
-        "type": "random",
-        "outcomes": [
+        "text": "Beloved of Bast: Recover 2 Health and 2 Sanity. Then, flip this card.",
+        "effects": [
           {
-            "weight": 4,
-            "text": "Your blessing endures.",
-            "effects": []
+            "type": "health",
+            "amount": 2
           },
           {
-            "weight": 2,
-            "text": "Your blessing fades.",
+            "type": "sanity",
+            "amount": 2
+          }
+        ],
+        "keep": true
+      },
+      {
+        "text": "Blessing of Nodens: You may discard one Monster of your choice. Then flip this card.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard 1 Monster of your choice?",
+            "options": [
+              {
+                "label": "Do not discard",
+                "effects": []
+              },
+              {
+                "label": "Discard a Monster",
+                "effects": [
+                  {
+                    "type": "discard_monster",
+                    "where": "choose_space"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "keep": true
+      },
+      {
+        "text": "Visions of Hypnos: Gain 2 Clues. Then flip this card.",
+        "effects": [
+          {
+            "type": "clues",
+            "amount": 2
+          }
+        ],
+        "keep": true
+      }
+    ],
+    "reckoning": [
+      {
+        "type": "roll",
+        "outcomes": [
+          {
+            "low": 1,
+            "high": 2,
             "effects": [
               {
-                "type": "flip_self"
+                "type": "remove_self"
               }
             ]
           }
         ]
-      }
-    ],
-    "backs": [
-      {
-        "weight": 1,
-        "text": "The grace that protected you departs, leaving you at peace.",
-        "effects": []
       }
     ]
   },
@@ -503,32 +809,59 @@
       "curse"
     ],
     "text": "Only 6's count as successes on your tests. If you would gain another Cursed Condition, flip this card instead. If you would gain a Blessed Condition, discard this card instead. Reckoning: Roll 1 die. On a 4, 5, or 6, discard this card.",
-    "reckoning": [
+    "backs": [
       {
-        "type": "random",
-        "outcomes": [
+        "text": "Harried: A Monster ambushes you. Then, flip this card.",
+        "effects": [
           {
-            "weight": 4,
-            "text": "The curse still clings to you.",
-            "effects": []
-          },
+            "type": "ambush"
+          }
+        ],
+        "keep": true
+      },
+      {
+        "text": "Karmic Justice: Discard this card.",
+        "effects": []
+      },
+      {
+        "text": "The Innsmouth Look: If you are on a Sea space, your body begins to change horribly into a fish-like creature, you are devoured. If you are not on a Sea space, the change cripples you; lose 3 Health and discard this card.",
+        "effects": [
           {
-            "weight": 2,
-            "text": "The curse runs its course.",
-            "effects": [
+            "type": "if",
+            "has": {
+              "at": {
+                "terrain": "sea"
+              }
+            },
+            "then": [
               {
-                "type": "flip_self"
+                "type": "devour"
+              }
+            ],
+            "else": [
+              {
+                "type": "health",
+                "amount": -3
               }
             ]
           }
         ]
       }
     ],
-    "backs": [
+    "reckoning": [
       {
-        "weight": 1,
-        "text": "The shadow lifts from your fate.",
-        "effects": []
+        "type": "roll",
+        "outcomes": [
+          {
+            "low": 4,
+            "high": 6,
+            "effects": [
+              {
+                "type": "remove_self"
+              }
+            ]
+          }
+        ]
       }
     ]
   }

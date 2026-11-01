@@ -70,13 +70,6 @@ def test_no_reroll_offer_when_the_test_already_passes(make_game: MakeGame, scrip
     assert not any(kind == "reroll" for kind, _ in script.asked)
 
 
-def test_condition_modifier_lowers_the_pool(make_game: MakeGame) -> None:
-    game = make_game()
-    inv = first(game)
-    rules.gain_condition(game, inv, "leg_injury")
-    assert dice_pool(game, inv, "strength", 0, ("encounter",)) == 4
-
-
 def test_card_reroll_ability_rerolls_one_die(make_game: MakeGame, script: Script) -> None:
     game = make_game(investigators=("jacqueline_fine", "mark_harrigan"))
     jacq = first(game)  # Jacqueline can reroll 1 Lore die

@@ -98,8 +98,9 @@ class HeuristicBot:
                     if mdef.where.matches(game, loc):
                         goals.append((0, dist[loc], loc))
         for active in game.active_mythos:
-            if active.rumor_space and active.rumor_space in dist:
-                goals.append((0, dist[active.rumor_space], active.rumor_space))
+            rumor_at = rules.rumor_location(game, active)
+            if rumor_at and rumor_at in dist:
+                goals.append((0, dist[rumor_at], rumor_at))
         for loc, monster in game.all_monsters():
             mon_def = game.content.monsters[monster.def_id]
             if mon_def.epic:

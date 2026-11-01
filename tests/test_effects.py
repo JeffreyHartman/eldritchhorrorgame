@@ -283,9 +283,17 @@ def test_mystery_progress_effect(make_game: MakeGame) -> None:
 def test_flip_conditions_resolves_back_and_discards(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
+    rules.gain_condition(game, inv, "amnesia")
+    run(game, inv, [{"type": "flip_conditions", "id": "amnesia"}])
+    assert not rules.has_condition(inv, "amnesia")
+
+
+def test_flip_conditions_keeps_a_card_whose_back_says_flip(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
     rules.gain_condition(game, inv, "blessed")
     run(game, inv, [{"type": "flip_conditions", "trait": "boon"}])
-    assert inv.conditions == []
+    assert rules.has_condition(inv, "blessed")
 
 
 @pytest.mark.parametrize(

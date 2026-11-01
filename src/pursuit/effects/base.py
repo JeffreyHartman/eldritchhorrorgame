@@ -18,7 +18,7 @@ class Ctx:
 
     `inv` is None for world effects, such as a Mythos card with no target investigator.
     `condition`, `asset`, `mythos`, and `monster` are set while resolving effects on those
-    components.
+    components. `tag` is an extra test context, such as "other_world".
     """
 
     game: Game
@@ -30,6 +30,7 @@ class Ctx:
     monster: MonsterInst | None = None
     gate: str | None = None
     test_successes: int | None = None
+    tag: str | None = None
 
     def stopped(self) -> bool:
         if self.game.outcome is not None:

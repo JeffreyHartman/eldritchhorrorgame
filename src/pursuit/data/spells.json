@@ -164,7 +164,7 @@
   },
   {
     "id": "shrivelling",
-    "name": "Shrivelling",
+    "name": "Shriveling",
     "traits": [
       "incantation"
     ],
@@ -184,7 +184,7 @@
       }
     ],
     "action": {
-      "text": "Cast Shrivelling: test Lore (-1). Pass: Monsters here lose 3 Health. Then flip this card.",
+      "text": "Cast Shriveling: test Lore (-1). Pass: Monsters here lose 3 Health. Then flip this card.",
       "effects": [
         {
           "type": "test",
@@ -337,7 +337,7 @@
     "traits": [
       "ritual"
     ],
-    "count": 1,
+    "count": 2,
     "text": "Action: Test Lore-1. If you pass, an investigator of your choice may move to any space. Then flip this card.",
     "flavor": "Whisper a question into the dark between stars.",
     "action": {

@@ -49,17 +49,6 @@ EXPEDITION_LOCATIONS = (
     "antarctica",
 )
 LOCATION_DECKS = ("americas", "europe", "asia_australia")
-OTHER_WORLD_TYPES = (
-    "the_abyss",
-    "the_dreamlands",
-    "the_future",
-    "the_past",
-    "the_underworld",
-    "city_of_the_great_race",
-    "great_hall_of_celaeno",
-    "lost_carcosa",
-    "yuggoth",
-)
 CONTEXTS = (
     "any",
     "encounter",
@@ -69,15 +58,21 @@ CONTEXTS = (
     "acquire",
     "cast",
     "mystery",
+    "other_world",
 )
 ASSET_KINDS = ("item", "ally", "service", "trinket", "spell", "artifact")
 RESERVE_KINDS = ("item", "ally", "service", "trinket")
 PERKS = (
-    "rest_bonus",
-    "acquire_bonus",
+    "rest_sanity",
     "double_improve",
+    "no_delay",
+    "clue_discount",
+    "ignore_monsters",
 )
-BLOCKABLE_ACTIONS = ("travel", "rest", "trade", "prepare", "acquire", "component")
+BLOCKABLE_ACTIONS = ("travel", "rest", "trade", "prepare", "acquire", "component", "move")
+MYTHOS_BLOCKS = ("reserve", "close_gate", "rest", "expedition")
+MYTHOS_DIFFICULTIES = ("easy", "normal", "hard")
+ACTIVE_EXPEDITION = "active_expedition"
 MONSTER_FORMS = ("beast", "humanoid", "horror", "swarm", "spirit")
 MYSTERY_KINDS = ("encounter", "research", "gate", "trophy", "defeat", "spend", "spell", "ambush", "special")
 SPECIAL_DECKS = ("special_cthulhu", "special_yog_sothoth")
@@ -200,7 +195,7 @@ class InvestigatorFilter:
             return False
         if self.asset is not None and all(a.id != self.asset for a in assets):
             return False
-        if self.asset_kind is not None and all(a.kind != self.asset_kind for a in assets):
+        if self.asset_kind is not None and not any(a.is_a(self.asset_kind) for a in assets):
             return False
         if self.asset_trait is not None and all(self.asset_trait not in a.traits for a in assets):
             return False
@@ -298,6 +293,8 @@ class Modifier:
     context: str = "any"
     where: LocationFilter | None = None
     additional: bool = False
+    aura: bool = False
+    except_context: str | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> Modifier:
@@ -307,11 +304,15 @@ class Modifier:
             context=r.get_enum("context", CONTEXTS, "any"),
             where=read_location_filter(r, "where"),
             additional=r.get_bool("additional", False),
+            aura=r.get_bool("aura", False),
+            except_context=r.get_enum("except_context", CONTEXTS, None),
         )
         r.done()
         return m
 
     def applies(self, skill: str, contexts: tuple[str, ...]) -> bool:
+        if self.except_context in contexts:
+            return False
         return (self.skill is None or self.skill == skill) and (self.context == "any" or self.context in contexts)
 
     def describe(self) -> str:
@@ -325,6 +326,71 @@ class Modifier:
 
 def read_modifiers(r: Reader, key: str) -> tuple[Modifier, ...]:
     return tuple(Modifier.parse(m) for m in r.objects(key, []))
+
+
+@dataclass(frozen=True)
+class Boost:
+    """A bonus the investigator chooses before rolling. It lasts for the Combat Encounter."""
+
+    text: str
+    modifiers: tuple[Modifier, ...]
+    discard: bool = False
+    once_per_round: bool = False
+
+    @classmethod
+    def parse(cls, r: Reader) -> Boost:
+        b = cls(
+            text=r.get_str("text"),
+            modifiers=read_modifiers(r, "modifiers"),
+            discard=r.get_bool("discard", False),
+            once_per_round=r.get_bool("once_per_round", False),
+        )
+        r.done()
+        return b
+
+
+@dataclass(frozen=True)
+class Prevent:
+    """Prevent loss of `stat`. An `amount` of 0 prevents all of the loss."""
+
+    stat: str
+    amount: int
+    discard: bool = False
+    local: bool = False
+    clue_cost: int = 0
+    once_per_round: bool = False
+    spell_only: bool = False
+
+    @classmethod
+    def parse(cls, r: Reader) -> Prevent:
+        p = cls(
+            stat=r.get_enum("stat", ("health", "sanity")),
+            amount=r.get_int("amount", 0),
+            discard=r.get_bool("discard", False),
+            local=r.get_bool("local", False),
+            clue_cost=r.get_int("clue_cost", 0),
+            once_per_round=r.get_bool("once_per_round", False),
+            spell_only=r.get_bool("spell_only", False),
+        )
+        r.done()
+        return p
+
+
+@dataclass(frozen=True)
+class SixRule:
+    """Each 6 rolled on a matching test counts as 2 successes."""
+
+    skill: str | None = None
+    context: str = "any"
+
+    @classmethod
+    def parse(cls, r: Reader) -> SixRule:
+        s = cls(_skill_or_none(r, "skill"), r.get_enum("context", CONTEXTS, "any"))
+        r.done()
+        return s
+
+    def applies(self, skill: str, contexts: tuple[str, ...]) -> bool:
+        return (self.skill is None or self.skill == skill) and (self.context == "any" or self.context in contexts)
 
 
 def read_perks(r: Reader, key: str) -> dict[str, int]:
@@ -341,15 +407,16 @@ def read_perks(r: Reader, key: str) -> dict[str, int]:
 
 @dataclass(frozen=True)
 class RerollAbility:
-    """Allows rerolling 1 die (or all dice) on a matching test."""
+    """Reroll 1 die or any number of dice on a matching test, or add 1 to 1 die."""
 
     text: str
     skill: str | None = None
     context: str = "any"
-    all_dice: bool = False
+    any_dice: bool = False
     once_per_round: bool = False
     discard: bool = False
     sanity_cost: int = 0
+    add_one: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> RerollAbility:
@@ -357,10 +424,11 @@ class RerollAbility:
             text=r.get_str("text"),
             skill=_skill_or_none(r, "skill"),
             context=r.get_enum("context", CONTEXTS, "any"),
-            all_dice=r.get_bool("all_dice", False),
+            any_dice=r.get_bool("any_dice", False),
             once_per_round=r.get_bool("once_per_round", False),
             discard=r.get_bool("discard", False),
             sanity_cost=r.get_int("sanity_cost", 0),
+            add_one=r.get_bool("add_one", False),
         )
         r.done()
         return a
@@ -380,6 +448,7 @@ class ActionAbility:
     target: str
     local: bool
     requires: InvestigatorFilter | None
+    free: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> ActionAbility:
@@ -391,6 +460,7 @@ class ActionAbility:
             target=r.get_enum("target", ("self", "investigator_here", "any_investigator"), "self"),
             local=r.get_bool("local", False),
             requires=read_investigator_filter(r, "requires"),
+            free=r.get_bool("free", False),
         )
         r.done()
         if not a.effects:
@@ -412,6 +482,7 @@ class CardBack:
     weight: int = 1
     min_successes: int | None = None
     max_successes: int | None = None
+    keep: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> CardBack:
@@ -421,6 +492,7 @@ class CardBack:
             weight=r.get_int("weight", 1),
             min_successes=r.get_int("min_successes", None),
             max_successes=r.get_int("max_successes", None),
+            keep=r.get_bool("keep", False),
         )
         r.done()
         if b.weight < 1:
@@ -471,6 +543,17 @@ class AssetDef:
     damage_reduction: int = 0
     sanity_reduction: int = 0
     perks: dict[str, int] = field(default_factory=dict)
+    boosts: tuple[Boost, ...] = ()
+    prevents: tuple[Prevent, ...] = ()
+    double_sixes: tuple[SixRule, ...] = ()
+    rest_prompt: str = ""
+    on_rest: tuple[Effect, ...] = ()
+    rest_aura: tuple[Effect, ...] = ()
+    on_close_gate: tuple[Effect, ...] = ()
+    on_combat_win: tuple[Effect, ...] = ()
+
+    def is_a(self, kind: str) -> bool:
+        return self.kind == kind or kind in self.traits
 
 
 @dataclass(frozen=True)
@@ -486,6 +569,8 @@ class ConditionDef:
     action: ActionAbility | None
     reckoning: tuple[Effect, ...]
     backs: tuple[CardBack, ...]
+    rest_roll: bool = False
+    replaces_encounter: bool = False
 
 
 @dataclass(frozen=True)
@@ -575,6 +660,10 @@ class MythosDef:
     encounter_text: str = ""
     encounter_effects: tuple[Effect, ...] = ()
     on_zero_eldritch: tuple[Effect, ...] = ()
+    difficulty: str = "normal"
+    blocks: tuple[str, ...] = ()
+    rumor_monster: str | None = None
+    trophy_space: str | None = None
 
 
 @dataclass(frozen=True)
@@ -699,8 +788,7 @@ class DifficultyDef:
     id: str
     label: str
     text: str
-    doom_mod: int
-    start_gates_mod: int
+    removes: str | None
 
 
 @dataclass(frozen=True)

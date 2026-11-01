@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
+from pursuit.controller import Option
 from pursuit.engine import rules
 from pursuit.engine.state import AssetCard, Game, Investigator
 
@@ -51,10 +53,15 @@ def modifier_sources(game: Game, inv: Investigator, skill: str, contexts: tuple[
             # Local investigator auras (e.g. Jim Culver, Silas Marsh) use additional=True
             aura = tuple(m for m in idef.modifiers if m.additional)
             add(idef.name, aura)
+            for card in person.assets:
+                adef = content.assets[card.def_id]
+                add(adef.name, tuple(m for m in adef.modifiers if m.aura))
 
     for card in inv.assets:
         adef = content.assets[card.def_id]
         add(adef.name, adef.modifiers)
+    for name, modifier in game.boosts:
+        add(name, (modifier,))
     for inst in inv.conditions:
         cdef = content.conditions[inst.def_id]
         add(cdef.name, cdef.modifiers)
@@ -73,6 +80,41 @@ def dice_pool(game: Game, inv: Investigator, skill: str, mod: int, contexts: tup
     return inv.skill(skill) + mod + sum(a for _, a in modifier_sources(game, inv, skill, contexts))
 
 
+def _offer_boosts(game: Game, inv: Investigator, skill: str, contexts: tuple[str, ...]) -> None:
+    for card in list(inv.assets):
+        adef = game.asset_def(card)
+        for boost in adef.boosts:
+            spent = boost.once_per_round and card.exhausted
+            if spent or not any(m.applies(skill, contexts) for m in boost.modifiers):
+                continue
+            if not rules.confirm(game, f"Use {adef.name}? ({boost.text})", kind="boost", inv=inv):
+                continue
+            card.exhausted = card.exhausted or boost.once_per_round
+            game.boosts.extend((adef.name, m) for m in boost.modifiers)
+            if boost.discard:
+                rules.discard_asset(game, inv, card)
+                break
+
+
+def _sixes_double(game: Game, inv: Investigator, skill: str, contexts: tuple[str, ...]) -> bool:
+    return any(rule.applies(skill, contexts) for c in inv.assets for rule in game.asset_def(c).double_sixes)
+
+
+def _pick_dice(game: Game, inv: Investigator, rolls: list[int], success_on: int) -> list[int]:
+    """Ask which failed dice to reroll, one at a time."""
+    left = [i for i, r in enumerate(rolls) if r < success_on]
+    picked: list[int] = []
+    while left:
+        options = [Option(f"Reroll the die showing {rolls[i]}", i) for i in left]
+        options.append(Option("Roll the chosen dice", None, enabled=bool(picked)))
+        index = options[rules.choose(game, "Reroll which die?", options, kind="reroll_dice", inv=inv)].value
+        if index is None:
+            break
+        left.remove(index)
+        picked.append(index)
+    return picked
+
+
 def _offer_card_rerolls(
     game: Game,
     inv: Investigator,
@@ -81,6 +123,7 @@ def _offer_card_rerolls(
     rolls: list[int],
     success_on: int,
     needed: int,
+    score: Callable[[list[int]], int],
 ) -> list[int]:
     from pursuit.content.defs import RerollAbility
 
@@ -102,25 +145,28 @@ def _offer_card_rerolls(
         failed = [i for i, r in enumerate(rolls) if r < success_on]
         if not failed:
             break
-        prompt = f"Use {name} to reroll ({rr.text})?"
+        prompt = f"Use {name}? ({rr.text})"
         if not rules.confirm(game, prompt, kind="reroll_card", inv=inv):
             continue
         if rr.sanity_cost:
-            rules.change_sanity(game, inv, -rr.sanity_cost)
+            rules.change_sanity(game, inv, -rr.sanity_cost, preventable=False)
         if rr.once_per_round and src_card is not None:
             src_card.exhausted = True
         if rr.discard and src_card is not None:
             rules.discard_asset(game, inv, src_card)
-        if rr.all_dice:
-            rolls = [r if r >= success_on else game.roll_die() for r in rolls]
+        if rr.add_one:
+            rolls[max(failed, key=lambda i: rolls[i])] += 1
+        elif rr.any_dice:
+            for idx in _pick_dice(game, inv, rolls, success_on):
+                rolls[idx] = game.roll_die()
         else:
             idx = min(failed, key=lambda i: rolls[i])
             rolls[idx] = game.roll_die()
-        successes = sum(r >= success_on for r in rolls)
+        successes = score(rolls)
         rules.emit(
             game,
             "dice",
-            f"{inv.name} uses {name} and rerolls: {successes} success(es).",
+            f"{inv.name} uses {name}: {successes} success(es).",
             rolls=list(rolls),
             successes=successes,
             needed=needed,
@@ -152,10 +198,16 @@ def run_test(
     elif cursed and not blessed:
         success_on = min(6, success_on + 1)
 
+    _offer_boosts(game, inv, skill, contexts)
     pool = dice_pool(game, inv, skill, mod, contexts)
     count = max(1, pool)
+    sixes_double = _sixes_double(game, inv, skill, contexts)
+
+    def score(dice: list[int]) -> int:
+        return sum(2 if sixes_double and r == 6 else 1 for r in dice if r >= success_on)
+
     rolls = [game.roll_die() for _ in range(count)]
-    successes = sum(r >= success_on for r in rolls)
+    successes = score(rolls)
     what = f"{skill.title()} ({label})" if label else skill.title()
     rules.emit(
         game,
@@ -169,8 +221,8 @@ def run_test(
     )
 
     if any(r < success_on for r in rolls):
-        rolls = _offer_card_rerolls(game, inv, skill, contexts, rolls, success_on, needed)
-        successes = sum(r >= success_on for r in rolls)
+        rolls = _offer_card_rerolls(game, inv, skill, contexts, rolls, success_on, needed, score)
+        successes = score(rolls)
 
     while allow_clues and inv.clues > 0 and any(r < success_on for r in rolls):
         short = successes < needed
@@ -184,7 +236,7 @@ def run_test(
         failed = [i for i, r in enumerate(rolls) if r < success_on]
         idx = min(failed, key=lambda i: rolls[i])
         rolls[idx] = game.roll_die()
-        successes = sum(r >= success_on for r in rolls)
+        successes = score(rolls)
         rules.emit(
             game,
             "dice",

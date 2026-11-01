@@ -15,7 +15,7 @@ from pursuit.content.defs import SKILLS, AssetDef, ConditionDef, InvestigatorDef
 from pursuit.content.loader import Content
 from pursuit.engine import actions
 from pursuit.engine.dice import dice_pool
-from pursuit.engine.rules import toughness
+from pursuit.engine.rules import rumor_location, toughness
 from pursuit.engine.state import Game, Investigator, Phase
 
 ART_DIR = Path(__file__).resolve().parent / "art"
@@ -187,7 +187,7 @@ def location_panel(game: Game, loc_id: str) -> Panel:
         flags.append(" ACTIVE EXPEDITION ", style="bold black on yellow")
         flags.append(" ")
     for active in game.active_mythos:
-        if active.rumor_space == loc_id:
+        if rumor_location(game, active) == loc_id:
             flags.append(" RUMOR ", style="bold white on magenta")
             flags.append(" ")
     if flags:

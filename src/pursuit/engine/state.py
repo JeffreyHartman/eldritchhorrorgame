@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from pursuit.content.defs import OMEN_COLORS, OMEN_TRACK
 
 if TYPE_CHECKING:
-    from pursuit.content.defs import AssetDef, LocationDef, MonsterDef, MysteryDef, OldOneDef, ReferenceRow
+    from pursuit.content.defs import AssetDef, LocationDef, Modifier, MonsterDef, MysteryDef, OldOneDef, ReferenceRow
     from pursuit.content.loader import Content
     from pursuit.controller import Controller
 
@@ -57,6 +57,8 @@ class ActiveMythos:
     def_id: str
     eldritch: int = 0
     rumor_space: str | None = None
+    health_tokens: int = 0
+    trophies: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -65,7 +67,6 @@ class LocationState:
     clue: bool = False
     eldritch: int = 0
     gate: bool = False
-    other_world: str | None = None
     monsters: list[MonsterInst] = field(default_factory=list)
     fallen: list[FallenInvestigator] = field(default_factory=list)
 
@@ -197,10 +198,10 @@ class Game:
     encounter_decks: dict[str, Deck[str]] = field(default_factory=dict)
     mythos_deck: list[str] = field(default_factory=list)
     mythos_discards: list[str] = field(default_factory=list)
+    mythos_box: list[str] = field(default_factory=list)
     active_mythos: list[ActiveMythos] = field(default_factory=list)
     gate_deck: Deck[str] = field(default_factory=Deck)
     clue_deck: Deck[str] = field(default_factory=Deck)
-    other_world_deck: Deck[str] = field(default_factory=Deck)
     monster_cup: list[str] = field(default_factory=list)
     set_aside: list[str] = field(default_factory=list)
     epics_gone: list[str] = field(default_factory=list)
@@ -210,9 +211,14 @@ class Game:
     outcome_reason: str = ""
     log: list[str] = field(default_factory=list)
     stats: dict[str, int] = field(default_factory=dict)
-    # Not saved. `spell_lore_passed` lasts for one Spell action. `ctl` receives every decision
-    # and event. `roll` makes dice scriptable in tests.
+    # Not saved, because none of these outlast a decision point that saves. `spell_lore_passed`
+    # lasts for one Spell action, `casting` is True while a Spell resolves, and `boosts` lasts
+    # for one Combat Encounter. `ctl` receives every decision and event. `roll` makes dice
+    # scriptable in tests.
     spell_lore_passed: bool = field(default=False, repr=False, compare=False)
+    casting: bool = field(default=False, repr=False, compare=False)
+    force_ones: bool = field(default=False, repr=False, compare=False)
+    boosts: list[tuple[str, Modifier]] = field(default_factory=list, repr=False, compare=False)
     ctl: Controller = field(default_factory=NullController, repr=False, compare=False)
     roll: Callable[[], int] | None = field(default=None, repr=False, compare=False)
 
@@ -224,6 +230,8 @@ class Game:
         return value
 
     def roll_die(self) -> int:
+        if self.force_ones:
+            return 1
         return self.roll() if self.roll else self.rng.randint(1, 6)
 
     @property

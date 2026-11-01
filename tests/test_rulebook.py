@@ -2,11 +2,31 @@
 
 from __future__ import annotations
 
-from conftest import MakeGame, Script, first, set_dice
+import random
+from collections import Counter
+
+import pytest
+
+from conftest import MakeGame, Script, first, kinds, set_dice
+from pursuit.bots import RandomBot
+from pursuit.content.defs import Cost
+from pursuit.content.loader import Content
 from pursuit.effects import library
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine import actions, combat, dice, phases, rules
-from pursuit.engine.state import Game, Investigator, MonsterInst, MysteryState, Phase
+from pursuit.engine.setup import GameConfig, new_game
+from pursuit.engine.state import ActiveMythos, Game, Investigator, MonsterInst, MysteryState, Phase
+
+
+class FixedBack(random.Random):
+    """An rng whose `choices` always takes the card back at `index`."""
+
+    def __init__(self, index: int) -> None:
+        super().__init__(0)
+        self.index = index
+
+    def choices(self, population, weights=None, *, cum_weights=None, k=1):  # type: ignore[no-untyped-def]
+        return [population[self.index]]
 
 
 def test_acquire_assets_offers_clue_rerolls_after_the_first_success(make_game: MakeGame, script: Script) -> None:
@@ -460,3 +480,461 @@ def test_key_and_gate_clue_bonus_adds_successes(make_game: MakeGame, script: Scr
         script.add("spend_for_test", True)
     effect.apply(Ctx(game, inv, "test"))
     assert mys.progress == 1 and inv.clues == 0
+
+
+def give(game: Game, inv: Investigator, asset_id: str) -> None:
+    inv.assets.append(rules.new_card(game, asset_id))
+
+
+def active(game: Game, mythos_id: str) -> ActiveMythos:
+    card = ActiveMythos(mythos_id, game.content.mythos[mythos_id].eldritch, game.content.mythos[mythos_id].rumor_space)
+    game.active_mythos.append(card)
+    return card
+
+
+def test_component_counts_match_the_rulebook(content: Content) -> None:
+    def total(kinds: tuple[str, ...]) -> int:
+        return sum(a.count for a in content.assets.values() if a.kind in kinds and a.id != "bank_loan")
+
+    colors = Counter(m.color for m in content.mythos.values())
+    assert total(("item", "ally", "service", "trinket")) == 40
+    assert total(("spell",)) == 20
+    assert total(("artifact",)) == 14
+    assert colors == {"green": 18, "yellow": 21, "blue": 12}
+    assert len(content.decks["other_world"]) == 24
+
+
+def test_the_nine_core_gates_have_the_wiki_colors(content: Content) -> None:
+    gates = {loc.id: loc.gate_color for loc in content.locations.values() if loc.gate_color}
+    assert gates == {
+        "san_francisco": "green",
+        "istanbul": "green",
+        "arkham": "red",
+        "rome": "red",
+        "shanghai": "red",
+        "sydney": "red",
+        "buenos_aires": "blue",
+        "london": "blue",
+        "tokyo": "blue",
+    }
+
+
+@pytest.mark.parametrize(("difficulty", "absent"), [("easy", "hard"), ("hard", "easy")])
+def test_difficulty_removes_mythos_cards_and_keeps_doom(make_game: MakeGame, difficulty: str, absent: str) -> None:
+    game = make_game(difficulty=difficulty)
+    assert game.doom == game.old_one.doom
+    assert all(game.content.mythos[m].difficulty != absent for m in game.mythos_deck)
+
+
+def test_a_solo_game_removes_teamwork_cards(make_game: MakeGame) -> None:
+    game = make_game(investigators=("mark_harrigan",))
+    assert not [c for c in game.asset_deck.cards if "teamwork" in game.asset_def(c).traits]
+
+
+def test_no_gate_can_spawn_advances_doom_by_one(make_game: MakeGame) -> None:
+    game = make_game()
+    game.gate_deck.cards, game.gate_deck.discards = [], []
+    doom = game.doom
+    assert rules.spawn_gate(game) is None
+    assert game.doom == doom - 1
+
+
+def test_a_second_blessed_flips_the_card_and_keeps_it(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "blessed")
+    game.rng = FixedBack(2)
+    rules.gain_condition(game, inv, "blessed")
+    assert inv.clues == 2 and rules.has_condition(inv, "blessed")
+
+
+def test_a_second_cursed_flips_the_card(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "cursed")
+    game.rng = FixedBack(1)
+    rules.gain_condition(game, inv, "cursed")
+    assert not rules.has_condition(inv, "cursed")
+
+
+def test_the_rest_roll_discards_an_injury_on_a_five(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "leg_injury")
+    set_dice(game, 5)
+    actions.perform(game, inv, ("rest",))
+    assert not rules.has_condition(inv, "leg_injury")
+
+
+def test_the_rest_roll_keeps_a_madness_on_a_four(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "amnesia")
+    set_dice(game, 4)
+    actions.perform(game, inv, ("rest",))
+    assert rules.has_condition(inv, "amnesia")
+
+
+def test_detained_blocks_every_action_except_its_own(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "detained")
+    assert kinds(actions.action_options(game, inv)) == ["condition", "end"]
+
+
+def test_detained_stops_movement_from_any_effect(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "detained")
+    start = inv.location
+    rules.move_investigator(game, inv, "arkham" if start != "arkham" else "london")
+    assert inv.location == start
+
+
+def test_detained_replaces_the_encounter_even_with_a_monster(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.clues = 1
+    rules.spawn_monster(game, inv.location, "ghost", trigger=False)
+    rules.gain_condition(game, inv, "detained")
+    script.add("pay", True)
+    phases.encounter_turn(game, inv)
+    assert not rules.has_condition(inv, "detained") and inv.clues == 0
+    assert not [e for e in script.events if e.kind == "combat"]
+
+
+def test_delayed_on_your_own_turn_loses_actions_instead(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "dynamite")
+    run = actions.perform
+
+    def perform_and_delay(game: Game, who: Investigator, value: tuple) -> None:
+        run(game, who, value)
+        who.delayed = True
+
+    script.add("action", "Rest")
+    actions.perform = perform_and_delay  # type: ignore[assignment]
+    phases.action_turn(game, inv)
+    actions.perform = run  # type: ignore[assignment]
+    assert not inv.delayed and inv.actions_taken == ["rest"]
+
+
+def test_pocket_watch_stops_forced_delay_but_not_a_chosen_one(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "pocket_watch")
+    rules.delay(game, inv)
+    assert not inv.delayed
+    rules.delay(game, inv, chosen=True)
+    assert inv.delayed
+
+
+def test_silas_marsh_has_eight_health_and_four_sanity(make_game: MakeGame) -> None:
+    silas = first(make_game(investigators=("silas_marsh", "lily_chen")))
+    assert (silas.max_health, silas.max_sanity) == (8, 4)
+
+
+def test_lily_chen_moves_any_number_of_points(make_game: MakeGame, script: Script) -> None:
+    game = make_game(investigators=("lily_chen", "mark_harrigan"))
+    lily = first(game)
+    lily.sanity = 2
+    script.add("effect_choice", "Spend Health").add("amount", "3")
+    actions.perform(game, lily, ("ability",))
+    assert (lily.health, lily.sanity) == (3, 5)
+
+
+def test_arcane_tome_tests_lore_with_no_penalty_and_has_no_action(make_game: MakeGame, script: Script) -> None:
+    game = make_game(investigators=("diana_stanley", "mark_harrigan"))
+    inv = first(game)
+    give(game, inv, "arcane_tome")
+    assert game.content.assets["arcane_tome"].action is None
+    spells = sum(game.asset_def(c).kind == "spell" for c in inv.assets)
+    script.add("rest_card", True)
+    set_dice(game, *[6] * inv.skill("lore"))
+    actions.perform(game, inv, ("rest",))
+    assert sum(game.asset_def(c).kind == "spell" for c in inv.assets) == spells + 1
+
+
+def test_the_axe_lets_the_player_choose_the_dice(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "axe")
+    inv.clues = 0
+    pool = dice.dice_pool(game, inv, "strength", 0, ("combat", "fight"))
+    script.add("reroll_card", True).add("reroll_dice", "showing 4").add("reroll_dice", "Roll the chosen")
+    set_dice(game, 4, *[1] * (pool - 1), 6)
+    result = dice.run_test(game, inv, "strength", contexts=("combat", "fight"))
+    assert result.successes == 1 and sorted(result.rolls)[-1] == 6 and 4 not in result.rolls
+
+
+def test_a_six_counts_twice_with_the_shotgun(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "double_barreled_shotgun")
+    pool = dice.dice_pool(game, inv, "strength", 0, ("combat", "fight"))
+    set_dice(game, 6, *[1] * (pool - 1))
+    assert dice.run_test(game, inv, "strength", contexts=("combat", "fight")).successes == 2
+
+
+def test_the_derringer_adds_one_to_a_die(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "derringer_18")
+    script.add("reroll_card", True)
+    pool = dice.dice_pool(game, inv, "strength", 0, ("combat", "fight"))
+    set_dice(game, 4, *[1] * (pool - 1))
+    assert dice.run_test(game, inv, "strength", contexts=("combat", "fight")).successes == 1
+
+
+def test_kerosene_is_discarded_for_five_strength(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    card = next(c for c in inv.assets if c.def_id == "kerosene")
+    base = dice.dice_pool(game, inv, "strength", 0, ("combat", "fight"))
+    revolver = 2
+    script.add("boost", True)
+    set_dice(game, *[1] * (base - revolver + 5))
+    result = dice.run_test(game, inv, "strength", contexts=("combat", "fight"))
+    assert result.pool == base - revolver + 5 and card not in inv.assets
+
+
+def test_holy_water_lasts_for_both_tests_of_one_combat(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "holy_water")
+    game.monster_cup.append("ghost")
+    monster = rules.spawn_monster(game, inv.location, "ghost", trigger=False)
+    assert monster is not None
+    script.add("boost", True)
+    game.roll = lambda: 6
+    combat.combat(game, inv, monster)
+    rolled = [e.data["rolls"] for e in script.events if e.kind == "dice"]
+    assert len(rolled[0]) == inv.skill("will") + 5 + game.monster_def("ghost").horror_mod
+    assert not game.boosts
+
+
+def test_bandages_prevent_health_loss_for_an_investigator_on_the_space(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    a, b = game.investigators
+    b.location = a.location
+    give(game, b, "bandages")
+    script.add("prevent", True)
+    health = a.health
+    rules.change_health(game, a, -3)
+    assert a.health == health - 1 and not b.assets[1:] and "bandages" not in [c.def_id for c in b.assets]
+
+
+def test_prevention_does_not_apply_to_spent_health(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "bandages")
+    rules.change_health(game, inv, -1, preventable=False)
+    assert not [kind for kind, _ in script.asked if kind == "prevent"]
+
+
+def test_flute_defeats_monsters_but_not_epic_monsters(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "flute_of_the_outer_gods")
+    rules.spawn_monster(game, inv.location, "ghost", trigger=False)
+    rules.spawn_monster(game, inv.location, "wind_walker", trigger=False)
+    health = inv.health
+    actions.perform(game, inv, ("asset", inv.assets[-1].uid))
+    left = [m.def_id for m in game.locations[inv.location].monsters]
+    assert left == ["wind_walker"] and inv.health == health - 2
+
+
+def test_ruby_grants_an_action_without_using_one(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "ruby_of_rlyeh")
+    before = actions.actions_left(game, inv)
+    actions.perform(game, inv, ("asset", inv.assets[-1].uid))
+    assert actions.actions_left(game, inv) == before + 1
+
+
+def test_silver_key_pays_one_less_clue(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "silver_key")
+    inv.clues = 1
+    assert rules.can_pay(game, inv, Cost(clues=2))
+    rules.pay_cost(game, inv, Cost(clues=2))
+    assert inv.clues == 0 and inv.assets[-1].exhausted
+
+
+def test_pallid_mask_lets_an_investigator_skip_the_monster(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "pallid_mask_artifact")
+    rules.spawn_monster(game, inv.location, "ghost", trigger=False)
+    script.add("ignore_monsters", True)
+    phases.encounter_turn(game, inv)
+    assert not [e for e in script.events if e.kind == "combat"]
+
+
+def test_gate_box_adds_a_die_and_a_clue_in_an_other_world(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    give(game, inv, "gate_box")
+    assert dice.dice_pool(game, inv, "will", 0, ("encounter", "other_world")) == inv.skill("will") + 1
+    game.locations[inv.location].gate = True
+    library.CloseGate().apply(Ctx(game, inv, "t", tag="other_world"))
+    assert inv.clues == 1
+
+
+def test_buying_information_gives_clues_equal_to_the_result(make_game: MakeGame) -> None:
+    game = make_game()
+    lead = first(game)
+    pool = dice.dice_pool(game, lead, "influence", 0, ("encounter",))
+    set_dice(game, 6, 6, *[1] * (pool - 2))
+    run_effects(game.content.mythos["buying_information"].effects, Ctx(game, None, "t"))
+    assert lead.clues == 2
+
+
+def test_patrolling_the_border_delays_on_entry(make_game: MakeGame) -> None:
+    game = make_game()
+    game.mythos_deck.insert(0, "patrolling_the_border")
+    game.phase = Phase.MYTHOS
+    phases.mythos_phase(game)
+    assert first(game).delayed
+
+
+def test_mysterious_lights_stops_a_gate_from_closing(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.locations[inv.location].gate = True
+    active(game, "mysterious_lights")
+    rules.close_gate(game, inv, inv.location)
+    assert game.locations[inv.location].gate
+
+
+def test_mysterious_lights_does_not_stop_a_discard(make_game: MakeGame) -> None:
+    game = make_game()
+    game.locations["arkham"].gate = True
+    active(game, "mysterious_lights")
+    assert rules.discard_gate(game, "arkham")
+
+
+def test_driven_to_bankruptcy_keeps_the_reserve_empty(make_game: MakeGame) -> None:
+    game = make_game()
+    card = active(game, "driven_to_bankruptcy")
+    run_effects(game.content.mythos["driven_to_bankruptcy"].effects, Ctx(game, None, "t", mythos=card))
+    assert game.reserve == []
+    rules.refill_reserve(game)
+    assert game.reserve == []
+    run_effects(game.content.mythos["driven_to_bankruptcy"].reckoning, Ctx(game, None, "t", mythos=card))
+    assert len(game.reserve) == 4 and not game.active_mythos
+
+
+def test_defeating_the_wind_walker_solves_its_rumor(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    active(game, "the_wind_walker")
+    monster = rules.spawn_monster(game, inv.location, "wind_walker", trigger=False)
+    assert monster is not None
+    rules.defeat_monster(game, inv, inv.location, monster)
+    assert not game.active_mythos
+
+
+def test_the_wind_walker_deals_six_health_on_its_last_token(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.health = inv.max_health = 8
+    card = active(game, "the_wind_walker")
+    card.eldritch = 1
+    run_effects(game.content.mythos["the_wind_walker"].reckoning, Ctx(game, None, "t", mythos=card))
+    assert inv.health == 2 and inv.delayed and not game.active_mythos
+
+
+def test_web_between_worlds_keeps_its_token_when_the_group_spends(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    first(game).clues = 1
+    card = active(game, "web_between_worlds")
+    script.add("group_spend", True)
+    run_effects(game.content.mythos["web_between_worlds"].reckoning, Ctx(game, None, "t", mythos=card))
+    assert card.eldritch == 3 and first(game).clues == 0
+
+
+def test_web_between_worlds_loses_the_game_with_no_tokens(make_game: MakeGame) -> None:
+    game = make_game()
+    card = active(game, "web_between_worlds")
+    card.eldritch = 1
+    run_effects(game.content.mythos["web_between_worlds"].reckoning, Ctx(game, None, "t", mythos=card))
+    assert game.outcome == "loss"
+
+
+def test_legitimate_banking_treats_all_rolls_as_ones(make_game: MakeGame) -> None:
+    game = make_game()
+    lead = first(game)
+    rules.gain_condition(game, lead, "debt")
+    game.rng = FixedBack(2)
+    health = lead.health
+    run_effects(game.content.mythos["legitimate_banking"].effects, Ctx(game, None, "t"))
+    assert lead.health == health - 3 and not rules.has_condition(lead, "debt")
+
+
+def test_all_for_nothing_returns_a_solved_mystery_to_the_deck(make_game: MakeGame) -> None:
+    game = make_game()
+    solved = game.mystery_deck.pop()
+    game.solved_mysteries.append(solved)
+    run_effects(game.content.mythos["all_for_nothing"].effects, Ctx(game, None, "t"))
+    assert game.solved_mysteries == [] and solved in game.mystery_deck
+
+
+def test_the_storm_resolves_a_rumor_from_the_box_when_none_is_in_play(make_game: MakeGame) -> None:
+    game = make_game()
+    game.mythos_box = ["stars_aligned"]
+    run_effects(game.content.mythos["the_storm"].effects, Ctx(game, None, "t"))
+    assert [a.def_id for a in game.active_mythos] == ["stars_aligned"]
+
+
+def test_return_of_the_ancient_ones_collects_toughness(make_game: MakeGame, script: Script) -> None:
+    game = make_game(investigators=("mark_harrigan",))
+    inv = first(game)
+    inv.location = "space_19"
+    inv.clues = 1
+    active(game, "return_of_the_ancient_ones")
+    monster = rules.spawn_monster(game, "space_19", "ghost", trigger=False)
+    assert monster is not None
+    script.add("pay", True)
+    rules.defeat_monster(game, inv, "space_19", monster)
+    assert not game.active_mythos and inv.clues == 0
+
+
+def test_a_rumor_at_the_active_expedition_follows_the_token(make_game: MakeGame) -> None:
+    game = make_game()
+    card = active(game, "secrets_of_the_past")
+    game.active_expedition = "tunguska"
+    assert rules.rumor_location(game, card) == "tunguska"
+
+
+def test_secrets_of_the_past_blocks_expedition_encounters(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    active(game, "secrets_of_the_past")
+    game.active_expedition = inv.location
+    phases.encounter_turn(game, inv)
+    menu = [e for e in script.asked if e[0] == "encounter"]
+    assert not any("Expedition Encounter" in text for _, text in menu)
+
+
+@pytest.mark.parametrize("seed", range(3))
+def test_every_mythos_card_resolves(content: Content, seed: int) -> None:
+    for mythos_id, mdef in content.mythos.items():
+        game = new_game(content, GameConfig("azathoth", ("mark_harrigan", "lily_chen", "diana_stanley"), seed=seed))
+        game.ctl = RandomBot(seed)
+        for loc in ("arkham", "london"):
+            rules.spawn_gate(game, loc)
+        rules.spawn_monster(game, "arkham", "cultist", trigger=False)
+        for inv in game.investigators:
+            inv.clues = 3
+            rules.gain_condition(game, inv, "debt")
+        phases.resolve_mythos(game, mdef)
+        rules.process_defeats(game)
+        for active_card in list(game.active_mythos):
+            run_effects(
+                game.content.mythos[active_card.def_id].reckoning, Ctx(game, None, "t", mythos=active_card)
+            )
+        assert game.mythos_deck, mythos_id

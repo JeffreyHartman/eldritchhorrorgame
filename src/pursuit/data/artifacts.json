@@ -1,42 +1,115 @@
 [
   {
-    "id": "lightning_gun",
-    "name": "Lightning Gun",
+    "id": "cultes_des_goules",
+    "name": "Cultes des Goules",
     "traits": [
       "item",
-      "weapon",
-      "magical"
+      "tome"
     ],
-    "text": "Gain +6 Strength when resolving a Combat Encounter. Action: You and each Monster on your space lose 1 Health.",
-    "flavor": "Built in a canyon laboratory by creatures from Yuggoth.",
-    "modifiers": [
-      {
-        "amount": 6,
-        "skill": "strength",
-        "context": "combat"
-      }
-    ]
+    "text": "Action: Test Lore. If you pass, you may spend 1 Sanity to gain 2 Clues.",
+    "action": {
+      "text": "Test Lore. If you pass, you may spend 1 Sanity to gain 2 Clues.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": 0,
+          "pass": [
+            {
+              "type": "pay",
+              "cost": {
+                "sanity": 1
+              },
+              "prompt": "Spend 1 Sanity to gain 2 Clues?",
+              "then": [
+                {
+                  "type": "clues",
+                  "amount": 2
+                }
+              ],
+              "else": []
+            }
+          ]
+        }
+      ]
+    }
   },
   {
-    "id": "sword_of_st_jerome",
-    "name": "Sword of Saint Jerome",
+    "id": "de_vermis_mysteriis",
+    "name": "De Vermis Mysteriis",
     "traits": [
       "item",
-      "weapon",
+      "tome"
+    ],
+    "text": "Action: Test Lore. If you pass, you may spend 1 Sanity to improve 1 skill of your choice.",
+    "action": {
+      "text": "Test Lore. If you pass, you may spend 1 Sanity to improve 1 skill of your choice.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": 0,
+          "pass": [
+            {
+              "type": "pay",
+              "cost": {
+                "sanity": 1
+              },
+              "prompt": "Spend 1 Sanity to improve 1 skill?",
+              "then": [
+                {
+                  "type": "improve_skill",
+                  "skill": "choose"
+                }
+              ],
+              "else": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "flute_of_the_outer_gods",
+    "name": "Flute of the Outer Gods",
+    "traits": [
+      "item",
       "magical"
     ],
-    "text": "Gain +2 Will and +5 Strength when resolving Combat Encounters. If you defeat a Monster during a Combat Encounter, recover 1 Sanity.",
-    "flavor": "The blade still shines after a thousand years.",
+    "text": "Action: Spend 2 Health and 2 Sanity to defeat all Monsters on your space.",
+    "action": {
+      "text": "Spend 2 Health and 2 Sanity to defeat all Monsters on your space.",
+      "cost": {
+        "health": 2,
+        "sanity": 2
+      },
+      "effects": [
+        {
+          "type": "defeat_monsters_here"
+        }
+      ]
+    }
+  },
+  {
+    "id": "gate_box",
+    "name": "Gate Box",
+    "traits": [
+      "item",
+      "magical"
+    ],
+    "text": "Investigators on your space roll 1 additional die when resolving tests during Other World Encounters. If you close a Gate during an Other World Encounter, gain 1 Clue.",
     "modifiers": [
       {
-        "amount": 2,
-        "skill": "will",
-        "context": "combat"
-      },
+        "amount": 1,
+        "additional": true,
+        "aura": true,
+        "context": "other_world"
+      }
+    ],
+    "on_close_gate": [
       {
-        "amount": 5,
-        "skill": "strength",
-        "context": "combat"
+        "type": "clues",
+        "amount": 1
       }
     ]
   },
@@ -48,41 +121,123 @@
       "magical"
     ],
     "text": "Each 6 you roll when resolving a Spell effect counts as 2 successes. You may prevent the loss of 1 Sanity when resolving your Spell effects.",
-    "flavor": "Look through the lens and see the threads that bind the stars.",
-    "modifiers": [
+    "double_sixes": [
       {
-        "amount": 2,
-        "skill": "observation"
-      },
-      {
-        "amount": 1,
         "skill": "lore",
-        "additional": true
+        "context": "cast"
+      }
+    ],
+    "prevents": [
+      {
+        "stat": "sanity",
+        "amount": 1,
+        "spell_only": true
+      }
+    ],
+    "flavor": "Look through the lens and see the threads that bind the stars."
+  },
+  {
+    "id": "grotesque_statue",
+    "name": "Grotesque Statue",
+    "traits": [
+      "item"
+    ],
+    "text": "When you gain this card from the deck, gain 5 Clues. Once per round, you may spend 1 Clue to prevent all Sanity loss from a single effect.",
+    "on_gain": [
+      {
+        "type": "clues",
+        "amount": 5
+      }
+    ],
+    "prevents": [
+      {
+        "stat": "sanity",
+        "amount": 0,
+        "clue_cost": 1,
+        "once_per_round": true
       }
     ]
   },
   {
-    "id": "t_tka_halot",
-    "name": "T'tka Halot",
+    "id": "lightning_gun",
+    "name": "Lightning Gun",
     "traits": [
       "item",
-      "tome",
-      "magical"
+      "magical",
+      "weapon"
     ],
-    "text": "Action: Test Lore. If you pass, you may spend 1 Sanity to choose 1 Monster on your space to lose 3 Health.",
-    "flavor": "Bound in black iron and written in a tongue of fire.",
+    "text": "Gain +6 Strength when resolving a Combat Encounter. Action: You and each Monster on your space lose 1 Health.",
+    "modifiers": [
+      {
+        "amount": 6,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
     "action": {
-      "text": "Read T'tka Halot: test Will (-1). Pass: each Monster here loses 5 Health.",
+      "text": "You and each Monster on your space lose 1 Health.",
+      "effects": [
+        {
+          "type": "health",
+          "amount": -1
+        },
+        {
+          "type": "damage_monsters",
+          "amount": 1,
+          "where": "here"
+        }
+      ]
+    },
+    "flavor": "Built in a canyon laboratory by creatures from Yuggoth."
+  },
+  {
+    "id": "mi_go_brain_case",
+    "name": "Mi-go Brain Case",
+    "traits": [
+      "item",
+      "magical",
+      "teamwork"
+    ],
+    "text": "Action: You and another investigator may trade possessions. In addition, he may move to your space; if he does, move to his previous space. === Rulings, clarifications, and reminders === None of the exchanged possessions are considered \"gained\" or \"discarded\" as part of Mi-go Brain Case's ability.",
+    "action": {
+      "text": "You and another investigator may trade possessions. In addition, he may move to your space; if he does, move to his previous space.",
+      "effects": [
+        {
+          "type": "brain_case"
+        }
+      ]
+    }
+  },
+  {
+    "id": "necronomicon",
+    "name": "Necronomicon",
+    "traits": [
+      "item",
+      "tome"
+    ],
+    "text": "Action: Test Lore. If you pass, you may spend 1 Sanity to gain 2 Spells.",
+    "action": {
+      "text": "Test Lore. If you pass, you may spend 1 Sanity to gain 2 Spells.",
       "effects": [
         {
           "type": "test",
-          "skill": "will",
-          "mod": -1,
+          "skill": "lore",
+          "mod": 0,
           "pass": [
             {
-              "type": "damage_monsters",
-              "amount": 5,
-              "where": "here"
+              "type": "pay",
+              "cost": {
+                "sanity": 1
+              },
+              "prompt": "Spend 1 Sanity to gain 2 Spells?",
+              "then": [
+                {
+                  "type": "gain_asset",
+                  "kind": "spell",
+                  "count": 2
+                }
+              ],
+              "else": []
             }
           ]
         }
@@ -91,44 +246,16 @@
   },
   {
     "id": "pallid_mask_artifact",
-    "name": "The Pallid Mask",
+    "name": "Pallid Mask",
     "traits": [
       "item",
       "magical"
     ],
     "text": "During the Encounter Phase, you may choose an encounter as if there are no Monsters on your space.",
-    "flavor": "Cool porcelain that fits your face as if it were made for you.",
-    "sanity_reduction": 1,
-    "modifiers": [
-      {
-        "amount": 2,
-        "skill": "influence"
-      },
-      {
-        "amount": 2,
-        "skill": "lore"
-      }
-    ]
-  },
-  {
-    "id": "silver_key",
-    "name": "The Silver Key",
-    "traits": [
-      "item",
-      "magical"
-    ],
-    "text": "Once per round, you may spend 1 less Clue to pay for an effect. You may reroll 1 die when resolving a test during an Other World Encounter.",
-    "flavor": "Turn it in empty air, and the door opens.",
-    "action": {
-      "text": "Turn the Silver Key: move up to 4 spaces.",
-      "effects": [
-        {
-          "type": "move",
-          "to": "choose_within",
-          "range": 4
-        }
-      ]
-    }
+    "perks": {
+      "ignore_monsters": 1
+    },
+    "flavor": "Cool porcelain that fits your face as if it were made for you."
   },
   {
     "id": "ruby_of_rlyeh",
@@ -138,27 +265,104 @@
       "magical"
     ],
     "text": "Once per round, during the Action Phase, you may spend 1 Sanity and perform 1 additional action.",
-    "flavor": "It pulses like a slow heart under deep water.",
-    "modifiers": [
-      {
-        "amount": 2,
-        "where": {
-          "terrain": "sea"
-        },
-        "additional": true
-      }
-    ],
     "action": {
-      "text": "Gaze into the Ruby: lose 1 Sanity to gain 2 Clues.",
+      "text": "Spend 1 Sanity and perform 1 additional action.",
+      "free": true,
       "cost": {
         "sanity": 1
       },
       "effects": [
         {
-          "type": "clues",
-          "amount": 2
+          "type": "extra_action"
         }
       ]
-    }
+    },
+    "flavor": "It pulses like a slow heart under deep water."
+  },
+  {
+    "id": "sword_of_st_jerome",
+    "name": "Sword of Saint Jerome",
+    "traits": [
+      "item",
+      "magical",
+      "weapon"
+    ],
+    "text": "Gain +2 Will and +5 Strength when resolving Combat Encounters. If you defeat a Monster during a Combat Encounter, recover 1 Sanity.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "will",
+        "context": "combat"
+      },
+      {
+        "amount": 5,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
+    "on_combat_win": [
+      {
+        "type": "sanity",
+        "amount": 1
+      }
+    ],
+    "flavor": "The blade still shines after a thousand years."
+  },
+  {
+    "id": "t_tka_halot",
+    "name": "T'tka Halot",
+    "traits": [
+      "item",
+      "tome"
+    ],
+    "text": "Action: Test Lore. If you pass, you may spend 1 Sanity to choose 1 Monster on your space to lose 3 Health.",
+    "action": {
+      "text": "Test Lore. If you pass, you may spend 1 Sanity to choose 1 Monster on your space to lose 3 Health.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": 0,
+          "pass": [
+            {
+              "type": "pay",
+              "cost": {
+                "sanity": 1
+              },
+              "prompt": "Spend 1 Sanity to wound 1 Monster?",
+              "then": [
+                {
+                  "type": "damage_monsters",
+                  "amount": 3,
+                  "where": "here",
+                  "one": true
+                }
+              ],
+              "else": []
+            }
+          ]
+        }
+      ]
+    },
+    "flavor": "Bound in black iron and written in a tongue of fire."
+  },
+  {
+    "id": "silver_key",
+    "name": "The Silver Key",
+    "traits": [
+      "item",
+      "magical"
+    ],
+    "text": "Once per round, you may spend 1 less Clue to pay for an effect. You may reroll 1 die when resolving a test during an Other World Encounter.",
+    "perks": {
+      "clue_discount": 1
+    },
+    "rerolls": [
+      {
+        "text": "Reroll 1 die.",
+        "context": "other_world"
+      }
+    ],
+    "flavor": "Turn it in empty air, and the door opens."
   }
 ]
