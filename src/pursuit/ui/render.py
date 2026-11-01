@@ -190,7 +190,7 @@ def location_panel(game: Game, loc_id: str) -> Panel:
     if flags:
         parts.append(flags)
     for monster in state.monsters:
-        mdef = content.monsters[monster.def_id]
+        mdef = game.monster_def(monster.def_id)
         line = Text(f"Monster: {mdef.name}", style="bold red")
         full = toughness(game, monster.def_id)
         line.append(f"  Health {full - monster.wounds}/{full}", style="red")

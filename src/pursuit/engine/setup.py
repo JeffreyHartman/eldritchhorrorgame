@@ -139,7 +139,9 @@ def _build_decks(game: Game) -> None:
     for mon_def in content.monsters.values():
         if not mon_def.epic:
             cup.extend([mon_def.id] * mon_def.count)
-    cup.extend(old.monsters)
+    for mon_id in old.set_aside:
+        cup.remove(mon_id)
+    game.set_aside = list(old.set_aside)
     game.monster_cup = sorted(cup)
 
 

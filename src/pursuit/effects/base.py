@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pursuit.content.reader import ContentError, Reader
 
 if TYPE_CHECKING:
-    from pursuit.engine.state import ActiveMythos, AssetCard, ConditionInst, Game, Investigator
+    from pursuit.engine.state import ActiveMythos, AssetCard, ConditionInst, Game, Investigator, MonsterInst
 
 
 @dataclass(frozen=True)
@@ -17,7 +17,8 @@ class Ctx:
     """Who and what an effect applies to.
 
     `inv` is None for world effects, such as a Mythos card with no target investigator.
-    `condition`, `asset`, and `mythos` are set while resolving effects on those cards.
+    `condition`, `asset`, `mythos`, and `monster` are set while resolving effects on those
+    components.
     """
 
     game: Game
@@ -26,6 +27,7 @@ class Ctx:
     condition: ConditionInst | None = None
     asset: AssetCard | None = None
     mythos: ActiveMythos | None = None
+    monster: MonsterInst | None = None
     test_successes: int | None = None
 
     def stopped(self) -> bool:
@@ -35,6 +37,11 @@ class Ctx:
 
     def for_inv(self, inv: Investigator | None) -> Ctx:
         return replace(self, inv=inv)
+
+    def need_monster(self, kind: str) -> MonsterInst:
+        if self.monster is None:
+            raise RuntimeError(f"effect '{kind}' from {self.source} needs a monster")
+        return self.monster
 
     def need_inv(self, kind: str) -> Investigator:
         if self.inv is None:

@@ -3,7 +3,7 @@
     "id": "azathoth",
     "name": "Azathoth",
     "title": "The Daemon Sultan",
-    "difficulty": "low",
+    "difficulty": "medium",
     "art": "king_in_yellow",
     "description": "The Idiot God sits at the center of all things spreading madness and death. Its seeds descend from the stars, threatening to crack the world in half.",
     "doom": 15,
@@ -38,24 +38,20 @@
     ],
     "reckoning": [],
     "cultist": {
-      "horror": 1,
-      "horror_mod": 0,
-      "damage": 0,
-      "fight_mod": 0,
       "toughness": 1,
+      "horror": 1,
+      "damage_test": false,
       "text": "After resolving the Will test, lose 1 Health and defeat this Monster.",
-      "on_defeat": [
+      "after_will": [
+        {
+          "type": "defeat_this"
+        },
         {
           "type": "health",
           "amount": -1
         }
-      ],
-      "horror_test": true,
-      "damage_test": false
+      ]
     },
-    "monsters": [
-      "mi_go"
-    ],
     "mysteries_needed": 3,
     "mysteries": [
       {
@@ -112,7 +108,8 @@
       "effects": [],
       "reckoning": [],
       "doom_advance_effects": []
-    }
+    },
+    "set_aside": []
   },
   {
     "id": "yog_sothoth",
@@ -144,18 +141,7 @@
       "When 3 Mysteries have been solved, investigators win the game.",
       "When Yog-Sothoth awakens, flip this sheet."
     ],
-    "setup": [
-      {
-        "type": "one_investigator",
-        "pick": "lead",
-        "effects": [
-          {
-            "type": "gain_asset",
-            "kind": "spell"
-          }
-        ]
-      }
-    ],
+    "setup": [],
     "reckoning": [
       {
         "type": "each_investigator",
@@ -207,24 +193,21 @@
       }
     ],
     "cultist": {
-      "horror": 0,
-      "horror_mod": 0,
-      "damage": 1,
-      "fight_mod": -1,
       "toughness": 1,
-      "text": "When defeated, gain 1 Spell.",
-      "on_defeat": [
+      "horror_test": false,
+      "damage": 1,
+      "text": "If you defeat this Monster during a Combat Encounter, lose 1 Sanity and gain 1 Spell.",
+      "on_combat_defeat": [
+        {
+          "type": "sanity",
+          "amount": -1
+        },
         {
           "type": "gain_asset",
           "kind": "spell"
         }
-      ],
-      "horror_test": false,
-      "damage_test": true
+      ]
     },
-    "monsters": [
-      "hound_of_tindalos"
-    ],
     "mysteries_needed": 3,
     "mysteries": [
       {
@@ -315,8 +298,21 @@
         "skill": "lore",
         "clue_cost": 1,
         "half_players": true
+      },
+      "cultist": {
+        "toughness": 1,
+        "horror_test": false,
+        "damage": 1,
+        "fight_mod": -1,
+        "text": "Before resolving the Strength test, lose 1 Sanity for each Spell you have.",
+        "before_strength": [
+          {
+            "type": "sanity_per_spell"
+          }
+        ]
       }
-    }
+    },
+    "set_aside": []
   },
   {
     "id": "shub_niggurath",
@@ -348,38 +344,28 @@
       "When 3 Mysteries have been solved, investigators win the game.",
       "When Shub-Niggurath awakens, flip this sheet and resolve the \"Shub-Niggurath Awakens!\" effect on the back."
     ],
-    "setup": [
-      {
-        "type": "spawn_monster",
-        "id": "goat_spawn",
-        "at": "the_heart_of_africa"
-      }
-    ],
+    "setup": [],
     "reckoning": [
       {
         "type": "monsters_move"
       }
     ],
     "cultist": {
-      "horror": 0,
-      "horror_mod": 0,
+      "toughness": 1,
+      "horror_test": false,
       "damage": 1,
       "fight_mod": -1,
-      "toughness": 2,
-      "text": "Toughness 2. Reckoning: Recover 1 Health.",
+      "text": "Reckoning: Spawn 1 Goat Spawn Monster or 1 Dark Young Monster on this space. Then, if you spawned a Monster, discard this Cultist.",
       "reckoning": [
         {
-          "type": "monsters_heal",
-          "amount": 1
+          "type": "replace_this",
+          "ids": [
+            "goat_spawn",
+            "dark_young"
+          ]
         }
-      ],
-      "horror_test": false,
-      "damage_test": true
+      ]
     },
-    "monsters": [
-      "goat_spawn",
-      "dark_young"
-    ],
     "mysteries_needed": 3,
     "mysteries": [
       {
@@ -460,8 +446,28 @@
         "amount": 1,
         "monster": "shub_niggurath_epic",
         "spawn_at": "random"
+      },
+      "cultist": {
+        "toughness": 2,
+        "horror_test": false,
+        "damage": 1,
+        "fight_mod": -2,
+        "text": "Reckoning: Move this Monster 1 space toward the Shub-Niggurath Epic Monster.",
+        "reckoning": [
+          {
+            "type": "move_this_toward",
+            "id": "shub_niggurath_epic"
+          }
+        ]
       }
-    }
+    },
+    "set_aside": [
+      "ghoul",
+      "ghoul",
+      "goat_spawn",
+      "goat_spawn",
+      "dark_young"
+    ]
   },
   {
     "id": "cthulhu",
@@ -503,18 +509,7 @@
       "When 3 Mysteries have been solved, investigators win the game.",
       "When Cthulhu awakens, flip this sheet."
     ],
-    "setup": [
-      {
-        "type": "spawn_monster",
-        "id": "deep_one",
-        "at": "space_3"
-      },
-      {
-        "type": "spawn_monster",
-        "id": "star_spawn",
-        "at": "space_2"
-      }
-    ],
+    "setup": [],
     "reckoning": [
       {
         "type": "each_investigator",
@@ -542,25 +537,17 @@
       }
     ],
     "cultist": {
-      "horror": 1,
-      "horror_mod": 0,
-      "damage": 2,
-      "fight_mod": 0,
       "toughness": 1,
-      "text": "Before resolving the Strength test, test Will or lose 1 Sanity. When defeated, gain 1 Clue.",
-      "on_defeat": [
+      "horror_test": false,
+      "damage": 1,
+      "text": "Before resolving the Strength test, lose 1 Sanity.",
+      "before_strength": [
         {
-          "type": "clues",
-          "amount": 1
+          "type": "sanity",
+          "amount": -1
         }
-      ],
-      "horror_test": true,
-      "damage_test": true
+      ]
     },
-    "monsters": [
-      "deep_one",
-      "star_spawn"
-    ],
     "mysteries_needed": 3,
     "mysteries": [
       {
@@ -640,7 +627,23 @@
         "amount": 1,
         "monster": "cthulhu_epic",
         "spawn_at": "space_3"
+      },
+      "cultist": {
+        "toughness": 2,
+        "horror_test": false,
+        "damage": 1,
+        "text": "Before resolving the Strength test, lose 2 Sanity.",
+        "before_strength": [
+          {
+            "type": "sanity",
+            "amount": -2
+          }
+        ]
       }
-    }
+    },
+    "set_aside": [
+      "deep_one",
+      "star_spawn"
+    ]
   }
 ]

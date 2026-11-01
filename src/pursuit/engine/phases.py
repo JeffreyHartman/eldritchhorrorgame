@@ -87,7 +87,7 @@ def encounter_phase(game: Game) -> None:
 
 def encounter_turn(game: Game, inv: Investigator) -> None:
     rules.emit(game, "turn", f"{inv.name}'s encounter.", investigator=inv.name, phase="encounter")
-    if not combat.resolve_monsters(game, inv):
+    if not combat.resolve_monsters(game, inv, encounter_phase=True):
         return
     content = game.content
     state = game.locations[inv.location]

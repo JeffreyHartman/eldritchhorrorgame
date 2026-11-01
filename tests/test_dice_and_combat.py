@@ -144,8 +144,8 @@ def test_surviving_monster_blocks_location_encounter(make_game: MakeGame) -> Non
 def test_defeating_all_monsters_allows_location_encounter(make_game: MakeGame) -> None:
     game = make_game(old_one="yog_sothoth")
     inv = first(game)
-    spawn(game, inv.location, "cultist")  # Yog cultist: horror 0, damage 1, fight -1, toughness 1
-    set_dice(game, 6, 1, 1, 1, 1, 1, 1)
+    spawn(game, inv.location, "cultist")  # Yog cultist: no Will test, damage 1, toughness 1
+    set_dice(game, 6, 1, 1, 1, 1, 1, 1, 1)
     assert combat.resolve_monsters(game, inv) is True
     assert not game.locations[inv.location].monsters
 

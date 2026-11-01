@@ -345,6 +345,7 @@ class RerollAbility:
     all_dice: bool = False
     once_per_round: bool = False
     discard: bool = False
+    sanity_cost: int = 0
 
     @classmethod
     def parse(cls, r: Reader) -> RerollAbility:
@@ -355,6 +356,7 @@ class RerollAbility:
             all_dice=r.get_bool("all_dice", False),
             once_per_round=r.get_bool("once_per_round", False),
             discard=r.get_bool("discard", False),
+            sanity_cost=r.get_int("sanity_cost", 0),
         )
         r.done()
         return a
@@ -503,6 +505,34 @@ class MonsterDef:
     art: str
     horror_test: bool = True
     damage_test: bool = True
+    before_will: tuple[Effect, ...] = ()
+    will_passed: tuple[Effect, ...] = ()
+    will_failed: tuple[Effect, ...] = ()
+    after_will: tuple[Effect, ...] = ()
+    before_strength: tuple[Effect, ...] = ()
+    lost_health: tuple[Effect, ...] = ()
+    after_hit: tuple[Effect, ...] = ()
+    on_combat_defeat: tuple[Effect, ...] = ()
+    replace_encounter: ActionAbility | None = None
+    skip_strength_on_will_fail: bool = False
+    no_clue_rerolls: bool = False
+    ally_shield: bool = False
+    blocks_encounter: bool = False
+    needs_mysteries: bool = False
+    sanity_to_sheet: bool = False
+
+    def combat_hooks(self) -> dict[str, tuple[Effect, ...]]:
+        return {
+            "before_will": self.before_will,
+            "will_passed": self.will_passed,
+            "will_failed": self.will_failed,
+            "after_will": self.after_will,
+            "before_strength": self.before_strength,
+            "lost_health": self.lost_health,
+            "after_hit": self.after_hit,
+            "on_combat_defeat": self.on_combat_defeat,
+            "on_defeat": self.on_defeat,
+        }
 
 
 @dataclass(frozen=True)
@@ -584,6 +614,7 @@ class AwakeningDef:
     doom_advance_effects: tuple[Effect, ...]
     lose_immediately: bool
     final_mystery: MysteryDef | None
+    cultist: MonsterDef | None = None
 
 
 @dataclass(frozen=True)
@@ -604,17 +635,8 @@ class OldOneDef:
     mysteries: tuple[MysteryDef, ...]
     mysteries_needed: int
     awakening: AwakeningDef
-    cultist_horror: int
-    cultist_horror_mod: int
-    cultist_damage: int
-    cultist_fight_mod: int
-    cultist_toughness: int
-    cultist_text: str
-    cultist_reckoning: tuple[Effect, ...]
-    cultist_on_defeat: tuple[Effect, ...]
-    monsters: tuple[str, ...]
-    cultist_horror_test: bool = True
-    cultist_damage_test: bool = True
+    cultist: MonsterDef
+    set_aside: tuple[str, ...]
 
 
 @dataclass(frozen=True)

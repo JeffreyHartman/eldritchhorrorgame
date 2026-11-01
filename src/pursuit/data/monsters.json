@@ -27,7 +27,13 @@
     "fight_mod": 0,
     "damage_test": true,
     "toughness": 1,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "lost_health": [
+      {
+        "type": "gain_condition",
+        "id": "paranoia"
+      }
+    ]
   },
   {
     "id": "goat_spawn",
@@ -43,14 +49,39 @@
     "damage_test": true,
     "toughness": 2,
     "toughness_per_investigator": 0,
-    "roams": true
+    "roams": true,
+    "on_combat_defeat": [
+      {
+        "type": "choice",
+        "prompt": "Gain a Dark Pact to discard 1 Monster from any space?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact",
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "discard_monster",
+                "where": "choose_space"
+              }
+            ]
+          },
+          {
+            "label": "Decline",
+            "effects": []
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "dark_young",
     "name": "Dark Young",
     "form": "horror",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.",
     "horror": 3,
     "horror_mod": -1,
     "horror_test": true,
@@ -61,8 +92,22 @@
     "toughness_per_investigator": 0,
     "reckoning": [
       {
-        "type": "monsters_heal",
-        "amount": 1
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 4,
+            "effects": []
+          },
+          {
+            "weight": 2,
+            "effects": [
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -71,7 +116,7 @@
     "name": "Deep One",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Each investigator on this space loses 1 Sanity.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -79,14 +124,26 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 2,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "each_investigator",
+        "near_monster": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "star_spawn",
     "name": "Star Spawn",
     "form": "horror",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.",
     "horror": 3,
     "horror_mod": -1,
     "horror_test": true,
@@ -94,14 +151,34 @@
     "fight_mod": -3,
     "damage_test": true,
     "toughness": 5,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 4,
+            "effects": []
+          },
+          {
+            "weight": 2,
+            "effects": [
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "hound_of_tindalos",
     "name": "Hound of Tindalos",
     "form": "spirit",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Move this Monster to the nearest space containing an investigator. Then an investigator on that space immediately encounters it.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -113,8 +190,7 @@
     "roams": true,
     "reckoning": [
       {
-        "type": "monsters_move",
-        "id": "hound_of_tindalos"
+        "type": "hunt_nearest"
       }
     ]
   },
@@ -132,65 +208,27 @@
     "damage_test": true,
     "toughness": 2,
     "toughness_per_investigator": 0,
-    "roams": true
+    "roams": true,
+    "replace_encounter": {
+      "text": "Lose 1 Sanity and move 3 spaces instead of resolving another encounter?",
+      "cost": {
+        "sanity": 1
+      },
+      "effects": [
+        {
+          "type": "move",
+          "to": "choose_within",
+          "range": 3
+        }
+      ]
+    }
   },
   {
     "id": "mi_go",
     "name": "Mi-Go",
     "form": "horror",
     "count": 1,
-    "text": "If you defeat this Monster during a Combat Encounter, gain 1 Artifact.",
-    "horror": 1,
-    "horror_mod": 0,
-    "horror_test": true,
-    "damage": 2,
-    "fight_mod": -2,
-    "damage_test": true,
-    "toughness": 3,
-    "toughness_per_investigator": 0,
-    "on_defeat": [
-      {
-        "type": "clues",
-        "amount": 1
-      }
-    ]
-  },
-  {
-    "id": "nightgaunt",
-    "name": "Nightgaunt",
-    "form": "beast",
-    "count": 1,
-    "text": "",
-    "horror": 2,
-    "horror_mod": 0,
-    "horror_test": true,
-    "damage": 1,
-    "fight_mod": -2,
-    "damage_test": true,
-    "toughness": 2,
-    "toughness_per_investigator": 0
-  },
-  {
-    "id": "cthonian",
-    "name": "Chthonian",
-    "form": "horror",
-    "count": 1,
-    "text": "",
-    "horror": 2,
-    "horror_mod": -1,
-    "horror_test": true,
-    "damage": 3,
-    "fight_mod": -2,
-    "damage_test": true,
-    "toughness": 4,
-    "toughness_per_investigator": 0
-  },
-  {
-    "id": "vampire",
-    "name": "Vampire",
-    "form": "humanoid",
-    "count": 1,
-    "text": "*If you fail the Will test, do not resolve the Strength test. *If you lose Health from the Strength test and this Monster is not defeated, it recovers 2 Health.",
+    "text": "If you defeat this Monster during a Combat Encounter, gain 1 Artifact. Reckoning: Discard the nearest Clue and move this Monster to that space.",
     "horror": 1,
     "horror_mod": 0,
     "horror_test": true,
@@ -201,8 +239,76 @@
     "toughness_per_investigator": 0,
     "reckoning": [
       {
-        "type": "monsters_heal",
-        "amount": 1
+        "type": "take_nearest_clue"
+      }
+    ],
+    "on_combat_defeat": [
+      {
+        "type": "gain_asset",
+        "kind": "artifact"
+      }
+    ]
+  },
+  {
+    "id": "nightgaunt",
+    "name": "Nightgaunt",
+    "form": "beast",
+    "count": 1,
+    "text": "Reckoning: If there is an investigator on this space, move him and this Monster 1 space and he becomes Delayed. Otherwise, move this Monster 2 spaces toward the nearest investigator.",
+    "horror": 2,
+    "horror_mod": 0,
+    "horror_test": true,
+    "damage": 1,
+    "fight_mod": -2,
+    "damage_test": true,
+    "toughness": 2,
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "carry_or_chase"
+      }
+    ]
+  },
+  {
+    "id": "cthonian",
+    "name": "Chthonian",
+    "form": "horror",
+    "count": 1,
+    "text": "When this Monster is spawned, move it to The Heart of Africa.",
+    "horror": 2,
+    "horror_mod": -1,
+    "horror_test": true,
+    "damage": 3,
+    "fight_mod": -2,
+    "damage_test": true,
+    "toughness": 4,
+    "toughness_per_investigator": 0,
+    "on_spawn": [
+      {
+        "type": "move_this",
+        "to": "the_heart_of_africa"
+      }
+    ]
+  },
+  {
+    "id": "vampire",
+    "name": "Vampire",
+    "form": "humanoid",
+    "count": 1,
+    "text": "If you fail the Will test, do not resolve the Strength test. If you lose Health from the Strength test and this Monster is not defeated, it recovers 2 Health.",
+    "horror": 1,
+    "horror_mod": 0,
+    "horror_test": true,
+    "damage": 2,
+    "fight_mod": -2,
+    "damage_test": true,
+    "toughness": 3,
+    "toughness_per_investigator": 0,
+    "skip_strength_on_will_fail": true,
+    "after_hit": [
+      {
+        "type": "heal_this",
+        "amount": 2
       }
     ]
   },
@@ -211,7 +317,7 @@
     "name": "Warlock",
     "form": "humanoid",
     "count": 1,
-    "text": "If you fail the Will test, lose 1 Health.",
+    "text": "If you fail the Will test, lose 1 Health. Reckoning: Roll 1 die. On a 1 or 2, the nearest investigator gains a Cursed Condition.",
     "horror": 1,
     "horror_mod": 0,
     "horror_test": true,
@@ -220,10 +326,35 @@
     "damage_test": true,
     "toughness": 1,
     "toughness_per_investigator": 0,
-    "on_defeat": [
+    "reckoning": [
       {
-        "type": "gain_asset",
-        "kind": "spell"
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 4,
+            "effects": []
+          },
+          {
+            "weight": 2,
+            "effects": [
+              {
+                "type": "nearest_investigator",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "cursed"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "will_failed": [
+      {
+        "type": "health",
+        "amount": -1
       }
     ]
   },
@@ -232,7 +363,7 @@
     "name": "Zombie",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Spawn the Zombie Horde Epic Monster on this space. If you do, discard this Monster.",
     "horror": 1,
     "horror_mod": 0,
     "horror_test": true,
@@ -240,14 +371,22 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 2,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "replace_this",
+        "ids": [
+          "zombie_horde"
+        ]
+      }
+    ]
   },
   {
     "id": "shoggoth",
     "name": "Shoggoth",
     "form": "horror",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: This Monster recovers all Health.",
     "horror": 3,
     "horror_mod": 0,
     "horror_test": true,
@@ -256,7 +395,12 @@
     "damage_test": true,
     "toughness": 4,
     "toughness_per_investigator": 0,
-    "roams": true
+    "roams": true,
+    "reckoning": [
+      {
+        "type": "heal_this"
+      }
+    ]
   },
   {
     "id": "wind_walker",
@@ -274,14 +418,34 @@
     "toughness_per_investigator": 1,
     "epic": true,
     "art": "epic",
-    "roams": true
+    "roams": true,
+    "before_will": [
+      {
+        "type": "pay",
+        "cost": {
+          "clues": 1
+        },
+        "prompt": "Spend 1 Clue to avoid losing 1 Health and 1 Sanity?",
+        "then": [],
+        "else": [
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "dunwich_horror",
     "name": "The Dunwich Horror",
     "form": "horror",
     "count": 1,
-    "text": "If The Dunwich Horror Prelude is in play, Dunwich Horror has toughness equal to investigators + 4 instead.",
+    "text": "Reckoning: Roll 1 die. If the result is less than or equal to investigators, spawn 1 Gate.",
     "horror": 3,
     "horror_mod": -1,
     "horror_test": true,
@@ -292,7 +456,17 @@
     "toughness_per_investigator": 1,
     "epic": true,
     "art": "epic",
-    "roams": true
+    "roams": true,
+    "reckoning": [
+      {
+        "type": "roll_under_investigators",
+        "effects": [
+          {
+            "type": "spawn_gate"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "shub_niggurath_epic",
@@ -309,7 +483,8 @@
     "toughness": 3,
     "toughness_per_investigator": 1,
     "epic": true,
-    "art": "epic"
+    "art": "epic",
+    "needs_mysteries": true
   },
   {
     "id": "cthulhu_epic",
@@ -326,14 +501,15 @@
     "toughness": 3,
     "toughness_per_investigator": 1,
     "epic": true,
-    "art": "epic"
+    "art": "epic",
+    "sanity_to_sheet": true
   },
   {
     "id": "nug_epic",
     "name": "Nug",
     "form": "horror",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Spawn 1 Ghoul Monster on this space.",
     "horror": 2,
     "horror_mod": -1,
     "horror_test": true,
@@ -348,7 +524,7 @@
       {
         "type": "spawn_monster",
         "id": "ghoul",
-        "at": "random_space"
+        "at": "monster_space"
       }
     ]
   },
@@ -357,7 +533,7 @@
     "name": "Cthylla",
     "form": "horror",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: A Deep One Monster ambushes the nearest investigator.",
     "horror": 4,
     "horror_mod": -1,
     "horror_test": true,
@@ -370,8 +546,7 @@
     "art": "epic",
     "reckoning": [
       {
-        "type": "one_investigator",
-        "pick": "random",
+        "type": "nearest_investigator",
         "effects": [
           {
             "type": "ambush",
@@ -396,14 +571,15 @@
     "toughness": 2,
     "toughness_per_investigator": 1,
     "epic": true,
-    "art": "epic"
+    "art": "epic",
+    "skip_strength_on_will_fail": true
   },
   {
     "id": "colour_out_of_space",
     "name": "Colour Out of Space",
     "form": "humanoid",
     "count": 1,
-    "text": "After resolving the Will test, roll 1 die. On a 5 or 6, defeat this Monster.",
+    "text": "When this Monster is spawned, move it to Tunguska. After resolving the Will test, roll 1 die. On a 5 or 6, defeat this Monster.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -411,14 +587,39 @@
     "fight_mod": 0,
     "damage_test": false,
     "toughness": 2,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "on_spawn": [
+      {
+        "type": "move_this",
+        "to": "tunguska"
+      }
+    ],
+    "after_will": [
+      {
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 4,
+            "effects": []
+          },
+          {
+            "weight": 2,
+            "effects": [
+              {
+                "type": "defeat_this"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "elder_thing",
     "name": "Elder Thing",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "When this Monster is spawned, move it to Antarctica.",
     "horror": 3,
     "horror_mod": 0,
     "horror_test": true,
@@ -426,7 +627,13 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 3,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "on_spawn": [
+      {
+        "type": "move_this",
+        "to": "antarctica"
+      }
+    ]
   },
   {
     "id": "ghost",
@@ -441,14 +648,19 @@
     "fight_mod": 0,
     "damage_test": false,
     "toughness": 2,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "will_passed": [
+      {
+        "type": "wound_this_by_test"
+      }
+    ]
   },
   {
     "id": "gnoph_keh",
     "name": "Gnoph-Keh",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "When this Monster is spawned, move it to The Himalayas. Reckoning: Each investigator on this space loses 1 Health.",
     "horror": 1,
     "horror_mod": 0,
     "horror_test": true,
@@ -456,7 +668,25 @@
     "fight_mod": -2,
     "damage_test": true,
     "toughness": 3,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "each_investigator",
+        "near_monster": 0,
+        "effects": [
+          {
+            "type": "health",
+            "amount": -1
+          }
+        ]
+      }
+    ],
+    "on_spawn": [
+      {
+        "type": "move_this",
+        "to": "the_himalayas"
+      }
+    ]
   },
   {
     "id": "gug",
@@ -471,14 +701,15 @@
     "fight_mod": -2,
     "damage_test": true,
     "toughness": 4,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "blocks_encounter": true
   },
   {
     "id": "lloigor",
     "name": "Lloigor",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "Reckoning: Each investigator on this space or an adjacent space loses 1 Health and 1 Sanity.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -486,14 +717,30 @@
     "fight_mod": -2,
     "damage_test": true,
     "toughness": 4,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "each_investigator",
+        "near_monster": 1,
+        "effects": [
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "maniac",
     "name": "Maniac",
     "form": "humanoid",
     "count": 1,
-    "text": "*If you fail the Strength test, you may discard 1 Ally Asset instead of losing Health. *If you defeat this Monster during a Combat Encounter, gain 1 Axe Asset.",
+    "text": "If you fail the Strength test, you may discard 1 Ally Asset instead of losing Health. If you defeat this Monster during a Combat Encounter, gain 1 Axe Asset.",
     "horror": 1,
     "horror_mod": 1,
     "horror_test": true,
@@ -501,14 +748,21 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 1,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "ally_shield": true,
+    "on_combat_defeat": [
+      {
+        "type": "gain_asset",
+        "id": "axe"
+      }
+    ]
   },
   {
     "id": "mummy",
     "name": "Mummy",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "When this Monster is spawned, move it to The Pyramids.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -516,7 +770,13 @@
     "fight_mod": -2,
     "damage_test": true,
     "toughness": 3,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "on_spawn": [
+      {
+        "type": "move_this",
+        "to": "the_pyramids"
+      }
+    ]
   },
   {
     "id": "riot",
@@ -531,14 +791,41 @@
     "fight_mod": -3,
     "damage_test": true,
     "toughness": 3,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "before_strength": [
+      {
+        "type": "choice",
+        "prompt": "Attempt to disperse the mob (Influence -1)?",
+        "options": [
+          {
+            "label": "Disperse the mob",
+            "effects": [
+              {
+                "type": "test",
+                "skill": "influence",
+                "mod": -1,
+                "pass": [
+                  {
+                    "type": "defeat_this"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "Fight",
+            "effects": []
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "serpent_people",
     "name": "Serpent People",
     "form": "humanoid",
     "count": 1,
-    "text": "",
+    "text": "When this Monster is spawned, move it to The Amazon. Reckoning: Roll 1 die. On a 1 or 2, the nearest investigator moves 1 space toward this Monster.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -546,7 +833,32 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 2,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 4,
+            "effects": []
+          },
+          {
+            "weight": 2,
+            "effects": [
+              {
+                "type": "pull_nearest"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "on_spawn": [
+      {
+        "type": "move_this",
+        "to": "the_amazon"
+      }
+    ]
   },
   {
     "id": "skeleton",
@@ -561,7 +873,13 @@
     "fight_mod": -2,
     "damage_test": true,
     "toughness": 2,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "on_combat_defeat": [
+      {
+        "type": "sanity",
+        "amount": 1
+      }
+    ]
   },
   {
     "id": "tick_tock_men",
@@ -578,14 +896,15 @@
     "toughness": 2,
     "toughness_per_investigator": 1,
     "epic": true,
-    "art": "epic"
+    "art": "epic",
+    "no_clue_rerolls": true
   },
   {
     "id": "witch",
     "name": "Witch",
     "form": "humanoid",
     "count": 1,
-    "text": "If you fail the Will test, gain a Cursed Condition.",
+    "text": "If you fail the Will test, gain a Cursed Condition. Reckoning: Each investigator who has a Cursed Condition loses 1 Health.",
     "horror": 0,
     "horror_mod": -1,
     "horror_test": true,
@@ -593,14 +912,34 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 1,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "reckoning": [
+      {
+        "type": "each_investigator",
+        "where": {
+          "condition": "cursed"
+        },
+        "effects": [
+          {
+            "type": "health",
+            "amount": -1
+          }
+        ]
+      }
+    ],
+    "will_failed": [
+      {
+        "type": "gain_condition",
+        "id": "cursed"
+      }
+    ]
   },
   {
     "id": "wraith",
     "name": "Wraith",
     "form": "humanoid",
     "count": 1,
-    "text": "When this Monster is defeated, an investigator may discard a Cursed Condition.",
+    "text": "When this Monster is spawned, the Lead Investigator gains a Cursed Condition. When this Monster is defeated, an investigator may discard a Cursed Condition.",
     "horror": 2,
     "horror_mod": -1,
     "horror_test": true,
@@ -608,14 +947,41 @@
     "fight_mod": -1,
     "damage_test": true,
     "toughness": 3,
-    "toughness_per_investigator": 0
+    "toughness_per_investigator": 0,
+    "on_spawn": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "gain_condition",
+            "id": "cursed"
+          }
+        ]
+      }
+    ],
+    "on_defeat": [
+      {
+        "type": "one_investigator",
+        "pick": "choose",
+        "where": {
+          "condition": "cursed"
+        },
+        "effects": [
+          {
+            "type": "remove_condition",
+            "id": "cursed"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "zombie_horde",
     "name": "Zombie Horde",
     "form": "horror",
     "count": 1,
-    "text": "If you lose Health from the Strength test, discard 1 Ally Asset.",
+    "text": "If you lose Health from the Strength test, discard 1 Ally Asset. Reckoning: Roll 1 die. On a 1 or 2, advance Doom by 1.",
     "horror": 2,
     "horror_mod": 0,
     "horror_test": true,
@@ -625,6 +991,32 @@
     "toughness": 5,
     "toughness_per_investigator": 0,
     "epic": true,
-    "art": "epic"
+    "art": "epic",
+    "reckoning": [
+      {
+        "type": "random",
+        "outcomes": [
+          {
+            "weight": 4,
+            "effects": []
+          },
+          {
+            "weight": 2,
+            "effects": [
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "lost_health": [
+      {
+        "type": "lose_asset",
+        "kind": "ally"
+      }
+    ]
   }
 ]

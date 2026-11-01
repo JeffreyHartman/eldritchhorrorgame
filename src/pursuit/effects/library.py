@@ -85,7 +85,13 @@ class Test(Effect):
         inv = ctx.need_inv(self.kind)
         counts_successes = any(e.kind == "flip_self" for lst in self.children() for e in walk(lst))
         result = run_test(
-            ctx.game, inv, self.skill, self.mod, contexts=(self.context,), needed=self.needed, open_ended=counts_successes
+            ctx.game,
+            inv,
+            self.skill,
+            self.mod,
+            contexts=(self.context,),
+            needed=self.needed,
+            open_ended=counts_successes,
         )
         sub_ctx = replace(ctx, test_successes=result.successes)
         run_effects(self.passed if result.passed else self.failed, sub_ctx)
@@ -970,22 +976,35 @@ class EachInvestigator(Effect):
     provides_investigator: ClassVar[bool] = True
     where: InvestigatorFilter | None
     here: bool
+    near_monster: int | None
     effects: tuple[Effect, ...]
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(read_investigator_filter(r, "where"), r.get_bool("here", False), read_effects(r, "effects"))
+        return cls(
+            read_investigator_filter(r, "where"),
+            r.get_bool("here", False),
+            r.get_int("near_monster", None),
+            read_effects(r, "effects"),
+        )
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         if self.here and ctx.inv is None:
             raise RuntimeError(f"each_investigator with here=true from {ctx.source} needs an investigator")
+        spaces: set[str] = set()
+        if self.near_monster is not None:
+            center = rules.monster_location(game, ctx.need_monster(self.kind))
+            if center is not None:
+                dist = rules.distances(game, center)
+                spaces = {loc for loc, d in dist.items() if d <= self.near_monster}
         targets = [
             i
             for i in game.turn_order()
             if not i.eliminated
             and not i.defeated
             and (not self.here or (ctx.inv is not None and i.location == ctx.inv.location))
+            and (self.near_monster is None or i.location in spaces)
             and (self.where is None or self.where.matches(game, i))
         ]
         for inv in targets:
@@ -1155,7 +1174,7 @@ class MonsterSurge(Effect):
         return False
 
 
-SPAWN_AT = ("here", "gates", "random_space", "active_expedition", "cultist_spaces")
+SPAWN_AT = ("here", "gates", "random_space", "active_expedition", "cultist_spaces", "monster_space")
 
 
 @register("spawn_monster")
@@ -1178,6 +1197,9 @@ class SpawnMonster(Effect):
                 places = game.open_gates()
             elif self.at == "active_expedition":
                 places = [game.active_expedition] if game.active_expedition else [rules.random_space(game)]
+            elif self.at == "monster_space":
+                found = rules.monster_location(game, ctx.need_monster(self.kind))
+                places = [found] if found else []
             elif self.at == "cultist_spaces":
                 places = [
                     loc
@@ -1212,9 +1234,7 @@ class Ambush(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
-        spawned = rules.spawn_monster(ctx.game, inv.location, self.monster)
-        if spawned is not None:
-            combat.combat(ctx.game, inv, spawned, ambush=True)
+        combat.ambush(ctx.game, inv, self.monster)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("monster", self.monster)] if self.monster else []
@@ -1247,7 +1267,11 @@ class DiscardMonster(Effect):
         if self.where == "here":
             loc_id = ctx.need_inv(self.kind).location
         else:
-            with_monsters = [loc for loc, st in game.locations.items() if st.monsters]
+            with_monsters = [
+                loc
+                for loc, st in game.locations.items()
+                if any(not game.monster_def(m.def_id).epic for m in st.monsters)
+            ]
             if not with_monsters:
                 return
             options = [Option(rules.loc_name(game, loc), loc) for loc in with_monsters]
@@ -1255,7 +1279,7 @@ class DiscardMonster(Effect):
                 game, "Choose a space with Monsters:", options, kind="choose_space", inv=ctx.inv, auto_single=True
             )
             loc_id = with_monsters[pick]
-        monsters = list(game.locations[loc_id].monsters)
+        monsters = [m for m in game.locations[loc_id].monsters if not game.monster_def(m.def_id).epic]
         if not monsters:
             return
         if self.all_monsters:
@@ -1334,12 +1358,8 @@ class DamageMonsters(Effect):
             )
             loc_id = with_monsters[pick]
         for monster in list(game.locations[loc_id].monsters):
-            mdef = game.content.monsters[monster.def_id]
-            monster.wounds += self.amount
-            full = rules.toughness(game, monster.def_id)
-            if monster.wounds >= full:
-                rules.defeat_monster(game, ctx.inv, loc_id, monster)
-            else:
+            mdef = game.monster_def(monster.def_id)
+            if not rules.wound_monster(game, ctx.inv, monster, self.amount):
                 rules.emit(game, "combat", f"The {mdef.name} loses {self.amount} Health.")
 
     def needs_investigator(self) -> bool:
@@ -1461,3 +1481,283 @@ class MysteryProgress(Effect):
     def needs_investigator(self) -> bool:
         return False
 
+
+
+# --- this Monster: effects on `ctx.monster` -------------------------------------------
+
+
+@register("defeat_this")
+@dataclass(frozen=True)
+class DefeatThis(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        monster = ctx.need_monster(self.kind)
+        loc_id = rules.monster_location(ctx.game, monster)
+        if loc_id is not None:
+            rules.defeat_monster(ctx.game, ctx.inv, loc_id, monster)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("sanity_per_spell")
+@dataclass(frozen=True)
+class SanityPerSpell(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        inv = ctx.need_inv(self.kind)
+        spells = sum(ctx.game.asset_def(c).kind == "spell" for c in inv.assets)
+        rules.change_sanity(ctx.game, inv, -spells)
+
+
+@register("heal_this")
+@dataclass(frozen=True)
+class HealThis(Effect):
+    amount: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_int("amount", 99))
+
+    def apply(self, ctx: Ctx) -> None:
+        monster = ctx.need_monster(self.kind)
+        monster.wounds = max(0, monster.wounds - self.amount)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("wound_this_by_test")
+@dataclass(frozen=True)
+class WoundThisByTest(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.wound_monster(ctx.game, ctx.inv, ctx.need_monster(self.kind), ctx.test_successes or 0)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("move_this")
+@dataclass(frozen=True)
+class MoveThis(Effect):
+    to: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("to"))
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.move_monster(ctx.game, ctx.need_monster(self.kind), self.to)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("location", self.to)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("move_this_toward")
+@dataclass(frozen=True)
+class MoveThisToward(Effect):
+    monster: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("id"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        monster = ctx.need_monster(self.kind)
+        src = rules.monster_location(game, monster)
+        goal = next((loc for loc, m in game.all_monsters() if m.def_id == self.monster), None)
+        if src is not None and goal is not None:
+            rules.move_monster(game, monster, rules.step_toward(game, src, goal))
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", self.monster)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("replace_this")
+@dataclass(frozen=True)
+class ReplaceThis(Effect):
+    """Spawn one of `ids` on this Monster's space. If that works, discard this Monster."""
+
+    ids: tuple[str, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str_tuple("ids"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        monster = ctx.need_monster(self.kind)
+        loc_id = rules.monster_location(game, monster)
+        choices = [i for i in self.ids if rules.monster_available(game, i)]
+        if loc_id is None or not choices:
+            return
+        options = [Option(game.content.monsters[i].name, i) for i in choices]
+        pick = rules.choose(game, "Spawn which Monster?", options, kind="spawn_choice", auto_single=True)
+        rules.spawn_monster(game, loc_id, choices[pick])
+        rules.discard_monster(game, loc_id, monster)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", i) for i in self.ids]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("hunt_nearest")
+@dataclass(frozen=True)
+class HuntNearest(Effect):
+    """Move this Monster to the nearest investigator, who then encounters it."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        monster = ctx.need_monster(self.kind)
+        loc_id = rules.monster_location(game, monster)
+        target = rules.nearest_investigator(game, loc_id) if loc_id else None
+        if target is not None:
+            rules.move_monster(game, monster, target.location)
+            combat.combat(game, target, monster)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("take_nearest_clue")
+@dataclass(frozen=True)
+class TakeNearestClue(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        monster = ctx.need_monster(self.kind)
+        loc_id = rules.monster_location(game, monster)
+        if loc_id is None:
+            return
+        dist = rules.distances(game, loc_id)
+        clues = [loc for loc, st in game.locations.items() if st.clue and loc in dist]
+        if clues:
+            dest = min(clues, key=lambda loc: (dist[loc], loc))
+            game.locations[dest].clue = False
+            rules.emit(game, "clue", f"The Clue at {rules.loc_name(game, dest)} is discarded.", location=dest)
+            rules.move_monster(game, monster, dest)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("carry_or_chase")
+@dataclass(frozen=True)
+class CarryOrChase(Effect):
+    """Nightgaunt: carry an investigator 1 space, or else fly 2 spaces toward the nearest one."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        monster = ctx.need_monster(self.kind)
+        loc_id = rules.monster_location(game, monster)
+        if loc_id is None:
+            return
+        here = game.investigators_at(loc_id)
+        if here:
+            victim = here[0]
+            near = rules.neighbors(game, loc_id)
+            options = [Option(rules.loc_name(game, loc), loc, k) for loc, k in near]
+            dest = near[rules.choose(game, "Move where?", options, kind="move", inv=victim, auto_single=True)][0]
+            rules.move_investigator(game, victim, dest)
+            rules.move_monster(game, monster, dest)
+            victim.delayed = True
+            rules.emit(game, "loss", f"{victim.name} becomes Delayed.")
+            return
+        target = rules.nearest_investigator(game, loc_id)
+        if target is not None:
+            rules.move_monster(game, monster, rules.step_toward(game, loc_id, target.location, 2))
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("pull_nearest")
+@dataclass(frozen=True)
+class PullNearest(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        loc_id = rules.monster_location(game, ctx.need_monster(self.kind))
+        target = rules.nearest_investigator(game, loc_id) if loc_id else None
+        if target is not None and loc_id is not None:
+            rules.move_investigator(game, target, rules.step_toward(game, target.location, loc_id))
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("nearest_investigator")
+@dataclass(frozen=True)
+class NearestInvestigator(Effect):
+    provides_investigator: ClassVar[bool] = True
+    effects: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(read_effects(r, "effects"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        loc_id = rules.monster_location(game, ctx.need_monster(self.kind))
+        target = rules.nearest_investigator(game, loc_id) if loc_id else None
+        if target is not None:
+            run_effects(self.effects, ctx.for_inv(target))
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.effects,)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("roll_under_investigators")
+@dataclass(frozen=True)
+class RollUnderInvestigators(Effect):
+    effects: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(read_effects(r, "effects"))
+
+    def apply(self, ctx: Ctx) -> None:
+        if ctx.game.roll_die() <= len(ctx.game.investigators):
+            run_effects(self.effects, ctx)
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.effects,)
+
+    def needs_investigator(self) -> bool:
+        return False

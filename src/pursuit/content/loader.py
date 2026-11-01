@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import os
-from collections import deque
+from collections import Counter, deque
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from functools import cache
@@ -295,35 +295,50 @@ class _Loader:
             out.append(inv)
         return out
 
+    def monster(self, r: Reader, *, cultist: bool = False) -> MonsterDef:
+        m = MonsterDef(
+            id="cultist" if cultist else _id(r),
+            name="Cultist" if cultist else r.get_str("name"),
+            form="humanoid" if cultist else r.get_enum("form", MONSTER_FORMS),
+            count=5 if cultist else r.get_int("count", 1),
+            text=r.get_str("text", ""),
+            horror=r.get_int("horror", 0),
+            horror_mod=r.get_int("horror_mod", 0),
+            damage=r.get_int("damage", 0),
+            fight_mod=r.get_int("fight_mod", 0),
+            toughness=r.get_int("toughness"),
+            toughness_per_investigator=r.get_int("toughness_per_investigator", 0),
+            roams=r.get_bool("roams", False),
+            epic=r.get_bool("epic", False),
+            on_spawn=read_effects(r, "on_spawn"),
+            reckoning=read_effects(r, "reckoning"),
+            on_defeat=read_effects(r, "on_defeat"),
+            art=r.get_str("art", ""),
+            horror_test=r.get_bool("horror_test", True),
+            damage_test=r.get_bool("damage_test", True),
+            before_will=read_effects(r, "before_will"),
+            will_passed=read_effects(r, "will_passed"),
+            will_failed=read_effects(r, "will_failed"),
+            after_will=read_effects(r, "after_will"),
+            before_strength=read_effects(r, "before_strength"),
+            lost_health=read_effects(r, "lost_health"),
+            after_hit=read_effects(r, "after_hit"),
+            on_combat_defeat=read_effects(r, "on_combat_defeat"),
+            replace_encounter=read_action(r, "replace_encounter"),
+            skip_strength_on_will_fail=r.get_bool("skip_strength_on_will_fail", False),
+            no_clue_rerolls=r.get_bool("no_clue_rerolls", False),
+            ally_shield=r.get_bool("ally_shield", False),
+            blocks_encounter=r.get_bool("blocks_encounter", False),
+            needs_mysteries=r.get_bool("needs_mysteries", False),
+            sanity_to_sheet=r.get_bool("sanity_to_sheet", False),
+        )
+        r.done()
+        if m.toughness < 1 or m.damage < 0 or m.horror < 0 or m.count < 1:
+            raise ContentError(f"{r.path}: toughness and count must be at least 1, damage and horror at least 0")
+        return m
+
     def monsters(self) -> list[MonsterDef]:
-        out = []
-        for r in _list_of_objects(self.file("monsters.json"), "monsters.json"):
-            m = MonsterDef(
-                id=_id(r),
-                name=r.get_str("name"),
-                form=r.get_enum("form", MONSTER_FORMS),
-                count=r.get_int("count", 1),
-                text=r.get_str("text"),
-                horror=r.get_int("horror"),
-                horror_mod=r.get_int("horror_mod", 0),
-                damage=r.get_int("damage"),
-                fight_mod=r.get_int("fight_mod", 0),
-                toughness=r.get_int("toughness"),
-                toughness_per_investigator=r.get_int("toughness_per_investigator", 0),
-                roams=r.get_bool("roams", False),
-                epic=r.get_bool("epic", False),
-                on_spawn=read_effects(r, "on_spawn"),
-                reckoning=read_effects(r, "reckoning"),
-                on_defeat=read_effects(r, "on_defeat"),
-                art=r.get_str("art", ""),
-                horror_test=r.get_bool("horror_test", True),
-                damage_test=r.get_bool("damage_test", True),
-            )
-            r.done()
-            if m.toughness < 1 or m.damage < 0 or m.horror < 0 or m.count < 1:
-                raise ContentError(f"{r.path}: toughness and count must be at least 1, damage and horror at least 0")
-            out.append(m)
-        return out
+        return [self.monster(r) for r in _list_of_objects(self.file("monsters.json"), "monsters.json")]
 
     def assets(self) -> list[AssetDef]:
         out = []
@@ -444,6 +459,7 @@ class _Loader:
         for r in _list_of_objects(self.file("old_ones.json"), "old_ones.json"):
             aw = r.get_obj("awakening")
             fm_r = aw.opt_obj("final_mystery")
+            cult_back = aw.opt_obj("cultist")
             awakening = AwakeningDef(
                 text=aw.get_str("text"),
                 effects=read_effects(aw, "effects"),
@@ -451,23 +467,12 @@ class _Loader:
                 doom_advance_effects=read_effects(aw, "doom_advance_effects"),
                 lose_immediately=aw.get_bool("lose_immediately", False),
                 final_mystery=self.mystery(fm_r) if fm_r is not None else None,
+                cultist=self.monster(cult_back, cultist=True) if cult_back is not None else None,
             )
             aw.done()
             stages_list = [self._stage(sr) for sr in r.objects("stages")]
             if len(stages_list) != 3:
                 raise ContentError(f"{r.at('stages')}: expected 3 stages")
-            cult_r = r.get_obj("cultist")
-            c_horror = cult_r.get_int("horror", 0)
-            c_horror_mod = cult_r.get_int("horror_mod", 0)
-            c_damage = cult_r.get_int("damage", 1)
-            c_fight_mod = cult_r.get_int("fight_mod", 0)
-            c_toughness = cult_r.get_int("toughness", 1)
-            c_text = cult_r.get_str("text", "")
-            c_reckoning = read_effects(cult_r, "reckoning")
-            c_on_defeat = read_effects(cult_r, "on_defeat")
-            c_horror_test = cult_r.get_bool("horror_test", c_horror > 0)
-            c_damage_test = cult_r.get_bool("damage_test", c_damage > 0)
-            cult_r.done()
             o = OldOneDef(
                 id=_id(r),
                 name=r.get_str("name"),
@@ -485,17 +490,8 @@ class _Loader:
                 mysteries=tuple(self.mystery(x) for x in r.objects("mysteries")),
                 mysteries_needed=r.get_int("mysteries_needed", 3),
                 awakening=awakening,
-                cultist_horror=c_horror,
-                cultist_horror_mod=c_horror_mod,
-                cultist_damage=c_damage,
-                cultist_fight_mod=c_fight_mod,
-                cultist_toughness=c_toughness,
-                cultist_text=c_text,
-                cultist_reckoning=c_reckoning,
-                cultist_on_defeat=c_on_defeat,
-                monsters=r.get_str_tuple("monsters"),
-                cultist_horror_test=c_horror_test,
-                cultist_damage_test=c_damage_test,
+                cultist=self.monster(r.get_obj("cultist"), cultist=True),
+                set_aside=r.get_str_tuple("set_aside"),
             )
             r.done()
             if o.doom < 1:
@@ -657,9 +653,12 @@ class _Checker:
         }
         for o in c.old_ones.values():
             where = f"old_ones.json '{o.id}'"
-            for m in o.monsters:
+            for m in o.set_aside:
                 if m not in c.monsters or c.monsters[m].epic:
                     self.fail(f"{where}: '{m}' is not an ordinary monster")
+            for name, count in Counter(o.set_aside).items():
+                if count > c.monsters[name].count:
+                    self.fail(f"{where}: sets aside more '{name}' tokens than the cup holds")
             need_green = sum(s.green for s in o.stages)
             need_yellow = sum(s.yellow for s in o.stages)
             need_blue = sum(s.blue for s in o.stages)
@@ -718,6 +717,14 @@ class _Checker:
                 if s.location and s.location not in c.locations:
                     self.fail(f"encounters '{e.id}': unknown section location '{s.location}'")
 
+    def monster_lists(self, where: str, mon: MonsterDef) -> Iterable[tuple[str, Sequence[Effect], bool]]:
+        yield f"{where} on_spawn", mon.on_spawn, True
+        yield f"{where} reckoning", mon.reckoning, True
+        for name, effects in mon.combat_hooks().items():
+            yield f"{where} {name}", effects, False
+        if mon.replace_encounter:
+            yield f"{where} replace_encounter", mon.replace_encounter.effects, False
+
     def effect_lists(self) -> Iterable[tuple[str, Sequence[Effect], bool]]:
         """Every effect list in the content, with a flag for 'runs with no investigator'."""
         c = self.c
@@ -736,8 +743,9 @@ class _Checker:
             yield f"old_ones.json '{o.id}' awakening", o.awakening.effects, True
             yield f"old_ones.json '{o.id}' awakening reckoning", o.awakening.reckoning, True
             yield f"old_ones.json '{o.id}' awakening doom_advance", o.awakening.doom_advance_effects, True
-            yield f"old_ones.json '{o.id}' cultist reckoning", o.cultist_reckoning, True
-            yield f"old_ones.json '{o.id}' cultist on_defeat", o.cultist_on_defeat, False
+            cultists = [o.cultist] if o.awakening.cultist is None else [o.cultist, o.awakening.cultist]
+            for cultist in cultists:
+                yield from self.monster_lists(f"old_ones.json '{o.id}' cultist", cultist)
             for mys in o.mysteries:
                 yield f"old_ones.json '{o.id}' mystery '{mys.id}' on_enter", mys.on_enter, True
             if o.awakening.final_mystery:
@@ -747,9 +755,7 @@ class _Checker:
                     True,
                 )
         for mon in c.monsters.values():
-            yield f"monsters.json '{mon.id}' on_spawn", mon.on_spawn, True
-            yield f"monsters.json '{mon.id}' reckoning", mon.reckoning, True
-            yield f"monsters.json '{mon.id}' on_defeat", mon.on_defeat, False
+            yield from self.monster_lists(f"monsters.json '{mon.id}'", mon)
         for a in c.assets.values():
             yield f"asset '{a.id}' on_gain", a.on_gain, False
             yield f"asset '{a.id}' reckoning", a.reckoning, False

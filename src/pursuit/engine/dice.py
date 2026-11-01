@@ -96,7 +96,7 @@ def _offer_card_rerolls(
     for name, src_card, rr in sources:
         if src_card is not None and (src_card not in inv.assets or (rr.once_per_round and src_card.exhausted)):
             continue
-        if not rr.applies(skill, contexts):
+        if not rr.applies(skill, contexts) or inv.sanity <= rr.sanity_cost:
             continue
         failed = [i for i, r in enumerate(rolls) if r < success_on]
         if not failed:
@@ -104,6 +104,8 @@ def _offer_card_rerolls(
         prompt = f"Use {name} to reroll ({rr.text})?"
         if not rules.confirm(game, prompt, kind="reroll_card", inv=inv):
             continue
+        if rr.sanity_cost:
+            rules.change_sanity(game, inv, -rr.sanity_cost)
         if rr.once_per_round and src_card is not None:
             src_card.exhausted = True
         if rr.discard and src_card is not None:

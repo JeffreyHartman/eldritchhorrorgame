@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 from pursuit.content.defs import OMEN_COLORS, OMEN_TRACK
 
 if TYPE_CHECKING:
-    from pursuit.content.defs import AssetDef, LocationDef, MysteryDef, OldOneDef, ReferenceRow
+    from pursuit.content.defs import AssetDef, LocationDef, MonsterDef, MysteryDef, OldOneDef, ReferenceRow
     from pursuit.content.loader import Content
     from pursuit.controller import Controller
 
@@ -201,6 +201,8 @@ class Game:
     clue_deck: Deck[str] = field(default_factory=Deck)
     other_world_deck: Deck[str] = field(default_factory=Deck)
     monster_cup: list[str] = field(default_factory=list)
+    set_aside: list[str] = field(default_factory=list)
+    epics_gone: list[str] = field(default_factory=list)
     unused_investigators: list[str] = field(default_factory=list)
     next_uid: int = 1
     outcome: str | None = None
@@ -254,6 +256,13 @@ class Game:
 
     def location_def(self, loc_id: str) -> LocationDef:
         return self.content.locations[loc_id]
+
+    def monster_def(self, def_id: str) -> MonsterDef:
+        """The Cultist's stats come from the sheet side of the Ancient One that is faceup."""
+        if def_id != "cultist":
+            return self.content.monsters[def_id]
+        old = self.old_one
+        return (old.awakening.cultist if self.awakened else None) or old.cultist
 
     def asset_def(self, card: AssetCard) -> AssetDef:
         return self.content.assets[card.def_id]

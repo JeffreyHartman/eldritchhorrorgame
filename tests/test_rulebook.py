@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from conftest import MakeGame, Script, first, set_dice
 from pursuit.engine import actions, combat, dice, phases, rules
-from pursuit.engine.state import Phase
+from pursuit.engine.state import Game, Investigator, MonsterInst, Phase
 
 
 def test_acquire_assets_offers_clue_rerolls_after_the_first_success(make_game: MakeGame, script: Script) -> None:
@@ -139,3 +139,137 @@ def test_mysteries_solve_only_at_the_end_of_the_mythos_phase(make_game: MakeGame
     assert mys.done and game.active_mystery is not mys
 
 
+
+
+def put(game: Game, inv: Investigator, monster_id: str) -> MonsterInst:
+    monster = rules.spawn_monster(game, inv.location, monster_id, trigger=False)
+    assert monster is not None
+    return monster
+
+
+def fail_dice(game: Game) -> None:
+    game.roll = lambda: 1
+
+
+def test_ghoul_gives_paranoia_when_health_is_lost(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    fail_dice(game)
+    combat.combat(game, inv, put(game, inv, "ghoul"))
+    assert rules.has_condition(inv, "paranoia")
+
+
+def test_vampire_stops_combat_on_a_failed_will_test(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    fail_dice(game)
+    health = inv.health
+    combat.combat(game, inv, put(game, inv, "vampire"))
+    assert inv.health == health
+
+
+def test_witch_curses_on_a_failed_will_test(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    fail_dice(game)
+    combat.combat(game, inv, put(game, inv, "witch"))
+    assert rules.has_condition(inv, "cursed")
+
+
+def test_ghost_loses_health_from_will_successes(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.roll = lambda: 6
+    ghost = put(game, inv, "ghost")
+    assert combat.combat(game, inv, ghost) == combat.DEFEATED
+
+
+def test_tick_tock_men_forbid_clue_rerolls(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.clues = 3
+    fail_dice(game)
+    combat.combat(game, inv, put(game, inv, "tick_tock_men"))
+    assert inv.clues == 3 and not [k for k, _ in script.asked if k == "reroll"]
+
+
+def test_gug_defeat_blocks_the_additional_encounter(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    put(game, inv, "gug").wounds = 3
+    game.roll = lambda: 6
+    assert combat.resolve_monsters(game, inv, encounter_phase=True) is False
+
+
+def test_shub_niggurath_cannot_lose_health_before_three_mysteries(make_game: MakeGame) -> None:
+    game = make_game(old_one="shub_niggurath")
+    inv = first(game)
+    shub = put(game, inv, "shub_niggurath_epic")
+    assert rules.wound_monster(game, inv, shub, 3) is False and shub.wounds == 0
+    game.solved_mysteries = ["a", "b", "c"]
+    rules.wound_monster(game, inv, shub, 3)
+    assert shub.wounds == 3
+
+
+def test_a_spawn_effect_moves_the_monster_but_an_ambush_ignores_it(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    mummy = rules.spawn_monster(game, "arkham", "mummy")
+    assert mummy is not None and rules.monster_location(game, mummy) == "the_pyramids"
+    game.locations["the_pyramids"].monsters.remove(mummy)
+    game.monster_cup.append("mummy")
+    game.roll = lambda: 1
+    combat.ambush(game, inv, "mummy")
+    assert "mummy" in game.monster_cup and not game.locations[inv.location].monsters
+
+
+def test_reckoning_effects_apply_only_to_their_own_monster(make_game: MakeGame) -> None:
+    game = make_game()
+    shoggoth = rules.spawn_monster(game, "arkham", "shoggoth")
+    zombie = rules.spawn_monster(game, "london", "lloigor")
+    assert shoggoth is not None and zombie is not None
+    shoggoth.wounds = zombie.wounds = 2
+    rules.resolve_reckoning(game)
+    assert shoggoth.wounds == 0 and zombie.wounds == 2
+
+
+def test_deep_one_reckoning_affects_only_its_space(make_game: MakeGame) -> None:
+    game = make_game(old_one="yog_sothoth")
+    a, b = game.investigators
+    a.location, b.location = "arkham", "london"
+    game.set_aside.append("deep_one")
+    put(game, a, "deep_one")
+    sanity_a, sanity_b = a.sanity, b.sanity
+    rules.resolve_reckoning(game)
+    assert a.sanity == sanity_a - 1 and b.sanity == sanity_b
+
+
+def test_epic_monsters_cannot_be_discarded_or_moved(make_game: MakeGame) -> None:
+    game = make_game()
+    epic = rules.spawn_monster(game, "arkham", "wind_walker")
+    assert epic is not None
+    rules.discard_monster(game, "arkham", epic)
+    rules.move_monster(game, epic, "london")
+    rules.move_monsters(game)
+    assert rules.monster_location(game, epic) == "arkham"
+
+
+def test_a_defeated_epic_monster_does_not_return(make_game: MakeGame) -> None:
+    game = make_game()
+    epic = rules.spawn_monster(game, "arkham", "zombie_horde")
+    assert epic is not None
+    rules.defeat_monster(game, None, "arkham", epic)
+    assert rules.spawn_monster(game, "arkham", "zombie_horde") is None
+
+
+def test_awakened_cultist_uses_the_back_of_the_sheet(make_game: MakeGame) -> None:
+    game = make_game(old_one="cthulhu")
+    assert rules.toughness(game, "cultist") == 1
+    game.awakened = True
+    assert rules.toughness(game, "cultist") == 2
+
+
+def test_set_aside_monsters_are_not_in_the_cup(make_game: MakeGame) -> None:
+    game = make_game(old_one="shub_niggurath", clean=False)
+    assert sorted(game.set_aside) == ["dark_young", "ghoul", "ghoul", "goat_spawn", "goat_spawn"]
+    assert not {"dark_young", "ghoul", "goat_spawn"} & set(game.monster_cup)

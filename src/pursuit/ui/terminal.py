@@ -286,7 +286,7 @@ class TerminalController:
 
     def _on_combat(self, game: Game, event: Event) -> None:
         if event.data.get("start"):
-            mdef = game.content.monsters[event.data["monster"]]
+            mdef = game.monster_def(event.data["monster"])
             full = rules.toughness(game, mdef.id)
             self.console.print(render.monster_panel(mdef, event.data.get("wounds", 0), full))
         else:

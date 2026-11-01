@@ -159,7 +159,8 @@ def additional_action(game: Game, inv: Investigator) -> None:
         return
     inv.bonus_actions += 1
     options = action_options(game, inv)
-    value = options[rules.choose(game, f"{inv.name}, perform 1 additional action.", options, kind="action", inv=inv)].value
+    pick = rules.choose(game, f"{inv.name}, perform 1 additional action.", options, kind="action", inv=inv)
+    value = options[pick].value
     if value[0] == "end":
         inv.bonus_actions -= 1
     else:

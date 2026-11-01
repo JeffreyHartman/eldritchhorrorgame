@@ -821,5 +821,33 @@
         "amount": 1
       }
     ]
+  },
+  {
+    "id": "axe",
+    "name": "Axe",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 2,
+    "count": 1,
+    "text": "Gain +2 Strength during Combat Encounters. You may spend 2 Sanity to reroll any number of dice when resolving a Strength test during a Combat Encounter.",
+    "flavor": "",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Spend 2 Sanity to reroll all failed dice on a Strength test in Combat.",
+        "skill": "strength",
+        "context": "combat",
+        "all_dice": true,
+        "sanity_cost": 2
+      }
+    ]
   }
 ]

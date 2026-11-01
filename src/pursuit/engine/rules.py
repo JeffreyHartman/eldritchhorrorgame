@@ -517,47 +517,78 @@ def monster_surge(game: Game) -> None:
             spawn_monster(game, loc_id)
 
 
-def spawn_monster(game: Game, loc_id: str, def_id: str | None = None) -> MonsterInst | None:
-    content = game.content
+def monster_available(game: Game, def_id: str) -> bool:
+    if game.content.monsters[def_id].epic:
+        on_board = any(m.def_id == def_id for _loc, m in game.all_monsters())
+        return not on_board and def_id not in game.epics_gone
+    return def_id in game.monster_cup or def_id in game.set_aside
+
+
+def spawn_monster(
+    game: Game, loc_id: str, def_id: str | None = None, *, trigger: bool = True
+) -> MonsterInst | None:
+    """Place a Monster token. Set `trigger` to False for an ambush, which ignores spawn effects."""
     if def_id is None:
         if not game.monster_cup:
             return None
         def_id = game.monster_cup.pop(game.rng.randrange(len(game.monster_cup)))
-    elif not content.monsters[def_id].epic:
-        if def_id not in game.monster_cup:
-            return None
+    elif not monster_available(game, def_id):
+        return None
+    elif def_id in game.monster_cup:
         game.monster_cup.remove(def_id)
+    elif def_id in game.set_aside:
+        game.set_aside.remove(def_id)
     monster = MonsterInst(game.uid(), def_id)
     game.locations[loc_id].monsters.append(monster)
-    mdef = content.monsters[def_id]
+    mdef = game.monster_def(def_id)
+    if not trigger:
+        return monster
     emit(game, "monster", f"{mdef.name} spawns at {loc_name(game, loc_id)}.", monster=def_id, location=loc_id)
     if mdef.on_spawn:
-        run_effects(mdef.on_spawn, Ctx(game, None, f"monster_spawn:{mdef.id}"))
+        run_effects(mdef.on_spawn, Ctx(game, None, f"monster_spawn:{mdef.id}", monster=monster))
     return monster
 
 
 def toughness(game: Game, def_id: str) -> int:
     """A monster's full Health. Epic monsters can scale with investigator count."""
-    if def_id == "cultist":
-        return game.old_one.cultist_toughness
-    mdef = game.content.monsters[def_id]
+    mdef = game.monster_def(def_id)
     return mdef.toughness + mdef.toughness_per_investigator * len(game.investigators)
 
 
+def monster_location(game: Game, monster: MonsterInst) -> str | None:
+    return next((loc for loc, m in game.all_monsters() if m is monster), None)
+
+
+def wound_monster(game: Game, inv: Investigator | None, monster: MonsterInst, amount: int) -> bool:
+    """Take Health from a Monster. Returns True if this defeats it."""
+    loc_id = monster_location(game, monster)
+    mdef = game.monster_def(monster.def_id)
+    if loc_id is None or amount <= 0:
+        return False
+    if mdef.needs_mysteries and len(game.solved_mysteries) < game.old_one.mysteries_needed:
+        emit(game, "combat", f"The {mdef.name} cannot lose Health until enough Mysteries are solved.")
+        return False
+    monster.wounds += amount
+    if monster.wounds < toughness(game, monster.def_id):
+        return False
+    defeat_monster(game, inv, loc_id, monster)
+    return True
+
+
 def defeat_monster(game: Game, inv: Investigator | None, loc_id: str, monster: MonsterInst) -> None:
-    mdef = game.content.monsters[monster.def_id]
+    mdef = game.monster_def(monster.def_id)
     state = game.locations[loc_id]
     if monster in state.monsters:
         state.monsters.remove(monster)
-    if not mdef.epic:
+    if mdef.epic:
+        game.epics_gone.append(mdef.id)
+    else:
         game.monster_cup.append(monster.def_id)
     game.bump("monsters_defeated")
     who = f"{inv.name} defeats" if inv else "Defeated"
     emit(game, "combat", f"{who} the {mdef.name}!", monster=mdef.id, defeated=True)
-    if inv is not None:
-        effects = game.old_one.cultist_on_defeat if mdef.id == "cultist" else mdef.on_defeat
-        if effects and not (mdef.id == "cultist" and game.old_one.id == "azathoth"):
-            run_effects(effects, Ctx(game, inv, f"monster:{mdef.id}"))
+    if inv is not None and mdef.on_defeat:
+        run_effects(mdef.on_defeat, Ctx(game, inv, f"monster:{mdef.id}"))
     for mys in game.active_mysteries():
         mys_def = game.mystery_def(mys)
         if mys_def.kind == "defeat" and mys_def.monster == mdef.id and not mys.done:
@@ -567,13 +598,14 @@ def defeat_monster(game: Game, inv: Investigator | None, loc_id: str, monster: M
 
 
 def discard_monster(game: Game, loc_id: str, monster: MonsterInst) -> None:
-    """Remove a Monster without resolving defeat effects or Mystery progress."""
+    """Remove a Monster without resolving defeat effects. Epic Monsters cannot be discarded."""
     state = game.locations[loc_id]
+    mdef = game.monster_def(monster.def_id)
+    if mdef.epic:
+        return
     if monster in state.monsters:
         state.monsters.remove(monster)
-    mdef = game.content.monsters[monster.def_id]
-    if not mdef.epic:
-        game.monster_cup.append(monster.def_id)
+    game.monster_cup.append(monster.def_id)
     game.bump("monsters_discarded")
     emit(game, "monster", f"The {mdef.name} is discarded.", monster=mdef.id, location=loc_id)
 
@@ -589,6 +621,8 @@ def move_monsters(game: Game, monster_id: str | None = None, toward: str = "inve
     moves: list[tuple[str, str, MonsterInst]] = []
     for loc, monster in list(game.all_monsters()):
         mdef = game.content.monsters[monster.def_id]
+        if mdef.epic:
+            continue
         if monster_id is not None:
             if monster.def_id != monster_id:
                 continue
@@ -610,6 +644,32 @@ def move_monsters(game: Game, monster_id: str | None = None, toward: str = "inve
             game.locations[dst].monsters.append(monster)
             name = game.content.monsters[monster.def_id].name
             emit(game, "monster", f"The {name} moves from {loc_name(game, src)} to {loc_name(game, dst)}.")
+
+
+def move_monster(game: Game, monster: MonsterInst, dest: str) -> None:
+    src = monster_location(game, monster)
+    mdef = game.monster_def(monster.def_id)
+    if src is None or src == dest or mdef.epic:
+        return
+    game.locations[src].monsters.remove(monster)
+    game.locations[dest].monsters.append(monster)
+    emit(game, "monster", f"The {mdef.name} moves from {loc_name(game, src)} to {loc_name(game, dest)}.")
+
+
+def step_toward(game: Game, src: str, goal: str, spaces: int = 1) -> str:
+    """The space reached after moving up to `spaces` along a shortest path to `goal`."""
+    here = src
+    for _ in range(spaces):
+        if here == goal:
+            break
+        here = _next_step(game, here, goal) or here
+    return here
+
+
+def nearest_investigator(game: Game, loc_id: str) -> Investigator | None:
+    dist = distances(game, loc_id)
+    people = [i for i in game.turn_order() if not i.eliminated and not i.defeated]
+    return min(people, key=lambda i: dist.get(i.location, 999), default=None)
 
 
 def _next_step(game: Game, src: str, goal: str) -> str | None:
@@ -835,12 +895,9 @@ def resolve_reckoning(game: Game) -> None:
     for _loc, monster in list(game.all_monsters()):
         if game.outcome:
             return
-        if monster.def_id == "cultist":
-            effects = game.old_one.cultist_reckoning
-        else:
-            effects = game.content.monsters[monster.def_id].reckoning
-        if effects:
-            run_effects(effects, Ctx(game, None, f"reckoning_monster:{monster.def_id}"))
+        effects = game.monster_def(monster.def_id).reckoning
+        if effects and monster_location(game, monster) is not None:
+            run_effects(effects, Ctx(game, None, f"reckoning_monster:{monster.def_id}", monster=monster))
             process_defeats(game)
 
     # 2. Ancient One sheet
