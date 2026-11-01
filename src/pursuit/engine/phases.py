@@ -6,7 +6,7 @@ at the same investigator's turn.
 
 from __future__ import annotations
 
-from pursuit.content.defs import LOCATION_DECKS, EncounterDef, EncounterSection, MythosDef
+from pursuit.content.defs import LOCATION_DECKS, EncounterDef, EncounterSection, MythosDef, encounter_code
 from pursuit.controller import Option
 from pursuit.effects.base import Ctx, run_effects, sourced
 from pursuit.engine import actions, combat, dice, rules
@@ -239,6 +239,7 @@ def _draw_and_run_encounter(
         title=edef.title,
         deck=deck_name,
         encounter=edef.id,
+        code=encounter_code(edef.id),
         location=inv.location,
     )
     tag = "other_world" if deck_name == "other_world" else None

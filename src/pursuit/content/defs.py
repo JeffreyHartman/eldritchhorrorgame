@@ -688,6 +688,26 @@ class EncounterSection:
     terrain: str | None = None
 
 
+def _abbreviate(name: str) -> str:
+    return name.removeprefix("the_").replace("_", "")[:3].upper()
+
+
+def encounter_code(encounter_id: str) -> str:
+    """Return the short code shown on an encounter card's panel.
+
+    `research_yog_sothoth_city_2` gives `YOG-C2`, `americas_3` gives `AME-3`, and
+    `expedition_the_amazon_1` gives `EXP-AMA1`.
+    """
+    stem, _, number = encounter_id.rpartition("_")
+    if stem.startswith("research_"):
+        old_one, _, terrain = stem.removeprefix("research_").rpartition("_")
+        return f"{_abbreviate(old_one)}-{terrain[0].upper()}{number}"
+    for prefix in ("expedition", "other_world", "special"):
+        if stem.startswith(f"{prefix}_"):
+            return f"{_abbreviate(prefix)}-{_abbreviate(stem.removeprefix(f'{prefix}_'))}{number}"
+    return f"{_abbreviate(stem)}-{number}"
+
+
 @dataclass(frozen=True)
 class EncounterDef:
     id: str
