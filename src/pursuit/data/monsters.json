@@ -96,14 +96,11 @@
     "toughness_per_investigator": 0,
     "reckoning": [
       {
-        "type": "random",
+        "type": "roll",
         "outcomes": [
           {
-            "weight": 4,
-            "effects": []
-          },
-          {
-            "weight": 2,
+            "low": 1,
+            "high": 2,
             "effects": [
               {
                 "type": "advance_doom",
@@ -160,14 +157,11 @@
     "toughness_per_investigator": 0,
     "reckoning": [
       {
-        "type": "random",
+        "type": "roll",
         "outcomes": [
           {
-            "weight": 4,
-            "effects": []
-          },
-          {
-            "weight": 2,
+            "low": 1,
+            "high": 2,
             "effects": [
               {
                 "type": "advance_doom",
@@ -341,14 +335,11 @@
     "toughness_per_investigator": 0,
     "reckoning": [
       {
-        "type": "random",
+        "type": "roll",
         "outcomes": [
           {
-            "weight": 4,
-            "effects": []
-          },
-          {
-            "weight": 2,
+            "low": 1,
+            "high": 2,
             "effects": [
               {
                 "type": "nearest_investigator",
@@ -619,14 +610,11 @@
     ],
     "after_will": [
       {
-        "type": "random",
+        "type": "roll",
         "outcomes": [
           {
-            "weight": 4,
-            "effects": []
-          },
-          {
-            "weight": 2,
+            "low": 5,
+            "high": 6,
             "effects": [
               {
                 "type": "defeat_this"
@@ -868,14 +856,11 @@
     "toughness_per_investigator": 0,
     "reckoning": [
       {
-        "type": "random",
+        "type": "roll",
         "outcomes": [
           {
-            "weight": 4,
-            "effects": []
-          },
-          {
-            "weight": 2,
+            "low": 1,
+            "high": 2,
             "effects": [
               {
                 "type": "pull_nearest"
@@ -1005,8 +990,23 @@
         },
         "effects": [
           {
-            "type": "remove_condition",
-            "id": "cursed"
+            "type": "choice",
+            "prompt": "Discard a Cursed Condition?",
+            "options": [
+              {
+                "label": "Discard Cursed",
+                "effects": [
+                  {
+                    "type": "remove_condition",
+                    "id": "cursed"
+                  }
+                ]
+              },
+              {
+                "label": "Keep it",
+                "effects": []
+              }
+            ]
           }
         ]
       }
@@ -1031,14 +1031,11 @@
     "art": "epic",
     "reckoning": [
       {
-        "type": "random",
+        "type": "roll",
         "outcomes": [
           {
-            "weight": 4,
-            "effects": []
-          },
-          {
-            "weight": 2,
+            "low": 1,
+            "high": 2,
             "effects": [
               {
                 "type": "advance_doom",

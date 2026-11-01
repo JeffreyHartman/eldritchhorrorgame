@@ -10,7 +10,7 @@ from conftest import MakeGame, Script, first, set_dice
 from pursuit.content.reader import ContentError
 from pursuit.effects.base import Ctx, parse_effects, run_effects
 from pursuit.engine import rules
-from pursuit.engine.state import Game, Investigator
+from pursuit.engine.state import ActiveMythos, Game, Investigator
 
 
 def run(game: Game, inv: Investigator | None, data: list[dict[str, Any]]) -> None:
@@ -362,3 +362,210 @@ def test_choice_with_one_enabled_option_resolves_with_no_prompt(make_game: MakeG
     run(game, inv, [{"type": "choice", "options": options}])
     assert not script.asked
     assert inv.sanity == sanity + 1
+
+
+def test_ambush_runs_the_defeated_branch(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.monster_cup[:] = ["ghoul"]
+    set_dice(game, *[6] * 20)
+    effect = [
+        {
+            "type": "ambush",
+            "id": "ghoul",
+            "defeated": [{"type": "clues", "amount": 2}],
+            "survived": [{"type": "gain_condition", "id": "amnesia"}],
+        }
+    ]
+    run(game, inv, effect)
+    assert inv.clues == 2
+    assert not rules.has_condition(inv, "amnesia")
+
+
+def test_ambush_runs_the_survived_branch(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.health = inv.max_health
+    game.monster_cup[:] = ["ghoul"]
+    set_dice(game, *[1] * 20)
+    effect = [
+        {
+            "type": "ambush",
+            "id": "ghoul",
+            "defeated": [{"type": "clues", "amount": 2}],
+            "survived": [{"type": "gain_condition", "id": "amnesia"}],
+        }
+    ]
+    run(game, inv, effect)
+    assert inv.clues == 0
+    assert rules.has_condition(inv, "amnesia")
+    assert not game.locations[inv.location].monsters
+
+
+def test_ambush_with_spawn_leaves_an_undefeated_monster_on_the_board(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.monster_cup[:] = ["ghoul"]
+    set_dice(game, *[1] * 20)
+    run(game, inv, [{"type": "ambush", "spawn": True}])
+    assert [m.def_id for m in game.locations[inv.location].monsters] == ["ghoul"]
+
+
+def test_ambush_or_random_draws_another_monster_when_the_named_one_is_gone(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.monster_cup[:] = ["ghoul"]
+    set_dice(game, *[1] * 20)
+    run(game, inv, [{"type": "ambush", "id": "dark_young", "or_random": True, "spawn": True}])
+    assert [m.def_id for m in game.locations[inv.location].monsters] == ["ghoul"]
+
+
+def test_ambush_with_no_monster_runs_neither_branch(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.monster_cup.clear()
+    game.set_aside.clear()
+    effect = [
+        {
+            "type": "ambush",
+            "id": "ghoul",
+            "defeated": [{"type": "clues", "amount": 2}],
+            "survived": [{"type": "sanity", "amount": -1}],
+        }
+    ]
+    run(game, inv, effect)
+    assert inv.clues == 0 and inv.sanity == inv.max_sanity
+
+
+def test_discard_this_discards_the_ambushing_monster(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.monster_cup[:] = ["ghoul"]
+    set_dice(game, *[1] * 20)
+    run(game, inv, [{"type": "ambush", "spawn": True, "survived": [{"type": "discard_this"}]}])
+    assert not game.locations[inv.location].monsters
+
+
+def test_spawn_clue_on_a_chosen_space(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    script.add("choose_space", "Tokyo")
+    run(game, inv, [{"type": "spawn_clue", "choose": True}])
+    assert len(game.locations["tokyo"].clues) == 1
+    assert sum(len(st.clues) for st in game.locations.values()) == 1
+
+
+def test_move_any_monster_moves_the_chosen_monster(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.spawn_monster(game, "arkham", "ghoul", trigger=False)
+    script.add("move", "Tokyo")
+    run(game, inv, [{"type": "move_any_monster"}])
+    assert not game.locations["arkham"].monsters
+    assert [m.def_id for m in game.locations["tokyo"].monsters] == ["ghoul"]
+
+
+def test_move_any_monster_ignores_epic_monsters(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.spawn_monster(game, "arkham", "dunwich_horror", trigger=False)
+    run(game, inv, [{"type": "move_any_monster"}])
+    assert not script.asked
+    assert game.locations["arkham"].monsters
+
+
+def test_move_monster_here_with_an_id_takes_that_monster(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.spawn_monster(game, "tokyo", "hound_of_tindalos", trigger=False)
+    set_dice(game, *[6] * 20)
+    run(
+        game,
+        inv,
+        [{"type": "move_monster_here", "id": "hound_of_tindalos", "else": [{"type": "sanity", "amount": -1}]}],
+    )
+    assert not game.locations["tokyo"].monsters
+    assert inv.sanity == inv.max_sanity
+
+
+def test_move_monster_here_runs_else_when_the_monster_is_not_on_the_board(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    run(
+        game,
+        inv,
+        [{"type": "move_monster_here", "id": "hound_of_tindalos", "else": [{"type": "sanity", "amount": -1}]}],
+    )
+    assert inv.sanity == inv.max_sanity - 1
+
+
+def test_move_clue_moves_one_clue_to_the_nearest_terrain(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.location = "arkham"
+    game.locations["arkham"].clues = ["arkham", "tokyo"]
+    run(game, inv, [{"type": "move_clue", "terrain": "sea"}])
+    assert len(game.locations["arkham"].clues) == 1
+    moved = [loc for loc, st in game.locations.items() if st.clues and loc != "arkham"]
+    assert len(moved) == 1
+    assert game.content.locations[moved[0]].terrain == "sea"
+
+
+def test_move_toward_gate_steps_one_space_closer(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.location = "arkham"
+    game.locations["tokyo"].gate = True
+    before = rules.distances(game, "tokyo")["arkham"]
+    run(game, inv, [{"type": "move", "to": "toward_gate"}])
+    assert rules.distances(game, "tokyo")[inv.location] == before - 1
+
+
+def test_move_toward_gate_with_no_gate_stays(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    here = inv.location
+    run(game, inv, [{"type": "move", "to": "toward_gate"}])
+    assert inv.location == here
+
+
+def test_plus_per_clue_adds_one_die_for_each_clue(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.clues = 2
+    # The last scripted die is a success, so a pool 1 die too small fails the test.
+    set_dice(game, *[1] * (inv.skill("will") + 1), 6)
+    run(game, inv, [{"type": "test", "skill": "will", "plus_per": "clue", "pass": [{"type": "clues", "amount": 5}]}])
+    assert inv.clues == 7
+
+
+def test_random_shuffle_back_needs_no_decision(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    game.solved_mysteries.extend(m.id for m in game.old_one.mysteries[:2])
+    run(game, inv, [{"type": "shuffle_back_mystery", "random": True}])
+    assert len(game.solved_mysteries) == 1
+    assert not script.asked
+
+
+def test_shuffle_back_with_no_solved_mystery_does_nothing(make_game: MakeGame) -> None:
+    game = make_game()
+    run(game, first(game), [{"type": "shuffle_back_mystery", "random": True}])
+    assert not game.solved_mysteries
+
+
+def test_skipped_reckon_twice_advances_doom_when_no_card_has_a_reckoning(make_game: MakeGame) -> None:
+    game = make_game()
+    doom = game.doom
+    game.active_mythos.clear()
+    run(game, None, [{"type": "reckon_twice", "what": "mythos", "skip": True}])
+    assert game.doom == doom - 1
+
+
+def test_skipped_reckon_twice_resolves_no_reckoning(make_game: MakeGame) -> None:
+    game = make_game()
+    doom = game.doom
+    game.active_mythos.append(ActiveMythos("stars_aligned"))
+    omen = game.omen_index
+    run(game, None, [{"type": "reckon_twice", "what": "mythos", "skip": True}])
+    assert game.doom == doom and game.omen_index == omen

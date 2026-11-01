@@ -9,6 +9,11 @@
         "text": "In the restricted section of Miskatonic University's library, you study an esoteric tome. Gain 1 Incantation Spell. You try to decode a note written in the margin (Lore). If you fail, the words put strange visions into your mind; gain a Hallucinations Condition.",
         "effects": [
           {
+            "type": "gain_asset",
+            "kind": "spell",
+            "trait": "incantation"
+          },
+          {
             "type": "test",
             "skill": "lore",
             "mod": 0,
@@ -90,6 +95,11 @@
         "text": "During the night, you have a nightmare about the old witch, Keziah Mason. In the dream, she shares her power with you; gain 1 Incantation Spell. When you wake up, you fear that the old witch will someday ask you for a favor in return (Will+1). If you fail, gain a Paranoia Condition.",
         "effects": [
           {
+            "type": "gain_asset",
+            "kind": "spell",
+            "trait": "incantation"
+          },
+          {
             "type": "test",
             "skill": "will",
             "mod": 1,
@@ -121,6 +131,10 @@
               {
                 "type": "text",
                 "text": "you identify the cthonian; improve 1 skill of your choice as scientists clamor to contribute to its study."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "choose"
               }
             ],
             "fail": [
@@ -149,6 +163,11 @@
               {
                 "type": "text",
                 "text": "gain 1 Ritual Spell."
+              },
+              {
+                "type": "gain_asset",
+                "kind": "spell",
+                "trait": "ritual"
               }
             ],
             "fail": [
@@ -361,6 +380,11 @@
               {
                 "type": "text",
                 "text": "you find a scrap of parchment and gain 1 Incantation Spell."
+              },
+              {
+                "type": "gain_asset",
+                "kind": "spell",
+                "trait": "incantation"
               }
             ],
             "fail": [
@@ -413,6 +437,11 @@
         "text": "You sneak aboard a ship loaded with stolen antiquities, including an ancient stone table. Reading it, you gain 1 Ritual Spell. Memorizing the words, you feel yourself slipping into a trance (Will). If you fail, you wake up imprisoned for theft; gain a Detained Condition.",
         "effects": [
           {
+            "type": "gain_asset",
+            "kind": "spell",
+            "trait": "ritual"
+          },
+          {
             "type": "test",
             "skill": "will",
             "mod": 0,
@@ -451,6 +480,11 @@
               {
                 "type": "text",
                 "text": "you impress her with your acumen, and she gives you a rare text; gain 1 Incantation Spell."
+              },
+              {
+                "type": "gain_asset",
+                "kind": "spell",
+                "trait": "incantation"
               }
             ],
             "fail": [
@@ -488,6 +522,10 @@
               {
                 "type": "health",
                 "amount": -1
+              },
+              {
+                "type": "sanity",
+                "amount": -1
               }
             ]
           }
@@ -497,6 +535,11 @@
         "location": "buenos_aires",
         "text": "An old woman warns you that you've angered Yig and teaches you a protective chant. Gain 1 Ritual Spell. Concerned that she may be right, you learn all you can about Yig (Lore). If you fail, you learn nothing; gain a Paranoia Condition.",
         "effects": [
+          {
+            "type": "gain_asset",
+            "kind": "spell",
+            "trait": "ritual"
+          },
           {
             "type": "test",
             "skill": "lore",
@@ -678,6 +721,10 @@
               {
                 "type": "text",
                 "text": "the tale chills you to the bone; gain a Madness Condition."
+              },
+              {
+                "type": "gain_condition",
+                "trait": "madness"
               }
             ]
           }
@@ -696,6 +743,11 @@
               {
                 "type": "text",
                 "text": "he relents and allows you a brief look at the book; gain 1 Ritual Spell."
+              },
+              {
+                "type": "gain_asset",
+                "kind": "spell",
+                "trait": "ritual"
               }
             ],
             "fail": []

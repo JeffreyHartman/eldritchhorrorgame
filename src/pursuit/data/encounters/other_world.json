@@ -42,12 +42,22 @@
             "text": "The symbols make no sense to you. You fear that you will be stuck here forever and search for a way home. You feel despair eating at you; lose 2 Sanity and gain a Paranoia Condition unless you spend 1 Clue."
           },
           {
-            "type": "sanity",
-            "amount": -2
-          },
-          {
-            "type": "gain_condition",
-            "id": "paranoia"
+            "type": "pay",
+            "prompt": "Spend 1 Clue to hold back the despair?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "sanity",
+                "amount": -2
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
           }
         ]
       }
@@ -101,8 +111,18 @@
             "text": "The horrible truth shakes the foundations of your mind. You try to banish any knowledge of the arcane from your thoughts, but you lose your grip on reality. Gain a Hallucinations Condition unless you spend 1 Clue."
           },
           {
-            "type": "gain_condition",
-            "id": "hallucinations"
+            "type": "pay",
+            "prompt": "Spend 1 Clue to keep your grip on reality?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
           }
         ]
       }
@@ -233,15 +253,35 @@
             "text": "You gain nothing from speaking to them. Just being around them sets you on edge. Your mind might unhinge if you continue to push yourself without resting. Gain a Paranoia Condition and lose 1 Sanity unless you become Delayed."
           },
           {
-            "type": "sanity",
-            "amount": -1
-          },
-          {
-            "type": "gain_condition",
-            "id": "paranoia"
-          },
-          {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Push on without resting?",
+            "options": [
+              {
+                "label": "Become Delayed",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  }
+                ]
+              },
+              {
+                "label": "Gain a Paranoia Condition and lose 1 Sanity",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "paranoia"
+                  },
+                  {
+                    "type": "sanity",
+                    "amount": -1
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -277,8 +317,28 @@
                 "text": "gain 1 Clue or 1 Spell."
               },
               {
-                "type": "clues",
-                "amount": 1
+                "type": "choice",
+                "prompt": "What do you take from the book?",
+                "options": [
+                  {
+                    "label": "Gain 1 Clue",
+                    "effects": [
+                      {
+                        "type": "clues",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Gain 1 Spell",
+                    "effects": [
+                      {
+                        "type": "gain_asset",
+                        "kind": "spell"
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "fail": [
@@ -299,8 +359,18 @@
             "text": "He spots you and unleashes a torrent of arcane energy that tears at your mind. Lose 3 Sanity unless you spend 1 Clue."
           },
           {
-            "type": "sanity",
-            "amount": -3
+            "type": "pay",
+            "prompt": "Spend 1 Clue to shield your mind?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ]
           }
         ]
       }
@@ -353,8 +423,18 @@
             "text": "Your drawing proves insufficient and you find yourself back on Earth, struggling to retain your memories of what happened. Gain an Amnesia Condition unless you spend 1 Clue."
           },
           {
-            "type": "gain_condition",
-            "id": "amnesia"
+            "type": "pay",
+            "prompt": "Spend 1 Clue to hold on to your memories?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
           }
         ]
       }
@@ -408,10 +488,21 @@
             "text": "You cannot find the book, but perhaps you unknowingly already have the information you need. You may spend 1 Clue to close this Gate. If you do not spend the Clue, you become Delayed."
           },
           {
-            "type": "delay"
-          },
-          {
-            "type": "close_gate"
+            "type": "pay",
+            "prompt": "Spend 1 Clue to close this Gate?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "close_gate"
+              }
+            ],
+            "else": [
+              {
+                "type": "delay"
+              }
+            ]
           }
         ]
       }
@@ -510,14 +601,33 @@
             "text": "The audience applauds your performance and curtain falls. Close this Gate. You consider sticking around for the second show in hopes of picking up details you missed the first time. You may become Delayed to gain 2 Clues."
           },
           {
-            "type": "clues",
-            "amount": 2
-          },
-          {
-            "type": "delay"
-          },
-          {
             "type": "close_gate"
+          },
+          {
+            "type": "choice",
+            "prompt": "Stay for the second show?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 2 Clues",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "clues",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ],
         "fail": [
@@ -594,11 +704,31 @@
             "text": "The words remain unintelligible, and you realize that you've become lost in the city while chasing after these voices. You walk, lost, through Carcosa's darkest alleyways and consider timestakingly retracing your steps. Lose 2 Sanity unless you become Delayed."
           },
           {
-            "type": "sanity",
-            "amount": -2
-          },
-          {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Retrace your steps?",
+            "options": [
+              {
+                "label": "Become Delayed",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  }
+                ]
+              },
+              {
+                "label": "Lose 2 Sanity",
+                "effects": [
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -697,15 +827,25 @@
             "text": "Believing that you can help him, a guest attempts to bribe you. Gain 1 Artifact. Seeing this, the Queen demands that you unmask. She questions you relentlessly in an attempt to discover what you've learned. Become Delayed unless you spend 2 Clues. If you spend the Clues, you gain her favor; close this Gate."
           },
           {
-            "type": "delay"
-          },
-          {
-            "type": "close_gate"
-          },
-          {
             "type": "gain_asset",
-            "count": 1,
             "kind": "artifact"
+          },
+          {
+            "type": "pay",
+            "prompt": "Spend 2 Clues to gain her favor and close this Gate?",
+            "cost": {
+              "clues": 2
+            },
+            "then": [
+              {
+                "type": "close_gate"
+              }
+            ],
+            "else": [
+              {
+                "type": "delay"
+              }
+            ]
           }
         ],
         "fail": [
@@ -807,6 +947,10 @@
               {
                 "type": "health",
                 "amount": -1
+              },
+              {
+                "type": "sanity",
+                "amount": -1
               }
             ]
           }
@@ -871,7 +1015,8 @@
           {
             "type": "delay"
           }
-        ]
+        ],
+        "plus_per": "clue"
       }
     ]
   },
@@ -896,10 +1041,21 @@
             "amount": 1
           },
           {
-            "type": "delay"
-          },
-          {
-            "type": "close_gate"
+            "type": "pay",
+            "prompt": "Spend 1 Health to feed the cats and close this Gate?",
+            "cost": {
+              "health": 1
+            },
+            "then": [
+              {
+                "type": "close_gate"
+              }
+            ],
+            "else": [
+              {
+                "type": "delay"
+              }
+            ]
           }
         ],
         "fail": [
@@ -1081,11 +1237,30 @@
             "text": "The child calms down, but eyes you suspiciously. \"Listen carefully to what I say,\" you tell yourself. \"It might save your life...\" You may become Delayed to gain 2 Clues. Whether you become Delayed or not, close this Gate."
           },
           {
-            "type": "clues",
-            "amount": 2
-          },
-          {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Stay to warn your younger self?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 2 Clues",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "clues",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           },
           {
             "type": "close_gate"
@@ -1134,15 +1309,33 @@
             "text": "Joseph Curwen was using this lab to revive dead wizards from their ashes and interrogate them for arcane knowledge. Using his notes, you close this Gate. The rest of his results may also prove useful. You may become Delayed to gain 1 Spell."
           },
           {
-            "type": "delay"
-          },
-          {
             "type": "close_gate"
           },
           {
-            "type": "gain_asset",
-            "count": 1,
-            "kind": "spell"
+            "type": "choice",
+            "prompt": "Study Curwen's results?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 1 Spell",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "gain_asset",
+                    "kind": "spell"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ],
         "fail": [
@@ -1205,6 +1398,10 @@
               {
                 "type": "text",
                 "text": "you hide, waiting for it to go away; lost 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
               }
             ]
           }
@@ -1215,16 +1412,38 @@
             "text": "Your well-reasoned arguments seem to have no impact, but bribery might. You may discard 1 Item possession to close this Gate. If you do not discard the possession, the ghouls attack you; lose 1 Health and gain an Injury Condition."
           },
           {
-            "type": "health",
-            "amount": -1
-          },
-          {
-            "type": "close_gate"
-          },
-          {
-            "type": "lose_asset",
-            "count": 1,
-            "kind": "item"
+            "type": "choice",
+            "prompt": "Bribe the ghouls?",
+            "options": [
+              {
+                "label": "Discard 1 Item: close this Gate",
+                "effects": [
+                  {
+                    "type": "lose_asset",
+                    "kind": "item"
+                  },
+                  {
+                    "type": "close_gate"
+                  }
+                ],
+                "requires": {
+                  "asset_kind": "item"
+                }
+              },
+              {
+                "label": "Refuse: lose 1 Health and gain an Injury Condition",
+                "effects": [
+                  {
+                    "type": "health",
+                    "amount": -1
+                  },
+                  {
+                    "type": "gain_condition",
+                    "trait": "injury"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -1278,8 +1497,18 @@
             "text": "The disembodied brains demand that you stay. They tell you terrible secrets they've learned about the fate of the Earth. Lose 2 Sanity unless you spend 1 Clue."
           },
           {
-            "type": "sanity",
-            "amount": -2
+            "type": "pay",
+            "prompt": "Spend 1 Clue to shut out the brains?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [],
+            "else": [
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
           }
         ]
       }
@@ -1494,6 +1723,10 @@
               },
               {
                 "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "sanity",
                 "amount": -1
               }
             ]

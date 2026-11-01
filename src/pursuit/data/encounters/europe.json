@@ -71,6 +71,10 @@
               {
                 "type": "text",
                 "text": "improve 1 skill of your choice."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "choose"
               }
             ],
             "fail": [
@@ -146,6 +150,10 @@
               },
               {
                 "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "sanity",
                 "amount": -1
               }
             ]
@@ -241,6 +249,10 @@
               {
                 "type": "sanity",
                 "amount": -1
+              },
+              {
+                "type": "remove_condition",
+                "id": "blessed"
               }
             ]
           }
@@ -363,6 +375,10 @@
               {
                 "type": "text",
                 "text": "you are overcome by terror; gain a Madness Condition."
+              },
+              {
+                "type": "gain_condition",
+                "trait": "madness"
               }
             ]
           }
@@ -381,7 +397,8 @@
         "effects": [
           {
             "type": "spawn_clue",
-            "count": 1
+            "count": 1,
+            "choose": true
           },
           {
             "type": "test",
@@ -476,7 +493,8 @@
               },
               {
                 "type": "spawn_clue",
-                "count": 1
+                "count": 1,
+                "choose": true
               }
             ],
             "fail": [
@@ -590,19 +608,38 @@
         "text": "A witch cult must have used this villa to conduct their rituals. They've left behind a number of small potions. You may drink one to improve 1 skill of your choice. If you improve a skill, you must resist the ill effects of the elixir (Will). If you fail, gain a Cursed Condition.",
         "effects": [
           {
-            "type": "test",
-            "skill": "will",
-            "mod": 0,
-            "needed": 1,
-            "pass": [],
-            "fail": [
+            "type": "choice",
+            "prompt": "Drink one of the potions?",
+            "options": [
               {
-                "type": "text",
-                "text": "gain a Cursed Condition."
+                "label": "Drink: improve 1 skill",
+                "effects": [
+                  {
+                    "type": "improve_skill",
+                    "skill": "choose"
+                  },
+                  {
+                    "type": "test",
+                    "skill": "will",
+                    "mod": 0,
+                    "needed": 1,
+                    "pass": [],
+                    "fail": [
+                      {
+                        "type": "text",
+                        "text": "gain a Cursed Condition."
+                      },
+                      {
+                        "type": "gain_condition",
+                        "id": "cursed"
+                      }
+                    ]
+                  }
+                ]
               },
               {
-                "type": "gain_condition",
-                "id": "cursed"
+                "label": "Refuse",
+                "effects": []
               }
             ]
           }

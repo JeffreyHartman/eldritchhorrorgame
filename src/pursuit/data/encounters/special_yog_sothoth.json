@@ -305,11 +305,11 @@
           },
           {
             "type": "gain_condition",
-            "id": "paranoia"
+            "trait": "madness"
           },
           {
             "type": "gain_condition",
-            "id": "back_injury"
+            "trait": "injury"
           }
         ]
       }

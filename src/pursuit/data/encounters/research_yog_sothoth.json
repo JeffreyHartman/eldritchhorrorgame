@@ -145,7 +145,7 @@
     "title": "You attempt to sneak into the local Silver Twilight...",
     "expansion": "CORE",
     "terrain": "city",
-    "text": "You attempt to sneak into the local Silver Twilight Lodge (Observation). If you pass, you find a chart that assigns the names of wizards to seasons of the year; gain this Clue and 1 additional Clue. Sanford corresponds to Spring, Waite to Summer, Curwen to Autumn and Eibon to Winter. You remember the information in case it someday proves useful..}}",
+    "text": "You attempt to sneak into the local Silver Twilight Lodge (Observation). If you pass, you find a chart that assigns the names of wizards to seasons of the year; gain this Clue and 1 additional Clue. Sanford corresponds to Spring, Waite to Summer, Curwen to Autumn and Eibon to Winter. You remember the information in case it someday proves useful.",
     "effects": [
       {
         "type": "test",
@@ -188,6 +188,10 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "gain_asset",
+            "kind": "spell"
           }
         ],
         "fail": [
@@ -222,6 +226,11 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "gain_asset",
+            "kind": "artifact",
+            "trait": "tome"
           }
         ],
         "fail": [
@@ -244,15 +253,19 @@
     "text": "A noted politician walks straight toward you, glaring. A Cultist Monster ambushes you! If you defeat it, you find out that he was secretly a member of the Silver Twilight Lodge; gain this Clue. If you do not defeat it, the magical attack leaves you deeply shaken; gain a Paranoia Condition.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "paranoia"
-      },
-      {
         "type": "ambush",
-        "id": "cultist"
+        "id": "cultist",
+        "defeated": [
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "survived": [
+          {
+            "type": "gain_condition",
+            "id": "paranoia"
+          }
+        ]
       }
     ]
   },
@@ -328,11 +341,13 @@
     "text": "Talking to one of the locals, you realize that this village and its surrounding farms are inhabited by worshipers of Yog-Sothoth. A Cultist Monster ambushes you! If you defeat it, you manage to reach safety; gain this Clue.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
         "type": "ambush",
-        "id": "cultist"
+        "id": "cultist",
+        "defeated": [
+          {
+            "type": "claim_clue"
+          }
+        ]
       }
     ]
   },
@@ -344,23 +359,34 @@
     "text": "You watch several mi-go operate alien technology. Gain this Clue. If you have at least 1 Spell, the mi-go are suddenly aware of your presence and turn their strange devices toward you (Observation). If you fail, their devices erode your sense of reason; lose 1 Sanity and gain a Paranoia Condition.",
     "effects": [
       {
-        "type": "test",
-        "skill": "observation",
-        "mod": 0,
-        "needed": 1,
-        "pass": [],
-        "fail": [
+        "type": "claim_clue"
+      },
+      {
+        "type": "if",
+        "has": {
+          "asset_kind": "spell"
+        },
+        "then": [
           {
-            "type": "text",
-            "text": "their devices erode your sense of reason; lose 1 Sanity and gain a Paranoia Condition."
-          },
-          {
-            "type": "sanity",
-            "amount": -1
-          },
-          {
-            "type": "gain_condition",
-            "id": "paranoia"
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "their devices erode your sense of reason; lose 1 Sanity and gain a Paranoia Condition."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
           }
         ]
       }
@@ -527,22 +553,33 @@
     "text": "At midnight, you feel an eerie presence surrounding the stone altar at the top of the hill. This strange presence fills your mind with blasphemous secrets. Gain this Clue. If you have at least 1 Spell, the entity tries to pull you into a deep trance (Will). If you fail, lose 1 Sanity and become Delayed.",
     "effects": [
       {
-        "type": "test",
-        "skill": "will",
-        "mod": 0,
-        "needed": 1,
-        "pass": [],
-        "fail": [
+        "type": "claim_clue"
+      },
+      {
+        "type": "if",
+        "has": {
+          "asset_kind": "spell"
+        },
+        "then": [
           {
-            "type": "text",
-            "text": "lose 1 Sanity and become Delayed."
-          },
-          {
-            "type": "sanity",
-            "amount": -1
-          },
-          {
-            "type": "delay"
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Sanity and become Delayed."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              },
+              {
+                "type": "delay"
+              }
+            ]
           }
         ]
       }
@@ -567,6 +604,10 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "gain_asset",
+            "kind": "spell"
           }
         ],
         "fail": [
@@ -609,9 +650,30 @@
             "text": "the mist impairs your vision; discard this Clue unless you discard 1 Spell."
           },
           {
-            "type": "lose_asset",
-            "count": 1,
-            "kind": "spell"
+            "type": "choice",
+            "prompt": "The mist closes in. What do you give up?",
+            "options": [
+              {
+                "label": "Discard 1 Spell",
+                "effects": [
+                  {
+                    "type": "lose_asset",
+                    "kind": "spell"
+                  }
+                ],
+                "requires": {
+                  "asset_kind": "spell"
+                }
+              },
+              {
+                "label": "Discard this Clue",
+                "effects": [
+                  {
+                    "type": "discard_clue"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
@@ -657,8 +719,14 @@
         "type": "claim_clue"
       },
       {
-        "type": "sanity",
-        "amount": -1
+        "type": "move_monster_here",
+        "id": "hound_of_tindalos",
+        "else": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
       }
     ]
   },
@@ -681,6 +749,10 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "gain_asset",
+            "kind": "spell"
           }
         ],
         "fail": [
@@ -832,13 +904,38 @@
     "text": "The whole ship is dragged sideways across the water by an invisible force. Gain this Clue and move 1 space toward the nearest Gate. Then lose 2 Sanity unless you discard 1 Spell.",
     "effects": [
       {
-        "type": "sanity",
-        "amount": -2
+        "type": "claim_clue"
       },
       {
-        "type": "lose_asset",
-        "count": 1,
-        "kind": "spell"
+        "type": "move",
+        "to": "toward_gate"
+      },
+      {
+        "type": "choice",
+        "prompt": "The force drags at your mind.",
+        "options": [
+          {
+            "label": "Lose 2 Sanity",
+            "effects": [
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          },
+          {
+            "label": "Discard 1 Spell",
+            "effects": [
+              {
+                "type": "lose_asset",
+                "kind": "spell"
+              }
+            ],
+            "requires": {
+              "asset_kind": "spell"
+            }
+          }
+        ]
       }
     ]
   }

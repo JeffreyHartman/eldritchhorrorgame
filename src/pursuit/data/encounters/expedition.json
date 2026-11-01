@@ -715,49 +715,60 @@
     "text": "A horrifying beast suddenly attacks you, almost as if it had stepped right out of your nightmares. Spawn a Monster on your space and immediately encounter it. If you defeat it, resolve the pass effect. If you do not defeat it, resolve the fail effect.",
     "effects": [
       {
-        "type": "retreat_doom",
-        "amount": 1
-      },
-      {
-        "type": "test",
-        "skill": "lore",
-        "mod": 0,
-        "needed": 1,
-        "pass": [],
-        "fail": [
-          {
-            "type": "text",
-            "text": "lose 2 Sanity as your uncertainty unhinges your mind."
-          },
-          {
-            "type": "sanity",
-            "amount": -2
-          }
-        ]
-      },
-      {
-        "type": "test",
-        "skill": "observation",
-        "mod": 0,
-        "needed": 1,
-        "pass": [
-          {
-            "type": "text",
-            "text": "discard the Monster and retreat Doom by 1."
-          },
+        "type": "ambush",
+        "spawn": true,
+        "defeated": [
           {
             "type": "retreat_doom",
             "amount": 1
-          }
-        ],
-        "fail": [
-          {
-            "type": "text",
-            "text": "lose 1 Sanity as you cower in fear."
           },
           {
-            "type": "sanity",
-            "amount": -1
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Sanity as your uncertainty unhinges your mind."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "survived": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "discard the Monster and retreat Doom by 1."
+              },
+              {
+                "type": "discard_this"
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Sanity as you cower in fear."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
           }
         ]
       }

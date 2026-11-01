@@ -24,6 +24,10 @@
           {
             "type": "text",
             "text": "move this Clue to the nearest Sea space."
+          },
+          {
+            "type": "move_clue",
+            "terrain": "sea"
           }
         ]
       }
@@ -197,6 +201,10 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "gain_asset",
+            "id": "mists_of_relah"
           }
         ],
         "fail": [
@@ -220,15 +228,23 @@
     "text": "The cult of Cthulhu anticipated your arrival. A Cultist Monster ambushes you! If you defeat it, gain this Clue. If you do not defeat it, you cannot recall how you escaped; gain an Amnesia Condition and move this Clue to the nearest Sea space.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "amnesia"
-      },
-      {
         "type": "ambush",
-        "id": "cultist"
+        "id": "cultist",
+        "defeated": [
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "survived": [
+          {
+            "type": "gain_condition",
+            "id": "amnesia"
+          },
+          {
+            "type": "move_clue",
+            "terrain": "sea"
+          }
+        ]
       }
     ]
   },
@@ -247,10 +263,16 @@
         "pass": [
           {
             "type": "text",
-            "text": "you identify more families descended from deep ones; gain this Clue. If you fail; they attack and turn you over to the police; lose 1 Health and gain a Detained Condition."
+            "text": "you identify more families descended from deep ones; gain this Clue."
           },
           {
             "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "they attack and turn you over to the police; lose 1 Health and gain a Detained Condition."
           },
           {
             "type": "health",
@@ -260,8 +282,7 @@
             "type": "gain_condition",
             "id": "detained"
           }
-        ],
-        "fail": []
+        ]
       }
     ]
   },
@@ -273,15 +294,19 @@
     "text": "In a remote area, you discover an ancient ritual underway stop to observe. A Cultist Monster ambushes you! If you defeat it, the cultists abandon their ritual; gain this Clue. If you do not defeat it, you are incorporated into the ceremony; gain a Cursed Condition.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "cursed"
-      },
-      {
         "type": "ambush",
-        "id": "cultist"
+        "id": "cultist",
+        "defeated": [
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "survived": [
+          {
+            "type": "gain_condition",
+            "id": "cursed"
+          }
+        ]
       }
     ]
   },
@@ -382,6 +407,10 @@
           {
             "type": "text",
             "text": "the man has been taken by pirates; move this Clue to the nearest Sea space;"
+          },
+          {
+            "type": "move_clue",
+            "terrain": "sea"
           }
         ]
       }
@@ -416,6 +445,10 @@
           {
             "type": "text",
             "text": "the stars tell you nothing; move this Clue to the nearest Sea space."
+          },
+          {
+            "type": "move_clue",
+            "terrain": "sea"
           }
         ]
       }
@@ -451,6 +484,10 @@
             "type": "lose_asset",
             "count": 2,
             "kind": "item"
+          },
+          {
+            "type": "move_clue",
+            "terrain": "sea"
           }
         ]
       }
@@ -525,6 +562,10 @@
           },
           {
             "type": "delay"
+          },
+          {
+            "type": "move_clue",
+            "terrain": "sea"
           }
         ]
       }
@@ -630,6 +671,10 @@
           {
             "type": "text",
             "text": "you wait until they're gone and then search the area; gain the Grotesque Statue Artifact."
+          },
+          {
+            "type": "gain_asset",
+            "id": "grotesque_statue"
           }
         ],
         "fail": [
@@ -710,12 +755,14 @@
             "text": "your ship is thrown into the air; a Star Spawn Monster ambushes you! If you defeat it, retreat Doom by 1."
           },
           {
-            "type": "retreat_doom",
-            "amount": 1
-          },
-          {
             "type": "ambush",
-            "id": "star_spawn"
+            "id": "star_spawn",
+            "defeated": [
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ]
           }
         ]
       }
@@ -767,19 +814,23 @@
     "text": "As you stare across the water, a webbed hand reaches from below the surface and grabs your leg! A Deep One Monster ambushes you. If you defeat it, gain this Clue and 1 additional Clue. If you do not defeat it, gain a Leg Injury Condition.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "clues",
-        "amount": 1
-      },
-      {
-        "type": "gain_condition",
-        "id": "leg_injury"
-      },
-      {
         "type": "ambush",
-        "id": "deep_one"
+        "id": "deep_one",
+        "defeated": [
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "survived": [
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          }
+        ]
       }
     ]
   },
@@ -791,16 +842,21 @@
     "text": "During the night, you hear the sounds of the crew battleing some unseen enemy. Suddenly, you are face-to-face with one of the fish-like monstrosities! Gain this Clue and lose 1 Sanity. A Deep One Monster ambushes you. If you defeat it, you find an odd relic; gain the Ruby of R'lyeh Artifact.",
     "effects": [
       {
+        "type": "claim_clue"
+      },
+      {
         "type": "sanity",
         "amount": -1
       },
       {
-        "type": "gain_asset",
-        "id": "ruby_of_rlyeh"
-      },
-      {
         "type": "ambush",
-        "id": "deep_one"
+        "id": "deep_one",
+        "defeated": [
+          {
+            "type": "gain_asset",
+            "id": "ruby_of_rlyeh"
+          }
+        ]
       }
     ]
   }

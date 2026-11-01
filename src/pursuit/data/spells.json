@@ -856,13 +856,28 @@
           "context": "cast",
           "pass": [
             {
-              "type": "gain_asset",
-              "source": "reserve",
-              "any_of": [
-                "item",
-                "trinket"
-              ],
-              "within_result": true
+              "type": "choice",
+              "prompt": "Gain an Asset from the reserve?",
+              "options": [
+                {
+                  "label": "Gain 1 Asset",
+                  "effects": [
+                    {
+                      "type": "gain_asset",
+                      "source": "reserve",
+                      "any_of": [
+                        "item",
+                        "trinket"
+                      ],
+                      "within_result": true
+                    }
+                  ]
+                },
+                {
+                  "label": "Decline",
+                  "effects": []
+                }
+              ]
             }
           ],
           "after": [

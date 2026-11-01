@@ -28,6 +28,7 @@ Sources:
 | Final Mysteries | They solve at once. Yog-Sothoth and Cthulhu wait for 3 solved Mysteries, as the sheets say |
 | Special Encounters | 6 cards for R'lyeh Risen and 6 for The Key and the Gate |
 | Components | 51 Mythos cards, 9 Gates, 40 Assets, 14 Artifacts, 20 Spells, and 1 Other World deck of 24 cards |
+| Encounters | All 186 cards in 12 decks follow the wiki text. Each pass and fail line is an effect, and `tests/test_card_text.py` checks the wording |
 | Mythos cards | All 51 cards follow the wiki text, including the Rumor and Ongoing rules |
 | Assets and Artifacts | Each card follows the wiki text, and each Asset has 1 copy |
 | Conditions | All 11 Conditions use the wiki Reckoning text and the Core back of each card |
@@ -59,6 +60,17 @@ not say "instead".
 
 The Reference Guide does not say that The Silver Key applies to a Clue reroll, so the
 discount applies only to a Clue cost.
+
+"Gain a Madness Condition" and "gain an Injury Condition" give a random matching Condition
+that the investigator does not have. The rulebook does not say who picks.
+
+A "you may" or "unless" cost that the investigator cannot pay is not offered. An investigator
+who is already Delayed cannot "become Delayed" to pay a cost, and one who already holds a
+Condition cannot gain it to pay a cost. Each such option stays disabled.
+
+If a card ambushes with a named Monster and no such Monster is available, no combat occurs and
+neither the "defeat it" branch nor the "do not defeat it" branch resolves. Only
+`research_shub_niggurath_wilderness_2` prints a fallback to a random Monster.
 
 ## Known gaps
 

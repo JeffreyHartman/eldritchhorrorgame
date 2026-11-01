@@ -49,6 +49,11 @@
               {
                 "type": "text",
                 "text": "each Monster on a space of your choice loses 2 Health as the mysterious group casts their spells."
+              },
+              {
+                "type": "damage_monsters",
+                "amount": 2,
+                "where": "choose_space"
               }
             ],
             "fail": [
@@ -116,6 +121,10 @@
               {
                 "type": "text",
                 "text": "improve 1 skill of your choice."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "choose"
               }
             ],
             "fail": [
@@ -229,7 +238,11 @@
       {
         "location": "tokyo",
         "text": "You find a gem bearing the symbol of the Emerald Lama. In its facets, you see the image of some horrible beast. Suddenly, the creature is right next to you! Choose 1 non-Epic Monster on any space and move it to your space, then encounter it.",
-        "effects": []
+        "effects": [
+          {
+            "type": "move_monster_here"
+          }
+        ]
       },
       {
         "location": "sydney",
@@ -301,6 +314,12 @@
               {
                 "type": "text",
                 "text": "they act immediately; 1 Monster of your choice on any space loses 2 Health."
+              },
+              {
+                "type": "damage_monsters",
+                "amount": 2,
+                "where": "choose_space",
+                "one": true
               }
             ],
             "fail": [
@@ -387,6 +406,12 @@
               {
                 "type": "text",
                 "text": "you convince him to help you; 1 Monster of your choice on any space loses 3 Health."
+              },
+              {
+                "type": "damage_monsters",
+                "amount": 3,
+                "where": "choose_space",
+                "one": true
               }
             ],
             "fail": [
@@ -502,8 +527,7 @@
               },
               {
                 "type": "gain_asset",
-                "count": 1,
-                "kind": "item"
+                "trait": "weapon"
               }
             ],
             "fail": [
@@ -661,6 +685,9 @@
               {
                 "type": "text",
                 "text": "you can use the arcane manual to move 1 Monster of your choice from any space to another space of your choice."
+              },
+              {
+                "type": "move_any_monster"
               }
             ],
             "fail": []
@@ -688,7 +715,6 @@
                   {
                     "type": "gain_asset",
                     "count": 1,
-                    "kind": "item",
                     "trait": "weapon"
                   }
                 ]

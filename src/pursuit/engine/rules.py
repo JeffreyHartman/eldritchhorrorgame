@@ -849,12 +849,14 @@ def heal_monsters(game: Game, amount: int = 99) -> None:
         emit(game, "monster", "Monsters recover Health.")
 
 
-def spawn_clue(game: Game) -> str | None:
+def spawn_clue(game: Game, loc_id: str | None = None) -> str | None:
+    """Draw a Clue token and place it on its own space, or on `loc_id` if given."""
     token = game.clue_deck.draw(game.rng)
     if token is None:
         return None
-    game.locations[token].clues.append(token)
-    emit(game, "clue", f"A Clue spawns at {loc_name(game, token)}.", location=token)
+    place = loc_id or token
+    game.locations[place].clues.append(token)
+    emit(game, "clue", f"A Clue spawns at {loc_name(game, place)}.", location=place)
     return token
 
 

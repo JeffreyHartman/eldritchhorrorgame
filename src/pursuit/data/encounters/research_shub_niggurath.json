@@ -14,21 +14,26 @@
         "pass": [
           {
             "type": "text",
-            "text": "you find notes about a creature; gain this Clue and discard 1 Monster of your choice. If you fail; advance Doom by 1."
+            "text": "you find notes about a creature; gain this Clue and discard 1 Monster of your choice."
           },
           {
             "type": "claim_clue"
-          },
-          {
-            "type": "advance_doom",
-            "amount": 1
           },
           {
             "type": "discard_monster",
             "where": "choose_space"
           }
         ],
-        "fail": []
+        "fail": [
+          {
+            "type": "text",
+            "text": "advance Doom by 1."
+          },
+          {
+            "type": "advance_doom",
+            "amount": 1
+          }
+        ]
       }
     ]
   },
@@ -186,6 +191,12 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "damage_monsters",
+            "amount": 2,
+            "where": "choose_space",
+            "one": true
           }
         ],
         "fail": [
@@ -285,15 +296,23 @@
     "text": "The moon is full, and a satyr-like creature pulls itself from an undulating mass of sludge. A Goat Spawn ambushes you! If you defeat it, gain this Clue and 1 additional Clue. If you fail, you wake up the next morning with no memory of how you survived; gain an Amnesia Condition.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "clues",
-        "amount": 1
-      },
-      {
-        "type": "gain_condition",
-        "id": "amnesia"
+        "type": "ambush",
+        "id": "goat_spawn",
+        "defeated": [
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "survived": [
+          {
+            "type": "gain_condition",
+            "id": "amnesia"
+          }
+        ]
       }
     ]
   },
@@ -322,6 +341,12 @@
           {
             "type": "text",
             "text": "you get lost in the forest; spawn a Dark Young Monster (or a random Monster if the Dark Young Monster is on the game board) on your space and encounter it."
+          },
+          {
+            "type": "ambush",
+            "id": "dark_young",
+            "spawn": true,
+            "or_random": true
           }
         ]
       }
@@ -693,6 +718,10 @@
           {
             "type": "text",
             "text": "you find nothing useful; move this Clue to the nearest Wilderness space."
+          },
+          {
+            "type": "move_clue",
+            "terrain": "wilderness"
           }
         ]
       }
@@ -723,6 +752,10 @@
           {
             "type": "text",
             "text": "he escapes and dives overboard; move this Clue to the nearest Wilderness space."
+          },
+          {
+            "type": "move_clue",
+            "terrain": "wilderness"
           }
         ]
       }

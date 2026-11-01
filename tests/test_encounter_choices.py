@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from conftest import MakeGame, Script, first, set_dice
+from conftest import MakeGame, Script, card_effects, clue_here, first, holds, resolve, set_dice
 from pursuit.content.loader import Content
-from pursuit.effects.base import Ctx, Effect, run_effects, walk
+from pursuit.effects.base import walk
 from pursuit.effects.library import Choice, Pay
 from pursuit.engine import rules
-from pursuit.engine.state import Game, Investigator
 
 # The sections that issue 1 lists, as (card id, location or terrain). None marks a card with no sections.
 ISSUE_1_SECTIONS = [
@@ -46,27 +45,6 @@ ISSUE_1_SECTIONS = [
     ("research_yog_sothoth_sea_5", None),
     ("research_yog_sothoth_sea_7", None),
 ]
-
-
-def card_effects(content: Content, card_id: str, location: str | None) -> tuple[Effect, ...]:
-    edef = content.encounters[card_id]
-    if location is None:
-        return edef.effects
-    return next(s for s in edef.sections if location in (s.location, s.terrain)).effects
-
-
-def resolve(game: Game, inv: Investigator, card_id: str, location: str | None = None) -> None:
-    """Resolve the section of an encounter card that matches `location`, or the whole card."""
-    tag = "other_world" if card_id.startswith("other_world") else None
-    run_effects(card_effects(game.content, card_id, location), Ctx(game, inv, f"encounter:{card_id}", tag=tag))
-
-
-def clue_here(game: Game, inv: Investigator) -> None:
-    game.locations[inv.location].clues = [inv.location]
-
-
-def holds(inv: Investigator, asset_id: str) -> bool:
-    return any(card.def_id == asset_id for card in inv.assets)
 
 
 def test_accepting_the_necronomicon_gives_the_clue_the_pact_and_the_book(make_game: MakeGame, script: Script) -> None:
