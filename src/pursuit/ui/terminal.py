@@ -268,7 +268,16 @@ class TerminalController:
         terrain = "rift" if is_other_world else game.content.locations[event.data["location"]].terrain
         style = "bold red" if is_other_world else render.TERRAIN_STYLE[terrain]
         body = Group(render.art_text(terrain, style), Text(event.text, style="italic"))
-        self.console.print(Panel(body, title=f"[bold]{event.data.get('title', 'Encounter')}[/]", border_style=style))
+        code = event.data.get("code")
+        self.console.print(
+            Panel(
+                body,
+                title=f"[bold]{event.data.get('title', 'Encounter')}[/]",
+                subtitle=Text(code, style="dim") if code else None,
+                subtitle_align="right",
+                border_style=style,
+            )
+        )
 
     def _on_mythos(self, game: Game, event: Event) -> None:
         if "title" not in event.data:

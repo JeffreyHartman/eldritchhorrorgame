@@ -289,6 +289,11 @@ against the content. The file has a version number (`SAVE_VERSION`).
 `ui/terminal.py` has `TerminalController`. `ui/render.py` makes the `rich` panels, tables, the map,
 and the dice. The ASCII art is in `ui/art/*.txt`.
 
+Each panel for an encounter card shows a short card code, such as `YOG-C2`. `encounter_code` in
+`content/defs.py` makes the code from the encounter id, so card data has no code field. A new
+encounter id must keep the shape of its deck. Tests check that each code is unique and has at most
+12 characters.
+
 ### Tests
 
 | File                       | What it tests                                                       |
