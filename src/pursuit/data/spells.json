@@ -8,50 +8,127 @@
     "count": 2,
     "text": "When resolving a Combat Encounter, you may test Lore. If you pass, gain +3 Strength during that encounter. Then flip this card.",
     "flavor": "Speak the syllable that turns bone to ash.",
-    "modifiers": [
+    "trigger_prompt": "Test Lore with Wither for +3 Strength in this encounter?",
+    "on_combat": [
       {
-        "amount": 2,
-        "skill": "strength",
-        "context": "combat"
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "context": "cast",
+        "pass": [
+          {
+            "type": "gain_boost",
+            "amount": 3,
+            "skill": "strength"
+          }
+        ],
+        "after": [
+          {
+            "type": "flip_self"
+          }
+        ]
       }
     ],
-    "action": {
-      "text": "Cast Wither: test Lore. Pass: each Monster here loses 2 Health. Then flip this card.",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "lore",
-          "context": "cast",
-          "pass": [
-            {
-              "type": "damage_monsters",
-              "amount": 2,
-              "where": "here"
-            }
-          ],
-          "after": [
-            {
-              "type": "flip_self"
-            }
-          ]
-        }
-      ]
-    },
     "backs": [
       {
-        "text": "The word sears your throat. Lose 1 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "The spell's dark energy turns against you, flooding your mind with madness. Discard this card unless you lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Lose 2 Sanity",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Lose 2 Sanity",
+                "effects": [
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 1
+      },
+      {
+        "face": 0,
+        "text": "The incantation takes effect with horrifying success. Lose 1 Sanity and gain +5 Strength during that encounter instead.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "gain_boost",
+            "amount": 5,
+            "skill": "strength"
+          }
+        ],
+        "min_successes": 2
+      },
+      {
+        "face": 1,
+        "text": "The words must have been wrong. You suffer the damage you had hoped to inflict. Discard this card unless you gain an Internal Injury Condition.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Gain an Internal Injury",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Gain an Internal Injury",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "internal_injury"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "The spell compacts and twists the target's body. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
           }
-        ]
+        ],
+        "min_successes": 1,
+        "max_successes": 1
       },
       {
-        "text": "Your mastery holds firm.",
-        "min_successes": 1,
-        "effects": []
+        "face": 1,
+        "text": "The magic ripples and surges through the target once more. You may reroll 1 die during the Strength test.",
+        "effects": [
+          {
+            "type": "free_reroll"
+          }
+        ],
+        "min_successes": 2
       }
     ]
   },
@@ -64,46 +141,104 @@
     "count": 2,
     "text": "Once per round, when an investigator would lose Health, you may test Lore. If you pass, prevent that investigator from losing up to 2 Health. Then flip this card.",
     "flavor": "Invisible plates of force interpose themselves before the blow.",
-    "damage_reduction": 1,
-    "action": {
-      "text": "Cast Flesh Ward: test Lore. Pass: recover 2 Health. Then flip this card.",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "lore",
-          "context": "cast",
-          "pass": [
-            {
-              "type": "health",
-              "amount": 2
-            }
-          ],
-          "after": [
-            {
-              "type": "flip_self"
-            }
-          ]
-        }
-      ]
-    },
+    "trigger_prompt": "Test Lore with Flesh Ward to prevent up to 2 Health loss?",
+    "ward_stat": "health",
+    "on_ward": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "context": "cast",
+        "pass": [
+          {
+            "type": "prevent_loss",
+            "amount": 2
+          }
+        ],
+        "after": [
+          {
+            "type": "flip_self"
+          }
+        ]
+      }
+    ],
     "backs": [
       {
-        "text": "The ward shatters violently! Lose 1 Sanity and discard Flesh Ward.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "The spell's energy twists around you and locks your jaw shut as if it were forbidding you from speaking. You don't know if you will be allowed to speak those words again. If you did not roll any 4's, discard this card.",
+        "effects": [
+          {
+            "type": "discard_unless_rolled",
+            "value": 4
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 0,
+        "text": "It is unpleasant to watch this transformation, even when it succeeds. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
-          },
-          {
-            "type": "remove_self"
           }
-        ]
+        ],
+        "min_successes": 1
       },
       {
-        "text": "The ward settles cleanly over your skin.",
+        "face": 1,
+        "text": "Something inside your chest shifts painfully. The chosen investigator loses 1 Health unless he gains an Internal Injury Condition.",
+        "effects": [
+          {
+            "type": "chosen_investigator",
+            "effects": [
+              {
+                "type": "choice",
+                "prompt": "Lose 1 Health unless you gain an Internal Injury.",
+                "options": [
+                  {
+                    "label": "Lose 1 Health",
+                    "effects": [
+                      {
+                        "type": "health",
+                        "amount": -1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Gain an Internal Injury",
+                    "effects": [
+                      {
+                        "type": "gain_condition",
+                        "id": "internal_injury"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "The spell causes skin to writhe and reform like a living being. No additional effect.",
+        "effects": [],
         "min_successes": 1,
-        "effects": []
+        "max_successes": 2
+      },
+      {
+        "face": 1,
+        "text": "Flesh and bone mend themselves and harden against attack. Prevent that investigator from losing Health up to your test result instead.",
+        "effects": [
+          {
+            "type": "prevent_loss"
+          }
+        ],
+        "min_successes": 3
       }
     ]
   },
@@ -116,49 +251,90 @@
     "count": 2,
     "text": "During the Encounter Phase, you may test Lore. If you pass, you may choose an encounter as if there are no Monsters on your space. Then flip this card.",
     "flavor": "A grey fog rises from nowhere to hide your steps.",
-    "modifiers": [
+    "trigger_prompt": "Test Lore with Mists of Releh to ignore the Monsters here?",
+    "encounter_when": "monsters",
+    "on_encounter": [
       {
-        "amount": 2,
-        "skill": "will",
-        "context": "combat"
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "context": "cast",
+        "pass": [
+          {
+            "type": "ignore_monsters"
+          }
+        ],
+        "after": [
+          {
+            "type": "flip_self"
+          }
+        ]
       }
     ],
-    "action": {
-      "text": "Cast Mists of Releh: test Lore. Pass: move 1 space. Then flip this card.",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "lore",
-          "context": "cast",
-          "pass": [
-            {
-              "type": "move",
-              "to": "choose_adjacent"
-            }
-          ],
-          "after": [
-            {
-              "type": "flip_self"
-            }
-          ]
-        }
-      ]
-    },
     "backs": [
       {
-        "text": "Something moves in the mist beside you. Lose 1 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "A thick, black fog engulfs you, choking your lungs and stinging your eyes. Lose 1 Health and 1 Sanity.",
+        "effects": [
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 1
+      },
+      {
+        "face": 0,
+        "text": "You walk forward boldly, knowing the mists will keep you hidden. No additional effects.",
+        "effects": [],
+        "min_successes": 2
+      },
+      {
+        "face": 1,
+        "text": "You see a monstrous form vanish into the fog. Whatever it was, you fear it may return the next time you recite the incantation. Discard this card unless you gain a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Gain Hallucinations",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Gain Hallucinations",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "hallucinations"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "Although you are hidden by the darkness, you feel unnatural tendrils of fog wrapping around your body. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
           }
-        ]
-      },
-      {
-        "text": "The mist parts on a clear road.",
-        "min_successes": 1,
-        "effects": []
+        ],
+        "min_successes": 1
       }
     ]
   },
@@ -171,36 +347,33 @@
     "count": 2,
     "text": "Action: Test Lore. If you pass, choose a Monster on your space to lose 2 Health. Then flip this card.",
     "flavor": "Black lightning leaps from your outstretched fingers.",
-    "modifiers": [
-      {
-        "amount": 3,
-        "skill": "strength",
-        "context": "combat"
-      },
-      {
-        "amount": 1,
-        "skill": "will",
-        "context": "combat"
-      }
-    ],
     "action": {
-      "text": "Cast Shriveling: test Lore (-1). Pass: Monsters here lose 3 Health. Then flip this card.",
+      "text": "Test Lore. If you pass, choose a Monster on your space to lose 2 Health. Then flip this card.",
+      "requires": {
+        "at": {
+          "monsters": true
+        }
+      },
       "effects": [
         {
-          "type": "test",
-          "skill": "lore",
-          "mod": -1,
-          "context": "cast",
-          "pass": [
+          "type": "with_monster_here",
+          "effects": [
             {
-              "type": "damage_monsters",
-              "amount": 3,
-              "where": "here"
-            }
-          ],
-          "after": [
-            {
-              "type": "flip_self"
+              "type": "test",
+              "skill": "lore",
+              "mod": 0,
+              "context": "cast",
+              "pass": [
+                {
+                  "type": "wound_this",
+                  "amount": 2
+                }
+              ],
+              "after": [
+                {
+                  "type": "flip_self"
+                }
+              ]
             }
           ]
         }
@@ -208,19 +381,90 @@
     },
     "backs": [
       {
-        "text": "The backlash tears at your mind! Lose 2 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "The ritual echoes in your head until it becomes gibberish. Discard this card unless you lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Lose 2 Sanity",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Lose 2 Sanity",
+                "effects": [
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 1
+      },
+      {
+        "face": 0,
+        "text": "The enemy's flesh boils and peels away. No additional effect.",
+        "effects": [],
+        "min_successes": 2,
+        "max_successes": 2
+      },
+      {
+        "face": 0,
+        "text": "Flames and thick smoke envelop your target. The chosen Monster loses Health equal to your test result instead.",
+        "effects": [
+          {
+            "type": "wound_this_by_test",
+            "less": 2
+          }
+        ],
+        "min_successes": 3
+      },
+      {
+        "face": 1,
+        "text": "The spell backfires, searing your hands. Lose 2 Health.",
+        "effects": [
+          {
+            "type": "health",
+            "amount": -2
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "The distinct smell of burning flesh lets you know the spell has been cast correctly. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
-            "amount": -2
+            "amount": -1
           }
-        ]
+        ],
+        "min_successes": 1,
+        "max_successes": 1
       },
       {
-        "text": "The air smells of ozone, but your mind is whole.",
-        "min_successes": 1,
-        "effects": []
+        "face": 1,
+        "text": "The magic spreads, and the burning flesh peels from your enemies' bodies. Each other Monster on your space also loses 2 Health.",
+        "effects": [
+          {
+            "type": "damage_monsters",
+            "amount": 2,
+            "where": "here",
+            "others": true
+          }
+        ],
+        "min_successes": 2
       }
     ]
   },
@@ -234,7 +478,7 @@
     "text": "Action: Test Lore-1. If you pass, choose an investigator on your space that does not have a Blessed Condition to gain a Blessed Condition. Then flip this card.",
     "flavor": "An ancient invocation of the winged goddess.",
     "action": {
-      "text": "Cast Blessing of Isis: test Lore (-1). Pass: an investigator here gains Blessed. Then flip this card.",
+      "text": "Test Lore-1. If you pass, choose an investigator on your space that does not have a Blessed Condition to gain a Blessed Condition. Then flip this card.",
       "target": "investigator_here",
       "effects": [
         {
@@ -244,8 +488,21 @@
           "context": "cast",
           "pass": [
             {
-              "type": "gain_condition",
-              "id": "blessed"
+              "type": "chosen_investigator",
+              "effects": [
+                {
+                  "type": "if",
+                  "has": {
+                    "lacks_condition": "blessed"
+                  },
+                  "then": [
+                    {
+                      "type": "gain_condition",
+                      "id": "blessed"
+                    }
+                  ]
+                }
+              ]
             }
           ],
           "after": [
@@ -258,27 +515,86 @@
     },
     "backs": [
       {
-        "text": "The goddess turns her face away. Lose 1 Sanity and discard this Spell.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "The goddess has been angered, and her wrath is terrible to behold. The chosen investigator gains 1 Cursed Condition.",
+        "effects": [
+          {
+            "type": "chosen_investigator",
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 0,
+        "text": "You feel an almighty power surge through you and it is too much for your mind to handle. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
-          },
-          {
-            "type": "remove_self"
           }
-        ]
+        ],
+        "min_successes": 1,
+        "max_successes": 1
       },
       {
-        "text": "Golden light warms the room.",
-        "min_successes": 1,
+        "face": 0,
+        "text": "The goddess smiles upon your cause. No additional effects.",
+        "effects": [],
+        "min_successes": 2
+      },
+      {
+        "face": 1,
+        "text": "Your chanting fills the air with ancient voices, and you fear the invocation has drained part of your life away. Lose 1 Health.",
         "effects": [
           {
-            "type": "sanity",
-            "amount": 1
+            "type": "health",
+            "amount": -1
           }
-        ]
+        ],
+        "min_successes": 0,
+        "max_successes": 2
+      },
+      {
+        "face": 1,
+        "text": "The goddess smiles upon your cause. Each investigator on your space that does not have a Blessed Condition may gain a Blessed Condition.",
+        "effects": [
+          {
+            "type": "each_investigator",
+            "here": true,
+            "where": {
+              "lacks_condition": "blessed"
+            },
+            "effects": [
+              {
+                "type": "choice",
+                "prompt": "Gain a Blessed Condition?",
+                "options": [
+                  {
+                    "label": "Gain Blessed",
+                    "effects": [
+                      {
+                        "type": "gain_condition",
+                        "id": "blessed"
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Refuse",
+                    "effects": []
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 3
       }
     ]
   },
@@ -291,43 +607,110 @@
     "count": 2,
     "text": "During the Encounter Phase, you may test Lore. If you pass, you may choose to encounter a Clue as if you are on its space, ignoring Monsters on that space. Then flip this card.",
     "flavor": "Close your eyes and see what lies hidden across the sea.",
-    "action": {
-      "text": "Cast Clairvoyance: test Lore (-1). Pass: gain 1 Clue. Then flip this card.",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "lore",
-          "mod": -1,
-          "context": "cast",
-          "pass": [
-            {
-              "type": "clues",
-              "amount": 1
-            }
-          ],
-          "after": [
-            {
-              "type": "flip_self"
-            }
-          ]
-        }
-      ]
-    },
+    "trigger_prompt": "Test Lore with Clairvoyance to encounter a distant Clue?",
+    "encounter_when": "clue",
+    "on_encounter": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "context": "cast",
+        "pass": [
+          {
+            "type": "remote_clue"
+          }
+        ],
+        "after": [
+          {
+            "type": "flip_self"
+          }
+        ]
+      }
+    ],
     "backs": [
       {
-        "text": "Something in the vision looks back at you! Lose 1 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "Opening your mind wreaks havoc on your psyche. Discard this card unless you gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Gain Paranoia",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Gain Paranoia",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "paranoia"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 0,
+        "text": "Your mind travels across the world, and the knowledge becomes clear. No additional effect.",
+        "effects": [],
+        "min_successes": 1,
+        "max_successes": 2
+      },
+      {
+        "face": 0,
+        "text": "The journey becomes clear to you, and the answer seems so simple. You may roll 1 additional die when resolving tests during the Research Encounter.",
+        "effects": [
+          {
+            "type": "gain_boost",
+            "amount": 1,
+            "additional": true
+          }
+        ],
+        "min_successes": 3
+      },
+      {
+        "face": 1,
+        "text": "The knowledge gets lost in the void. Discard the chosen Clue.",
+        "effects": [
+          {
+            "type": "discard_remote_clue"
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "The knowledge is too great for one mind to contain. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
           }
-        ]
+        ],
+        "min_successes": 1,
+        "max_successes": 2
       },
       {
-        "text": "The vision fades without harm.",
-        "min_successes": 1,
-        "effects": []
+        "face": 1,
+        "text": "Suddenly, the images and ideas coalesce into a new realization. Gain 1 Clue.",
+        "effects": [
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "min_successes": 3
       }
     ]
   },
@@ -341,7 +724,8 @@
     "text": "Action: Test Lore-1. If you pass, an investigator of your choice may move to any space. Then flip this card.",
     "flavor": "Whisper a question into the dark between stars.",
     "action": {
-      "text": "Cast Plumb the Void: test Lore (-1). Pass: spawn 1 Clue and gain 1 Clue. Then flip this card.",
+      "text": "Test Lore-1. If you pass, an investigator of your choice may move to any space. Then flip this card.",
+      "target": "anyone",
       "effects": [
         {
           "type": "test",
@@ -350,12 +734,13 @@
           "context": "cast",
           "pass": [
             {
-              "type": "spawn_clue",
-              "count": 1
-            },
-            {
-              "type": "clues",
-              "amount": 1
+              "type": "chosen_investigator",
+              "effects": [
+                {
+                  "type": "move",
+                  "to": "any_space"
+                }
+              ]
             }
           ],
           "after": [
@@ -368,19 +753,80 @@
     },
     "backs": [
       {
-        "text": "The void answers with a scream. Lose 2 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "The portal closes abruptly, nearly severing you in half. The chosen investigator loses 3 Health.",
+        "effects": [
+          {
+            "type": "chosen_investigator",
+            "effects": [
+              {
+                "type": "health",
+                "amount": -3
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 0,
+        "text": "The ritual requires an exhausting amount of concentration. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
-            "amount": -2
+            "amount": -1
           }
-        ]
+        ],
+        "min_successes": 1,
+        "max_successes": 2
       },
       {
-        "text": "You pull your mind back in time.",
-        "min_successes": 1,
-        "effects": []
+        "face": 0,
+        "text": "More than just warping space, you also manipulate time. You may perform an additional action.",
+        "effects": [
+          {
+            "type": "extra_action"
+          }
+        ],
+        "min_successes": 3
+      },
+      {
+        "face": 1,
+        "text": "You remember that a swirling passage to an unknown world opened before you, but did you travel through it? If you did, where did you go? Discard this card unless you gain an Amnesia Condition.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Gain Amnesia",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Gain Amnesia",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "amnesia"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 1
+      },
+      {
+        "face": 1,
+        "text": "You bend the fabric of space to your will, transporting the subject across the globe. No additional effect.",
+        "effects": [],
+        "min_successes": 2
       }
     ]
   },
@@ -393,7 +839,7 @@
     "count": 2,
     "text": "Action: Test Lore+1. If you pass, you may gain 1 Item or Trinket Asset from the reserve with value equal to or less than your test result. Then flip this card.",
     "action": {
-      "text": "Cast Conjuration: test Lore (+1). Pass: gain 1 Item or Trinket Asset from the reserve. Then flip this card.",
+      "text": "Test Lore+1. If you pass, you may gain 1 Item or Trinket Asset from the reserve with value equal to or less than your test result. Then flip this card.",
       "effects": [
         {
           "type": "test",
@@ -403,7 +849,12 @@
           "pass": [
             {
               "type": "gain_asset",
-              "source": "reserve"
+              "source": "reserve",
+              "any_of": [
+                "item",
+                "trinket"
+              ],
+              "within_result": true
             }
           ],
           "after": [
@@ -416,19 +867,99 @@
     },
     "backs": [
       {
-        "text": "The spell slips away from you. Lose 1 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "What could you have possibly forgotten? Why didn't the spell work? If you did not roll any 4's, discard this card.",
+        "effects": [
+          {
+            "type": "discard_unless_rolled",
+            "value": 4
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 0,
+        "text": "For a moment, your mind is exposed to a powerful intelligence, dwelling between worlds. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
           }
-        ]
+        ],
+        "min_successes": 1,
+        "max_successes": 3
       },
       {
-        "text": "The casting holds.",
+        "face": 0,
+        "text": "The magic is powerful and beyond your expectations. Gain 1 additional Item or Trinket Asset from the reserve.",
+        "effects": [
+          {
+            "type": "gain_asset",
+            "source": "reserve",
+            "any_of": [
+              "item",
+              "trinket"
+            ]
+          }
+        ],
+        "min_successes": 4
+      },
+      {
+        "face": 1,
+        "text": "You can feel that the spell has not worked the way you hoped. Discard this card unless you discard 1 Item Asset.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Discard 1 Item Asset",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Discard 1 Item Asset",
+                "effects": [
+                  {
+                    "type": "lose_asset",
+                    "kind": "item"
+                  }
+                ],
+                "requires": {
+                  "asset_kind": "item"
+                }
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "Something unnatural tries to pull the object away from you. Lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ],
         "min_successes": 1,
-        "effects": []
+        "max_successes": 1
+      },
+      {
+        "face": 1,
+        "text": "All of your wishes materialize before your eyes. You may gain any number of Item or Trinket Assets from the reserve with total value equal to or less than your test result.",
+        "effects": [
+          {
+            "type": "reserve_budget"
+          }
+        ],
+        "min_successes": 2
       }
     ]
   },
@@ -441,7 +972,7 @@
     "count": 2,
     "text": "Action: Test Lore-1. If you pass, choose an investigator on your space to improve 1 skill of his choice. Then flip this card.",
     "action": {
-      "text": "Cast Feed the Mind: test Lore (-1). Pass: an investigator here improves 1 skill. Then flip this card.",
+      "text": "Test Lore-1. If you pass, choose an investigator on your space to improve 1 skill of his choice. Then flip this card.",
       "target": "investigator_here",
       "effects": [
         {
@@ -451,8 +982,13 @@
           "context": "cast",
           "pass": [
             {
-              "type": "improve_skill",
-              "skill": "choose"
+              "type": "chosen_investigator",
+              "effects": [
+                {
+                  "type": "improve_skill",
+                  "skill": "choose"
+                }
+              ]
             }
           ],
           "after": [
@@ -465,19 +1001,74 @@
     },
     "backs": [
       {
-        "text": "The spell slips away from you. Lose 1 Sanity.",
-        "max_successes": 0,
+        "face": 0,
+        "text": "Casting the spell, you open yourself to terrible knowledge. Your mind is filled with gibberish, repeating endlessly. Discard this card unless you lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Discard this card unless you: Lose 2 Sanity",
+            "options": [
+              {
+                "label": "Discard this card",
+                "effects": [
+                  {
+                    "type": "remove_self"
+                  }
+                ]
+              },
+              {
+                "label": "Lose 2 Sanity",
+                "effects": [
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 2
+      },
+      {
+        "face": 0,
+        "text": "You manipulate memories and potential knowledge with a practiced ease. The chosen investigator may improve 1 additional skill of his choice.",
+        "effects": [
+          {
+            "type": "chosen_investigator",
+            "effects": [
+              {
+                "type": "improve_skill",
+                "skill": "choose"
+              }
+            ]
+          }
+        ],
+        "min_successes": 3
+      },
+      {
+        "face": 1,
+        "text": "You were unable to sufficiently focus your mind. You wonder if you simply lack the mental discipline this spell requires. If you did not roll any 4's, discard this card.",
+        "effects": [
+          {
+            "type": "discard_unless_rolled",
+            "value": 4
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "Casting your thought into the ether, your mind returns with strange knowledge. You may not entirely be the same person you were before. Lose 1 Sanity.",
         "effects": [
           {
             "type": "sanity",
             "amount": -1
           }
-        ]
-      },
-      {
-        "text": "The casting holds.",
-        "min_successes": 1,
-        "effects": []
+        ],
+        "min_successes": 1
       }
     ]
   },
@@ -489,43 +1080,104 @@
     ],
     "count": 2,
     "text": "Once per round, when an investigator would lose Sanity, you may test Lore. If you pass, prevent that investigator from losing up to 2 Sanity. Then flip this card.",
-    "action": {
-      "text": "Cast Instill Bravery: test Lore. Pass: an investigator here recovers 2 Sanity. Then flip this card.",
-      "target": "investigator_here",
-      "effects": [
-        {
-          "type": "test",
-          "skill": "lore",
-          "context": "cast",
-          "pass": [
-            {
-              "type": "sanity",
-              "amount": 2
-            }
-          ],
-          "after": [
-            {
-              "type": "flip_self"
-            }
-          ]
-        }
-      ]
-    },
-    "backs": [
+    "trigger_prompt": "Test Lore with Instill Bravery to prevent up to 2 Sanity loss?",
+    "ward_stat": "sanity",
+    "on_ward": [
       {
-        "text": "The spell slips away from you. Lose 1 Sanity.",
-        "max_successes": 0,
-        "effects": [
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "context": "cast",
+        "pass": [
           {
-            "type": "sanity",
-            "amount": -1
+            "type": "prevent_loss",
+            "amount": 2
+          }
+        ],
+        "after": [
+          {
+            "type": "flip_self"
           }
         ]
+      }
+    ],
+    "backs": [
+      {
+        "face": 0,
+        "text": "Your malformed magic lashes against your mind, and you fear your memories have been altered. If you did not roll any 4's, discard this card.",
+        "effects": [
+          {
+            "type": "discard_unless_rolled",
+            "value": 4
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
       },
       {
-        "text": "The casting holds.",
+        "face": 0,
+        "text": "Your incantation inspires courage in the face of madness, but at the cost of your own blood. Lose 1 Health.",
+        "effects": [
+          {
+            "type": "health",
+            "amount": -1
+          }
+        ],
+        "min_successes": 1
+      },
+      {
+        "face": 1,
+        "text": "The magic warps your mind and thoughts until you can no longer tell reality from delusion. The chosen investigator loses 1 Sanity unless he gains a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "chosen_investigator",
+            "effects": [
+              {
+                "type": "choice",
+                "prompt": "Lose 1 Sanity unless you gain Hallucinations.",
+                "options": [
+                  {
+                    "label": "Lose 1 Sanity",
+                    "effects": [
+                      {
+                        "type": "sanity",
+                        "amount": -1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Gain Hallucinations",
+                    "effects": [
+                      {
+                        "type": "gain_condition",
+                        "id": "hallucinations"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "min_successes": 0,
+        "max_successes": 0
+      },
+      {
+        "face": 1,
+        "text": "The spell prevents any lingering effects of the traumatic experience. No additional effect.",
+        "effects": [],
         "min_successes": 1,
-        "effects": []
+        "max_successes": 2
+      },
+      {
+        "face": 1,
+        "text": "The spell inspires and invigorates. Prevent that investigator from losing Sanity up to your test result instead.",
+        "effects": [
+          {
+            "type": "prevent_loss"
+          }
+        ],
+        "min_successes": 3
       }
     ]
   }

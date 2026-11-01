@@ -96,6 +96,17 @@ def _offer_boosts(game: Game, inv: Investigator, skill: str, contexts: tuple[str
                 break
 
 
+def _offer_lent_die(game: Game, inv: Investigator) -> int:
+    """Lola Hayes may let 1 investigator on her space roll 1 additional die, once per round."""
+    for person in game.investigators_at(inv.location):
+        if rules.perk(game, person, "lend_die") > 0 and "lend_die" not in person.used_this_round:
+            prompt = f"Let {inv.name} roll 1 additional die?"
+            if rules.confirm(game, prompt, kind="lend_die", inv=person):
+                person.used_this_round.append("lend_die")
+                return 1
+    return 0
+
+
 def _sixes_double(game: Game, inv: Investigator, skill: str, contexts: tuple[str, ...]) -> bool:
     return any(rule.applies(skill, contexts) for c in inv.assets for rule in game.asset_def(c).double_sixes)
 
@@ -199,7 +210,7 @@ def run_test(
         success_on = min(6, success_on + 1)
 
     _offer_boosts(game, inv, skill, contexts)
-    pool = dice_pool(game, inv, skill, mod, contexts)
+    pool = dice_pool(game, inv, skill, mod, contexts) + _offer_lent_die(game, inv)
     count = max(1, pool)
     sixes_double = _sixes_double(game, inv, skill, contexts)
 
@@ -222,20 +233,30 @@ def run_test(
 
     if any(r < success_on for r in rolls):
         rolls = _offer_card_rerolls(game, inv, skill, contexts, rolls, success_on, needed, score)
+        if skill == "strength" and "combat" in contexts and game.free_rerolls > 0:
+            failed = [i for i, r in enumerate(rolls) if r < success_on]
+            if failed and rules.confirm(game, "Use the Spell to reroll 1 die?", kind="reroll_card", inv=inv):
+                game.free_rerolls -= 1
+                rolls[min(failed, key=lambda i: rolls[i])] = game.roll_die()
         successes = score(rolls)
 
-    while allow_clues and inv.clues > 0 and any(r < success_on for r in rolls):
+    while (
+        allow_clues
+        and (inv.clues > 0 or rules.sanity_clue_ready(game, inv))
+        and any(r < success_on for r in rolls)
+    ):
         short = successes < needed
         if not short and not open_ended:
             break
         prompt = f"{successes}/{needed} successes. Spend 1 Clue to reroll 1 failed die?"
         if not rules.confirm(game, prompt, kind="reroll" if short else "reroll_extra", inv=inv):
             break
-        inv.clues -= 1
+        rules.spend_reroll_clue(game, inv)
         game.bump("clues_spent_rerolls")
-        failed = [i for i, r in enumerate(rolls) if r < success_on]
-        idx = min(failed, key=lambda i: rolls[i])
-        rolls[idx] = game.roll_die()
+        failed = sorted((i for i, r in enumerate(rolls) if r < success_on), key=lambda i: rolls[i])
+        two_dice = any(rules.perk(game, p, "clue_two_dice") > 0 for p in game.investigators_at(inv.location))
+        for idx in failed[: 2 if two_dice else 1]:
+            rolls[idx] = game.roll_die()
         successes = score(rolls)
         rules.emit(
             game,

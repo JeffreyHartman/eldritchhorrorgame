@@ -16,6 +16,7 @@ from pursuit.content.defs import (
     TICKET_KINDS,
     Cost,
     InvestigatorFilter,
+    Modifier,
     read_cost,
     read_investigator_filter,
 )
@@ -24,7 +25,7 @@ from pursuit.controller import Option
 from pursuit.effects.base import Ctx, Effect, read_effects, register, run_effects, walk
 from pursuit.engine import actions, combat, phases, rules
 from pursuit.engine.dice import run_test
-from pursuit.engine.state import AssetCard, Investigator
+from pursuit.engine.state import AssetCard, Game, Investigator
 
 
 def _nonzero(r: Reader, key: str) -> int:
@@ -106,9 +107,10 @@ class Test(Effect):
             open_ended=counts_successes,
         )
         successes = result.successes + self._spend_clues(ctx, inv, result.successes)
-        if ctx.asset is not None and self.skill == "lore" and successes >= self.needed:
+        spell = ctx.asset is not None and ctx.game.asset_def(ctx.asset).kind == "spell"
+        if spell and self.skill == "lore" and successes >= self.needed:
             ctx.game.spell_lore_passed = True
-        sub_ctx = replace(ctx, test_successes=successes)
+        sub_ctx = replace(ctx, test_successes=successes, test_rolls=result.rolls)
         run_effects(self.passed if successes >= self.needed else self.failed, sub_ctx)
         if self.after:
             run_effects(self.after, sub_ctx)
@@ -271,6 +273,7 @@ class ImproveSkill(Effect):
         game = ctx.game
         inv = ctx.need_inv(self.kind)
         cap = game.content.rules.max_improvement
+        tokens = dict(inv.improvements)
         skill = self.skill
         if skill == "choose":
             options = [
@@ -281,7 +284,7 @@ class ImproveSkill(Effect):
             skill = SKILLS[rules.choose(game, "Improve which skill?", options, kind="improve", inv=inv)]
         current = inv.improvements.get(skill, 0)
         delta = self.amount
-        if delta > 0 and rules.perk(game, inv, "double_improve") > 0:
+        if delta > 0 and tokens.get(skill, 0) == 0 and rules.perk(game, inv, "double_improve") > 0:
             delta += 1
         new = max(-inv.skills[skill] + 1, min(cap, current + delta))
         if new == current:
@@ -323,6 +326,7 @@ class GainAsset(Effect):
     source: str
     count: int
     any_of: tuple[str, ...]
+    within_result: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
@@ -330,9 +334,10 @@ class GainAsset(Effect):
             asset_id=r.get_str("id", None),
             asset_kind=r.get_enum("kind", ASSET_KINDS, None),
             trait=r.get_str("trait", None),
-            source=r.get_enum("source", ("deck", "reserve", "choice"), "deck"),
+            source=r.get_enum("source", ("deck", "reserve", "choice", "reserve_or_discard"), "deck"),
             count=_positive(r, "count"),
             any_of=r.get_str_tuple("any_of"),
+            within_result=r.get_bool("within_result", False),
         )
         if e.source == "reserve" and (e.asset_id or (e.asset_kind and e.asset_kind not in RESERVE_KINDS)):
             raise ContentError(f"{r.path}: a reserve gain can only filter by a reserve kind and a trait")
@@ -343,6 +348,9 @@ class GainAsset(Effect):
         inv = ctx.need_inv(self.kind)
         for _ in range(self.count):
             src = self.source
+            if src == "reserve_or_discard":
+                self._take_named(ctx, inv)
+                continue
             if src == "choice":
                 matching_res = [
                     c
@@ -363,6 +371,7 @@ class GainAsset(Effect):
                     if (self.asset_kind is None or game.asset_def(c).kind == self.asset_kind)
                     and (self.trait is None or self.trait in game.asset_def(c).traits)
                     and (not self.any_of or any(game.asset_def(c).is_a(k) for k in self.any_of))
+                    and (not self.within_result or game.asset_def(c).cost <= (ctx.test_successes or 0))
                 ]
                 if not cards:
                     rules.emit(game, "info", "No matching Asset is in the reserve.")
@@ -380,6 +389,25 @@ class GainAsset(Effect):
                     return
                 card = found
             rules.gain_card(game, inv, card)
+
+    def _take_named(self, ctx: Ctx, inv: Investigator) -> None:
+        """Take a card of the player's choice from the reserve or the Asset discard pile."""
+        game = ctx.game
+        pool = [
+            c
+            for c in (*game.reserve, *game.asset_deck.discards)
+            if self.asset_kind is None or game.asset_def(c).is_a(self.asset_kind)
+        ]
+        if not pool:
+            return
+        options = [Option(game.asset_def(c).name, c.uid, game.asset_def(c).text) for c in pool]
+        card = pool[rules.choose(game, "Gain which card?", options, kind="gain_reserve", inv=inv, auto_single=True)]
+        if card in game.reserve:
+            game.reserve.remove(card)
+            rules.refill_reserve(game)
+        else:
+            game.asset_deck.discards.remove(card)
+        rules.gain_card(game, inv, card)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("asset", self.asset_id)] if self.asset_id else []
@@ -539,8 +567,9 @@ class FlipSelf(Effect):
         if ctx.condition is not None:
             rules.flip_condition(ctx.game, inv, ctx.condition, ctx.test_successes)
         elif ctx.asset is not None:
-            owner = next((i for i in ctx.game.investigators if ctx.asset in i.assets), inv)
-            rules.flip_asset(ctx.game, owner, ctx.asset, ctx.test_successes)
+            owner = next((i for i in ctx.game.investigators if ctx.asset in i.assets), None)
+            if owner is not None:
+                rules.flip_asset(ctx.game, owner, ctx.asset, ctx)
 
 
 @register("flip_conditions")
@@ -570,6 +599,7 @@ class FlipConditions(Effect):
 
 
 MOVE_KEYWORDS = (
+    "any_space",
     "nearest_city",
     "random_city",
     "start",
@@ -619,6 +649,11 @@ class Move(Effect):
             options = [Option(rules.loc_name(game, loc), loc, "ship path") for loc, _ in near]
             pick = rules.choose(game, "Move along which Ship path?", options, kind="move", inv=inv, auto_single=True)
             dest = near[pick][0]
+        elif self.to == "any_space":
+            places = sorted(content.locations, key=lambda loc: rules.loc_name(game, loc))
+            options = [Option(rules.loc_name(game, loc), loc) for loc in places]
+            options.append(Option("Stay here", None))
+            dest = options[rules.choose(game, "Where do you move?", options, kind="move", inv=inv)].value
         elif self.to == "choose_within":
             dist = rules.distances(game, inv.location)
             places = sorted(
@@ -1207,6 +1242,15 @@ class SpawnGate(Effect):
         return False
 
 
+def _akachi_moves(game: Game, inv: Investigator) -> None:
+    places = [loc for loc, st in game.locations.items() if loc != inv.location and (st.gate or st.clue)]
+    if places:
+        options = [Option(rules.loc_name(game, t), t) for t in places] + [Option("Stay here", None)]
+        dest = options[rules.choose(game, "Move to a space with a Gate or Clue?", options, kind="move", inv=inv)].value
+        if dest:
+            rules.move_investigator(game, inv, dest)
+
+
 @register("close_gate")
 @dataclass(frozen=True)
 class CloseGate(Effect):
@@ -1227,6 +1271,8 @@ class CloseGate(Effect):
         if ctx.tag == "other_world" and had_gate and not game.locations[inv.location].gate:
             for card in list(inv.assets):
                 run_effects(game.asset_def(card).on_close_gate, replace(ctx, asset=card))
+            if inv.def_id == "akachi_onyele":
+                _akachi_moves(game, inv)
 
 
 @register("discard_matching_gates")
@@ -1261,6 +1307,10 @@ class PeekGates(Effect):
         game = ctx.game
         inv = ctx.need_inv(self.kind)
         cards = game.gate_deck.cards
+        if len(cards) < 2 and game.gate_deck.discards:
+            game.rng.shuffle(game.gate_deck.discards)
+            cards.extend(game.gate_deck.discards)
+            game.gate_deck.discards = []
         if len(cards) < 2:
             if cards:
                 rules.emit(game, "info", f"Top Gate in the stack: {rules.loc_name(game, cards[0])}.")
@@ -1378,7 +1428,7 @@ class DiscardMonster(Effect):
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(r.get_enum("where", ("here", "choose_space"), "here"), r.get_bool("all", False))
+        return cls(r.get_enum("where", ("here", "choose_space", "gate_space"), "here"), r.get_bool("all", False))
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
@@ -1389,6 +1439,7 @@ class DiscardMonster(Effect):
                 loc
                 for loc, st in game.locations.items()
                 if any(not game.monster_def(m.def_id).epic for m in st.monsters)
+                and (self.where != "gate_space" or st.gate)
             ]
             if not with_monsters:
                 return
@@ -1458,11 +1509,15 @@ class DamageMonsters(Effect):
     amount: int
     where: str
     one: bool = False
+    others: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
         return cls(
-            _positive(r, "amount"), r.get_enum("where", ("here", "choose_space"), "here"), r.get_bool("one", False)
+            _positive(r, "amount"),
+            r.get_enum("where", ("here", "choose_space"), "here"),
+            r.get_bool("one", False),
+            r.get_bool("others", False),
         )
 
     def apply(self, ctx: Ctx) -> None:
@@ -1478,7 +1533,7 @@ class DamageMonsters(Effect):
                 game, "Choose a space to damage Monsters:", options, kind="choose_space", inv=ctx.inv, auto_single=True
             )
             loc_id = with_monsters[pick]
-        targets = list(game.locations[loc_id].monsters)
+        targets = [m for m in game.locations[loc_id].monsters if not self.others or m is not ctx.monster]
         if self.one and targets:
             options = [Option(game.monster_def(m.def_id).name, m.uid) for m in targets]
             pick = rules.choose(game, "Choose a Monster.", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
@@ -1675,12 +1730,15 @@ class HealThis(Effect):
 @register("wound_this_by_test")
 @dataclass(frozen=True)
 class WoundThisByTest(Effect):
+    less: int
+
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls()
+        return cls(r.get_int("less", 0))
 
     def apply(self, ctx: Ctx) -> None:
-        rules.wound_monster(ctx.game, ctx.inv, ctx.need_monster(self.kind), ctx.test_successes or 0)
+        amount = (ctx.test_successes or 0) - self.less
+        rules.wound_monster(ctx.game, ctx.inv, ctx.need_monster(self.kind), amount)
 
     def needs_investigator(self) -> bool:
         return False
@@ -2819,6 +2877,276 @@ class Kleptomania(Effect):
         if result.successes < game.asset_def(card).cost and card in inv.assets:
             rules.discard_asset(game, inv, card)
             rules.gain_condition(game, inv, "detained")
+
+
+@register("gain_boost")
+@dataclass(frozen=True)
+class GainBoost(Effect):
+    """A bonus for the rest of this Combat Encounter or Research Encounter."""
+
+    amount: int
+    skill: str | None
+    additional: bool
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(_positive(r, "amount"), r.get_enum("skill", SKILLS, None), r.get_bool("additional", False))
+
+    def apply(self, ctx: Ctx) -> None:
+        name = ctx.game.asset_def(ctx.asset).name if ctx.asset else "Spell"
+        ctx.game.boosts.append((name, Modifier(self.amount, self.skill, additional=self.additional)))
+
+
+@register("free_reroll")
+@dataclass(frozen=True)
+class FreeReroll(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        ctx.game.free_rerolls += 1
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("ignore_monsters")
+@dataclass(frozen=True)
+class IgnoreMonsters(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        ctx.game.ignore_monsters = True
+
+
+@register("remote_clue")
+@dataclass(frozen=True)
+class RemoteClue(Effect):
+    """Clairvoyance: choose a Clue to encounter as if on its space, ignoring Monsters there."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        places = [loc for loc, st in game.locations.items() if st.clue and loc != ctx.need_inv(self.kind).location]
+        if not places:
+            return
+        options = [Option(rules.loc_name(game, loc), loc) for loc in places]
+        options.append(Option("Do not encounter a Clue", None))
+        pick = rules.choose(game, "Encounter which Clue?", options, kind="pick_clue", inv=ctx.inv)
+        game.remote_clue = options[pick].value
+
+
+@register("discard_remote_clue")
+@dataclass(frozen=True)
+class DiscardRemoteClue(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        if game.remote_clue is not None:
+            game.locations[game.remote_clue].clue = False
+            game.remote_clue = None
+
+
+@register("with_monster_here")
+@dataclass(frozen=True)
+class WithMonsterHere(Effect):
+    """Choose a Monster on this space. Nested effects use it as `ctx.monster`."""
+
+    effects: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(read_effects(r, "effects"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        monsters = game.locations[ctx.need_inv(self.kind).location].monsters
+        if not monsters:
+            return
+        options = [Option(game.monster_def(m.def_id).name, m.uid) for m in monsters]
+        pick = rules.choose(game, "Choose a Monster.", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
+        run_effects(self.effects, replace(ctx, monster=monsters[pick]))
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.effects,)
+
+
+@register("wound_this")
+@dataclass(frozen=True)
+class WoundThis(Effect):
+    amount: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(_positive(r, "amount"))
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.wound_monster(ctx.game, ctx.inv, ctx.need_monster(self.kind), self.amount)
+
+
+@register("chosen_investigator")
+@dataclass(frozen=True)
+class ChosenInvestigator(Effect):
+    """Run nested effects on the investigator a Spell targets, and not on the caster."""
+
+    effects: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(read_effects(r, "effects"))
+
+    def apply(self, ctx: Ctx) -> None:
+        run_effects(self.effects, ctx.for_inv(ctx.chosen or ctx.inv))
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.effects,)
+
+
+@register("discard_unless_rolled")
+@dataclass(frozen=True)
+class DiscardUnlessRolled(Effect):
+    value: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_int("value"))
+
+    def apply(self, ctx: Ctx) -> None:
+        if self.value not in ctx.test_rolls and ctx.asset is not None:
+            rules.discard_asset(ctx.game, ctx.need_inv(self.kind), ctx.asset)
+
+
+@register("prevent_loss")
+@dataclass(frozen=True)
+class PreventLoss(Effect):
+    """Prevent up to `amount` of the loss a ward answers, or up to the test result."""
+
+    amount: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_int("amount", 0))
+
+    def apply(self, ctx: Ctx) -> None:
+        ctx.game.prevented = max(ctx.game.prevented, self.amount or (ctx.test_successes or 0))
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("reserve_budget")
+@dataclass(frozen=True)
+class ReserveBudget(Effect):
+    """Gain any number of Item or Trinket Assets with total value up to the test result."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        budget = ctx.test_successes or 0
+        while True:
+            cards = [
+                c
+                for c in game.reserve
+                if game.asset_def(c).cost <= budget
+                and (game.asset_def(c).is_a("item") or game.asset_def(c).is_a("trinket"))
+            ]
+            if not cards:
+                break
+            options = [Option(game.asset_def(c).name, c.uid, game.asset_def(c).text) for c in cards]
+            options.append(Option("Stop", None))
+            uid = options[rules.choose(game, f"Value left: {budget}.", options, kind="gain_reserve", inv=inv)].value
+            if uid is None:
+                break
+            card = next(c for c in cards if c.uid == uid)
+            game.reserve.remove(card)
+            budget -= game.asset_def(card).cost
+            rules.gain_card(game, inv, card)
+        rules.refill_reserve(game)
+
+
+@register("trade_clues")
+@dataclass(frozen=True)
+class TradeClues(Effect):
+    """Jacqueline Fine: each side gives any number of Clues. Neither gains or discards them."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        others = [i for i in game.turn_order() if i is not inv and not i.eliminated and not i.defeated]
+        if not others:
+            return
+        options = [Option(i.name, i.seat, f"{i.clues} Clue(s)") for i in others]
+        other = others[rules.choose(game, "Trade Clues with whom?", options, kind="ability_target", inv=inv)]
+        for giver, taker in ((inv, other), (other, inv)):
+            amounts = [Option(str(n), n) for n in range(giver.clues + 1)]
+            prompt = f"How many Clues does {giver.name} give?"
+            amount = amounts[rules.choose(game, prompt, amounts, kind="amount", inv=inv, auto_single=True)].value
+            giver.clues -= amount
+            taker.clues += amount
+
+
+@register("lola_rehearse")
+@dataclass(frozen=True)
+class LolaRehearse(Effect):
+    """Spend any number of Improvement tokens, then improve 1 skill for each. +2 counts as 2."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        inv = ctx.need_inv(self.kind)
+        spent = 0
+        while held := [s for s in SKILLS if inv.improvements.get(s, 0) > 0]:
+            options = [Option(f"Spend the {s.title()} token", s, f"+{inv.improvements[s]}") for s in held]
+            options.append(Option("Stop", None))
+            skill = options[rules.choose(game, "Spend which token?", options, kind="spend_token", inv=inv)].value
+            if skill is None:
+                break
+            spent += inv.improvements.pop(skill)
+        improve = ImproveSkill("choose", 1)
+        for _ in range(spent):
+            improve.apply(ctx)
+
+
+@register("cultist_elsewhere")
+@dataclass(frozen=True)
+class CultistElsewhere(Effect):
+    """Diana Stanley: move the Cultist on this space to any other space."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        here = ctx.need_inv(self.kind).location
+        monster = next((m for m in game.locations[here].monsters if m.def_id == "cultist"), None)
+        if monster is None:
+            return
+        places = sorted(game.content.locations, key=lambda loc: rules.loc_name(game, loc))
+        places.remove(here)
+        options = [Option(rules.loc_name(game, loc), loc) for loc in places]
+        pick = rules.choose(game, "Move it where?", options, kind="move", inv=ctx.inv)
+        rules.move_monster(game, monster, places[pick])
 
 
 @register("gate_per_spell")

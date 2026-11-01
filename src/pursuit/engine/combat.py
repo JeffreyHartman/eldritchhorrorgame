@@ -79,10 +79,22 @@ def ambush(game: Game, inv: Investigator, def_id: str | None = None) -> str | No
 
 
 def combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool = False) -> str:
-    game.boosts.clear()
+    _clear_combat_bonuses(game)
     result = _combat(game, inv, monster, ambush=ambush)
-    game.boosts.clear()
+    _clear_combat_bonuses(game)
     return result
+
+
+def _clear_combat_bonuses(game: Game) -> None:
+    game.boosts.clear()
+    game.free_rerolls = 0
+
+
+def _offer_combat_spells(game: Game, inv: Investigator) -> None:
+    for card in list(inv.assets):
+        adef = game.asset_def(card)
+        if adef.on_combat and rules.confirm(game, adef.trigger_prompt, kind="cast_spell", inv=inv):
+            rules.cast(game, inv, card, adef.on_combat)
 
 
 def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool) -> str:
@@ -110,6 +122,9 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
             _return_ambush_monster(game, inv.location, monster)
         return FELL if inv.defeated else SURVIVED
 
+    _offer_combat_spells(game, inv)
+    if inv.defeated:
+        return finish()
     run_effects(mdef.before_will, ctx)
     failed_will = _will_test(game, inv, mdef, ctx) if mdef.horror_test and not inv.defeated else False
     run_effects(mdef.after_will, ctx)
@@ -155,18 +170,19 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
 
 def _will_test(game: Game, inv: Investigator, mdef: MonsterDef, ctx: Ctx) -> bool:
     """Resolve the Will test. Returns True if the investigator failed it."""
+    horror = min(mdef.horror, 1) if rules.perk(game, inv, "horror_to_one") > 0 else mdef.horror
     result = run_test(
         game,
         inv,
         "will",
         mdef.horror_mod,
         contexts=("combat", "horror"),
-        needed=max(1, mdef.horror),
+        needed=max(1, horror),
         label=f"Will test against the {mdef.name}",
         allow_clues=not mdef.no_clue_rerolls,
     )
     reduction = sum(game.asset_def(c).sanity_reduction for c in inv.assets)
-    sanity_loss = max(0, _reduced(mdef.horror, reduction) - result.successes)
+    sanity_loss = max(0, _reduced(horror, reduction) - result.successes)
     if sanity_loss > 0:
         rules.change_sanity(game, inv, -sanity_loss)
         if mdef.sanity_to_sheet:

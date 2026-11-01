@@ -19,9 +19,9 @@
     "assets": [
       "mists_of_relah"
     ],
-    "passive_text": "When you close a Gate, you may move to any space containing a Gate or a Clue.",
+    "passive_text": "When you close a Gate during an Other World Encounter, you may move to any space containing a Clue or a Gate.",
     "action": {
-      "text": "Look at the top 2 Gates in the Gate stack; keep 1 on top and put the other on the bottom.",
+      "text": "Look at the top 2 Gates in the Gate stack. Put 1 Gate on the top of the Gate stack, and the other on the bottom.",
       "effects": [
         {
           "type": "peek_gates"
@@ -29,18 +29,18 @@
       ]
     },
     "crippled": {
-      "text": "Akachi has slipped into a coma. Gain all of her possessions. You try to convince the hospital staff to share what she said before losing consciousness (Influence).",
+      "text": "By the time you find Akachi, she's slipped into a coma. Doctors aren't certain if she will recover. Gain all of her possessions. The hospital staff has grown very fond of her, and you try to convince them to tell you what she said to them while she was conscious (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "The staff repeat her warnings in full; retreat Doom by 1.",
-      "fail_text": "The staff refuse to speak of what she whispered."
+      "pass_text": "you hear many stories; retreat Doom by 1.",
+      "fail_text": "you can't get anyone to share Akachi's story with you."
     },
     "insane": {
-      "text": "Akachi's mind wanders between worlds. Gain all of her possessions. You drink a bitter draught to follow her visions and hear her counsel (Will).",
+      "text": "Akachi's mind has left this world and she no longer has interest in material goods. Gain all of her possessions. An Odinani man gives you a bitter drink to help you reach her. After you drink it, you are assaulted by nightmarish visions, but you force yourself to keep searching for her (Will).",
       "skill": "will",
       "mod": 0,
-      "pass_text": "You hear Akachi's voice across the veil; retreat Doom by 1.",
-      "fail_text": "Nightmarish visions force you back before you can reach her."
+      "pass_text": "you hear Akachi's voice sharing all she's learned; retreat Doom by 1.",
+      "fail_text": "you curl up in a corner until the drink wears off."
     }
   },
   {
@@ -63,7 +63,7 @@
     "assets": [
       "personal_assistant"
     ],
-    "passive_text": "When you Acquire Assets, any investigator may receive the cards you purchase.",
+    "passive_text": "When you perform an Acquire Assets action, you may allow other investigators to gain any cards you purchase.",
     "action": {
       "text": "Another investigator of your choice may immediately perform 1 additional action.",
       "target": "any_investigator",
@@ -75,18 +75,18 @@
       ]
     },
     "crippled": {
-      "text": "The nurse hands you Charlie's parcel. Gain all of his possessions. You try to persuade the doctor to let you speak with him (Influence).",
+      "text": "The nurse at the front desk hands you a parcel. Gain all of his possessions. \"Mr. Kane said to give you this package, but the doctor insists that no visitors be admitted.\" You try to convince her to make an exception for you (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "Charlie is weak, but he briefs you on every contact he has; retreat Doom by 1.",
-      "fail_text": "The doctor bars the door and allows no visitors."
+      "pass_text": "you find that Charlie's health is beyond recovery, but he's still in good spirits and you have a long talk; retreat Doom by 1.",
+      "fail_text": "Charlie spends the rest of his days cut off from all human contact."
     },
     "insane": {
-      "text": "Charlie hands you all of his belongings in a hotel dining room, offering to sell you Atlantis. You negotiate carefully with him (Influence).",
+      "text": "The first thing Charlie does when you enter the restaurant is hand you all of his belongings. Gain all of his possessions. He offers you deals, promising to sell you Atlantis and introduce you to Caesar. You negotiate carefully with him (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "He tells you everything he knows in exchange for a salt shaker; retreat Doom by 1.",
-      "fail_text": "Charlie storms out, promising to have you impeached."
+      "pass_text": "he tells you all he knows in exchange for your napkin ring and a salt shaker; retreat Doom by 1.",
+      "fail_text": "Charlie gets angry and insists that you'll be sorry when he's President of the world."
     }
   },
   {
@@ -110,59 +110,56 @@
       "arcane_manuscripts",
       "wither"
     ],
-    "passive_text": "+1 Lore when casting Spells.",
-    "modifiers": [
-      {
-        "amount": 1,
-        "skill": "lore",
-        "context": "cast"
-      }
-    ],
+    "passive_text": "Reduce the horror of Monsters you encounter to 1.",
     "action": {
-      "text": "Blood Rite: lose 1 Health to gain 1 Spell or 1 Clue.",
-      "cost": {
-        "health": 1
-      },
+      "text": "If there is a Cultist Monster on your space, discard all Monsters on your space or move the Cultist Monster to any other space.",
       "effects": [
         {
           "type": "choice",
-          "prompt": "What do you draw from the rite?",
+          "prompt": "What do you do?",
           "options": [
             {
-              "label": "Gain 1 Spell",
+              "label": "Discard all Monsters on your space",
               "effects": [
                 {
-                  "type": "gain_asset",
-                  "kind": "spell"
+                  "type": "discard_monster",
+                  "all": true
                 }
               ]
             },
             {
-              "label": "Gain 1 Clue",
+              "label": "Move the Cultist to any other space",
               "effects": [
                 {
-                  "type": "clues",
-                  "amount": 1
+                  "type": "cultist_elsewhere"
                 }
               ]
             }
           ]
         }
-      ]
+      ],
+      "requires": {
+        "at": {
+          "monster": "cultist"
+        }
+      }
     },
     "crippled": {
-      "text": "Diana lies hidden in a safe house. Gain all of her possessions. You search her coded lodge notebooks (Lore).",
+      "text": "In her hospital, Diana tells you to pick up your things and bids you farewell. Gain all of her possessions. You infer that she is being watched. Using your knowledge of the Silver Twilight, you try to determine which doctors can be trusted (Lore).",
       "skill": "lore",
       "mod": 0,
-      "pass_text": "You decipher the Lodge cipher; retreat Doom by 1.",
-      "fail_text": "The pages are too bloodstained to read."
+      "pass_text": "you move Diana to a new hospital and she shares her secrets with you; retreat Doom by 1.",
+      "fail_text": "Diana remains under the Lodge's watchful eye."
     },
     "insane": {
-      "text": "Diana chants in a locked room, terrified the Lodge has found her. Gain all of her possessions. You try to calm her (Will).",
-      "skill": "will",
+      "text": "It's obviously Diana, but she claims to be a woman named Iris who has lived in this city her whole life. In her trash, you find Diana's things. Gain all of her possessions. It's clear that she has disassociated from her former life. You share all of your memories of Diana to restore her identity (Influence).",
+      "skill": "influence",
       "mod": 0,
-      "pass_text": "She recognizes you and reveals the cult's next step; retreat Doom by 1.",
-      "fail_text": "She mistakes you for a Lodge assassin and says nothing."
+      "pass_text": "she tells you of the horrors that brought her to this state; retreat Doom by 1.",
+      "fail_text": "Diana sternly asks you to leave her alone."
+    },
+    "perks": {
+      "horror_to_one": 1
     }
   },
   {
@@ -185,39 +182,31 @@
     "assets": [
       "flesh_ward"
     ],
-    "passive_text": "You may reroll 1 die when resolving a Lore test.",
-    "rerolls": [
-      {
-        "text": "Reroll 1 die on a Lore test.",
-        "skill": "lore",
-        "once_per_round": true
-      }
-    ],
+    "passive_text": "Once per round, when another investigator gains a non-Common Condition, you may look at the back of that card and gain 1 Clue.",
     "action": {
-      "text": "Premonition: lose 1 Sanity to spawn 1 Clue or gain 1 Clue.",
-      "cost": {
-        "sanity": 1
-      },
+      "text": "You may trade any number of Clues with an investigator on any space.",
       "effects": [
         {
-          "type": "clues",
-          "amount": 1
+          "type": "trade_clues"
         }
       ]
     },
     "crippled": {
-      "text": "Jacqueline is feverish in a quiet clinic. Gain all of her possessions. You piece together her sketches (Observation).",
-      "skill": "observation",
+      "text": "Somehow, Jacqueline knew you would be at this café to receive the parcel. Gain all of her possessions. Strangely, everyone here encountered her sometime after she was injured. You try to convince everyone to share their story (Influence).",
+      "skill": "influence",
       "mod": 0,
-      "pass_text": "Her drawings form a map of the threat; retreat Doom by 1.",
-      "fail_text": "The sketches seem only fragments of a nightmare."
+      "pass_text": "you get the whole message Jacqueline hoped to convey; retreat Doom by 1.",
+      "fail_text": "the story is incomplete and makes no sense."
     },
     "insane": {
-      "text": "Jacqueline speaks in a voice that is not her own. Gain all of her possessions. You listen for the pattern in her prophecies (Lore).",
+      "text": "You visit Jacqueline in the asylum and claim her belongings. Gain all of her possessions. She seems lost in her own world, talking to visions only she sees. You do your best to interpret what she's seeing based on what she says (Lore).",
       "skill": "lore",
       "mod": 0,
-      "pass_text": "Her prophecy names the hour and the place; retreat Doom by 1.",
-      "fail_text": "Her words dissolve into weeping."
+      "pass_text": "you have a clear idea of what she's experiencing; retreat Doom by 1.",
+      "fail_text": "Jacqueline remains trapped in a world only she can see."
+    },
+    "perks": {
+      "watch_conditions": 1
     }
   },
   {
@@ -268,18 +257,18 @@
       ]
     },
     "crippled": {
-      "text": "Jim sits on a hospital cot with his trumpet case beside him. Gain all of his possessions. You listen to the last tune he hums (Will).",
-      "skill": "will",
-      "mod": 0,
-      "pass_text": "The melody carries a message from beyond; retreat Doom by 1.",
-      "fail_text": "Jim drifts to sleep before finishing the song."
-    },
-    "insane": {
-      "text": "Jim is playing to an empty graveyard at midnight. Gain all of his possessions. You talk with him between songs (Influence).",
+      "text": "Seeing Jim in this hospital bed is heartbreaking. He hands you a key to a safety deposit box. Gain all of his possessions. The severity of the injuries means that he'll never speak or play music again. You gently try to coax him into writing down everything he's learned (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "He tells you what the ghosts told him; retreat Doom by 1.",
-      "fail_text": "He keeps playing for an audience only he can see."
+      "pass_text": "Jim fills a dozen sheets of paper with arcane illustrations; retreat Doom by 1.",
+      "fail_text": "all Jim wants is to listen to a record of his own music played over and over."
+    },
+    "insane": {
+      "text": "At the cemetery's gate, you find Jim's old suitcase and hear wild and erratic music ahead. Gain all of his possessions. Summoning all your nerve, you walk toward the crowd of dancing cadavers that surround Jim (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "you spend the night learning the secrets of the dead; retreat Doom by 1.",
+      "fail_text": "you run, and Jim is never seen by a living soul again."
     }
   },
   {
@@ -292,20 +281,17 @@
     "sanity": 6,
     "skills": {
       "lore": 2,
-      "influence": 3,
+      "influence": 2,
       "observation": 3,
       "strength": 3,
-      "will": 2
+      "will": 3
     },
     "start": "buenos_aires",
     "clues": 0,
-    "tickets": [
-      "ship"
-    ],
     "assets": [
       "hired_muscle"
     ],
-    "passive_text": "Roll 1 additional die on tests while on a Wilderness space.",
+    "passive_text": "If you are on a Wilderness space, investigators on your space roll 1 additional die when resolving tests.",
     "modifiers": [
       {
         "amount": 1,
@@ -316,12 +302,7 @@
       }
     ],
     "action": {
-      "text": "Recruit: on a City space, test Influence. If you pass, gain 1 Ally Asset.",
-      "requires": {
-        "at": {
-          "terrain": "city"
-        }
-      },
+      "text": "Test Influence. If you pass, gain 1 Ally Asset of your choice from the reserve or the discard pile.",
       "effects": [
         {
           "type": "test",
@@ -330,25 +311,25 @@
             {
               "type": "gain_asset",
               "kind": "ally",
-              "source": "choice"
+              "source": "reserve_or_discard"
             }
           ]
         }
       ]
     },
     "crippled": {
-      "text": "Leo refuses to leave his map table despite his wounds. Gain all of his possessions. You review his expedition logs (Observation).",
-      "skill": "observation",
+      "text": "\"It's all in the drawer,\" Leo tells you \"Take it and leave me here to die. I deserve it.\". Gain all of his possessions. Leo's injuries have left him bedridden and in agony in this hotel. Worse, he's lost his will to live. You try to convince him that he hasn't failed his friends (Influence).",
+      "skill": "influence",
       "mod": 0,
-      "pass_text": "His logs pinpoint the site; retreat Doom by 1.",
-      "fail_text": "Water damage has blurred the coordinates."
+      "pass_text": "he draws you several maps and promises to let you check him into a hospital; retreat Doom by 1.",
+      "fail_text": "he never speaks to you again."
     },
     "insane": {
-      "text": "Leo is calling roll for an expedition whose members died years ago. Gain all of his possessions. You steady him like a soldier (Will).",
-      "skill": "will",
+      "text": "You find Leo's canvas bag in his hotel room. Gain all of his possessions. While you are distracted, Leo attacks you. His face covered with tribal markings, and he speaks à hodgepodge of tribal dialects. You try to subdue him (Strength).",
+      "skill": "strength",
       "mod": 0,
-      "pass_text": "He salutes and hands you his final report; retreat Doom by 1.",
-      "fail_text": "He wanders into the crowd calling for his guides."
+      "pass_text": "you get Leo to an asylum, and the doctors learn some of what happened to him; retreat Doom by 1.",
+      "fail_text": "Leo is gone when you regain consciousness."
     }
   },
   {
@@ -372,7 +353,7 @@
       "protective_amulet",
       "lucky_rabbits_foot"
     ],
-    "passive_text": "When you improve a skill, immediately improve that skill again.",
+    "passive_text": "When you improve a skill, you may immediately improve that skill again.",
     "perks": {
       "double_improve": 1
     },
@@ -385,18 +366,18 @@
       ]
     },
     "crippled": {
-      "text": "Lily meditates despite her broken bones. Gain all of her possessions. You join her breathing exercise (Strength).",
+      "text": "When you reach the hospital, you find Lily's things, but she is not in her bed. Gain all of her possessions. You quickly find that she's been kidnapped by cultists! You fight to free her (Strength).",
       "skill": "strength",
       "mod": 0,
-      "pass_text": "She passes on the monastery's secret teaching; retreat Doom by 1.",
-      "fail_text": "Her strength fails before she can speak."
+      "pass_text": "you interrogate the cultists, and Lily is safely returned to the hospital to begin the slow healing process; retreat Doom by 1.",
+      "fail_text": "Lily disappears into the darkness."
     },
     "insane": {
-      "text": "Lily strikes endlessly at shadows in a courtyard. Gain all of her possessions. You match her forms to reach her mind (Will).",
-      "skill": "will",
+      "text": "You barely recognize the small woman huddled in the alleyway, her few belongings scattered next to her. Gain all of her possessions. \"It wasn't true,\" Lily sobs. \"I have no destiny. I cannot fight the darkness.\" You reassure her that she has already done her part and that others will finish the task (Influence).",
+      "skill": "influence",
       "mod": 0,
-      "pass_text": "She bows and tells you what she saw; retreat Doom by 1.",
-      "fail_text": "She leaps over the wall and vanishes into the night."
+      "pass_text": "she chants over you, passing her destiny on to you; retreat Doom by 1.",
+      "fail_text": "Lily eventually falls into a catatonic state."
     }
   },
   {
@@ -419,37 +400,41 @@
     "assets": [
       "derringer_18"
     ],
-    "passive_text": "Once per round, you may reroll 1 die on any test.",
-    "rerolls": [
-      {
-        "text": "Lola's poise: reroll 1 die.",
-        "context": "any",
-        "once_per_round": true
-      }
-    ],
+    "passive_text": "Once per round, an investigator on your space may roll 1 additional die when resolving a test.",
     "action": {
-      "text": "Rehearsal: improve 1 skill of your choice.",
+      "text": "Spend any number of Improvement tokens, then improve 1 skill of your choice for each token spent (a \"+2\" token counts as 2 tokens).",
       "effects": [
         {
-          "type": "improve_skill",
-          "skill": "choose"
+          "type": "lola_rehearse"
         }
-      ]
+      ],
+      "requires": {
+        "has_improvement": true
+      }
     },
     "crippled": {
-      "text": "Lola nods at the equipment strewn across her hotel room. Gain all of her possessions. You try to persuade her to visit a hospital (Influence).",
+      "text": "\"I'm fine darling. Help yourself, by the way.\" Lola nods at the equipment strewn across the hotel room. Gain all of her possessions. As convincing as she is, you know she's in pain. You try to persuade her to visit a hospital (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "She sighs with relief and tells you of the horrors she encountered; retreat Doom by 1.",
-      "fail_text": "The day after Lola leaves the city, she succumbs to her wounds."
+      "pass_text": "she sighs a breath of relief and tells you of all the horrors she's encountered; retreat Doom by 1.",
+      "fail_text": "the day after Lola leaves the city, she succumbs to her wounds."
     },
     "insane": {
-      "text": "The trail of Lola's belongings leads into a derelict theater. Gain all of her possessions. You try to direct her performance to reveal what she knows (Influence).",
+      "text": "The trail of Lola's belongings leads you into a derelict theater. Gain all of her possessions. She's on the stage, wringing her blood-soaked hands and reciting, \"Will these hands ne'er be clean?\" You try to direct her performance, hoping to better reveal her character (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "She tells you of the Tattered King; retreat Doom by 1.",
+      "pass_text": "she tells you of the Tattered King, indicating a goat she killed; retreat Doom by 1.",
       "fail_text": "Lola's dialogue degenerates into gibberish."
-    }
+    },
+    "perks": {
+      "lend_die": 1
+    },
+    "on_start": [
+      {
+        "type": "improve_skill",
+        "skill": "choose"
+      }
+    ]
   },
   {
     "id": "mark_harrigan",
@@ -463,8 +448,8 @@
       "lore": 1,
       "influence": 2,
       "observation": 2,
-      "strength": 5,
-      "will": 3
+      "strength": 4,
+      "will": 4
     },
     "start": "space_14",
     "clues": 0,
@@ -472,37 +457,44 @@
       "kerosene",
       "revolver_38"
     ],
-    "passive_text": "Cannot become Delayed while in Combat; +1 Strength in Combat.",
-    "modifiers": [
-      {
-        "amount": 1,
-        "skill": "strength",
-        "context": "combat",
-        "additional": true
-      }
-    ],
+    "passive_text": "You cannot become Delayed or gain a Detained Condition unless you choose to.",
     "action": {
-      "text": "Charge: move 1 space toward a space containing a Monster.",
+      "text": "You and 1 Monster on your space each lose 1 Health.",
       "effects": [
         {
-          "type": "move",
-          "to": "choose_adjacent"
+          "type": "damage_monsters",
+          "amount": 1,
+          "where": "here",
+          "one": true
+        },
+        {
+          "type": "health",
+          "amount": -1
         }
-      ]
+      ],
+      "requires": {
+        "at": {
+          "monsters": true
+        }
+      }
     },
     "crippled": {
-      "text": "Mark is bandaged in a field hospital. Gain all of his possessions. You promise to finish his fight (Strength).",
+      "text": "While you are collecting Mark's things, you smell smoke on the hospital. Gain all of his possessions. The hospital has been set on fire, and you run to Mark's room and try to carry him to safety (Strength).",
       "skill": "strength",
       "mod": 0,
-      "pass_text": "He grips your arm and shares his tactical notes; retreat Doom by 1.",
-      "fail_text": "He turns his face to the wall in silence."
+      "pass_text": "Mark is able to tell you who set the fire; retreat Doom by 1.",
+      "fail_text": "the smoke overcomes Mark, and he dies outside the hospital."
     },
     "insane": {
-      "text": "Mark is firing at the walls of a burned hotel room. Gain all of his possessions. You call him back to the present (Will).",
-      "skill": "will",
+      "text": "You take custody of Mark's belongings and arrange to visit him in the asylum. Gain all of his possessions. To your dismay, Mark is convinced that you are a creature disguising itself as a human. You do your best to convince him that you are telling the truth (Influence).",
+      "skill": "influence",
       "mod": 0,
-      "pass_text": "He lowers his weapon and tells you what broke through; retreat Doom by 1.",
-      "fail_text": "He flees into the smoke, still calling Sophie's name."
+      "pass_text": "he shows you sketches he made of the horrible monsters that he's been hunting; retreat Doom by 1.",
+      "fail_text": "Mark screams accusations of murder at you."
+    },
+    "perks": {
+      "no_delay": 1,
+      "no_detained": 1
     }
   },
   {
@@ -521,49 +513,42 @@
       "will": 4
     },
     "start": "arkham",
-    "clues": 1,
+    "clues": 0,
     "assets": [
       "feed_the_mind"
     ],
-    "passive_text": "Roll 1 additional die when resolving tests on a space with a Gate.",
-    "modifiers": [
-      {
-        "amount": 1,
-        "where": {
-          "gate": true
-        },
-        "additional": true
-      }
-    ],
+    "passive_text": "Once per round, you may spend 1 Sanity in place of spending 1 Clue.",
     "action": {
-      "text": "Read the Stars: spend 1 Clue on a space with a Gate to close that Gate.",
-      "cost": {
-        "clues": 1
-      },
-      "requires": {
-        "at": {
-          "gate": true
-        }
-      },
+      "text": "Spend 2 Clues to discard 1 Monster on a space containing a Gate.",
       "effects": [
         {
-          "type": "close_gate"
+          "type": "discard_monster",
+          "where": "gate_space"
         }
-      ]
+      ],
+      "cost": {
+        "clues": 2
+      },
+      "requires": {
+        "monster_at_gate": true
+      }
     },
     "crippled": {
-      "text": "Norman lies in an observatory dome. Gain all of his possessions. You check his star charts (Lore).",
-      "skill": "lore",
+      "text": "Norman can barely move in his hospital bed and points to his notes and suitcase. Gain all of his possessions. He begs you to use his telescope to record the current locations of the stars. The work is slow and demanding, but you focus at best you can to give him accurate results (Will).",
+      "skill": "will",
       "mod": 0,
-      "pass_text": "His equations predict the next alignment; retreat Doom by 1.",
-      "fail_text": "The lenses are shattered and the charts incomplete."
+      "pass_text": "Norman's insight into the Ancient One proves accurate; retreat Doom by 1.",
+      "fail_text": "Norman can make no sense of the night sky."
     },
     "insane": {
-      "text": "Norman stares directly at the sky, muttering numbers. Gain all of his possessions. You copy down his calculations (Observation).",
-      "skill": "observation",
+      "text": "The doctors would like you to look at Norman l's notes and belongings. Gain all of his possessions. They are trying to gain some insight into his catatonic state. You try to convince them to move Norman to a room with a view of the night sky (Influence).",
+      "skill": "influence",
       "mod": 0,
-      "pass_text": "The numbers form a true ephemeris of the threat; retreat Doom by 1.",
-      "fail_text": "He erases the chalkboard before you can finish."
+      "pass_text": "Norman becomes slightly responsive, and you are able to question him; retreat Doom by 1.",
+      "fail_text": "Norman's condition grows steadily worse."
+    },
+    "perks": {
+      "sanity_for_clue": 1
     }
   },
   {
@@ -583,9 +568,6 @@
     },
     "start": "sydney",
     "clues": 0,
-    "tickets": [
-      "ship"
-    ],
     "assets": [
       "fishing_net"
     ],
@@ -600,7 +582,7 @@
       }
     ],
     "action": {
-      "text": "Move 1 space along a Ship path, then perform 1 additional action.",
+      "text": "Move 1 space along a ship path, then perform 1 additional action.",
       "effects": [
         {
           "type": "move",
@@ -612,17 +594,17 @@
       ]
     },
     "crippled": {
-      "text": "Silas had hidden his belongings in the prearranged cache, but the man himself is nowhere to be found. Gain all of his possessions. You search local hospitals filled with the unidentified dead or dying (Observation).",
+      "text": "Silas had hidden his belongings in the prearranged cache, but the man itself is nowhere to be found. Gain all of his possessions. You search local hospitals filled with the unidentified dead or dying (Observation).",
       "skill": "observation",
       "mod": 0,
-      "pass_text": "You find Silas alive but incapacitated, and arrange a private nurse to watch over him; retreat Doom by 1.",
+      "pass_text": "you find Silas alive but incapacitated, and you arrange a private nurse to watch over him; retreat Doom by 1.",
       "fail_text": "Silas dies alone and unrecognized."
     },
     "insane": {
-      "text": "You find Silas and gain all of his possessions. He tells you, 'I'm a Marsh. It's in my blood. Not long now, I'll join my family, down in the deep.' You ask a doctor to watch him overnight (Influence).",
+      "text": "You find Silas and gain all of his possessions. He has grown pale, and his breath has become a loud wheeze. He tells you, \"I'm a Marsh. It's in my blood. Not long now, I'll join my family down in the deep.\" You ask a doctor to watch him overnight (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "The sailor shares all he's learned before dying peacefully in his sleep; retreat Doom by 1.",
+      "pass_text": "the sailor shares all he's learned before dying peacefully in his sleep; retreat Doom by 1.",
       "fail_text": "Silas surrenders his humanity and disappears into the sea."
     }
   },
@@ -632,53 +614,49 @@
     "occupation": "The Spy",
     "bio": "Everyone expected great things from Trish when she was young. In school, she excelled in athletics and the sciences, but she surprised everyone after graduation by settling into a humble position at a commercial code company. What almost no one knows is that this particular company is a front for the Bureau's code-breaking agency, the Black Chamber. Now she finds herself in the city of Krasnoyarsk meeting another agent who has important information about an impending threat from a world beyond our own.",
     "quote": "We lie all the time. But the truth is in there. You just have to know how to decode people.",
-    "health": 6,
-    "sanity": 6,
+    "health": 7,
+    "sanity": 5,
     "skills": {
-      "lore": 2,
+      "lore": 1,
       "influence": 3,
       "observation": 4,
       "strength": 3,
-      "will": 1
+      "will": 2
     },
     "start": "space_16",
-    "clues": 1,
-    "tickets": [
-      "train"
-    ],
+    "clues": 0,
     "assets": [
       "automatic_45"
     ],
-    "passive_text": "+1 Observation on all tests.",
-    "modifiers": [
-      {
-        "amount": 1,
-        "skill": "observation",
-        "additional": true
-      }
-    ],
+    "passive_text": "If an investigator on your space spends a Clue to reroll a die, he may reroll up to 2 dice instead.",
     "action": {
-      "text": "Dead Drop: gain 1 Clue.",
+      "text": "If you do not have any Clues, gain 1 Clue.",
       "effects": [
         {
           "type": "clues",
           "amount": 1
         }
-      ]
+      ],
+      "requires": {
+        "clues_at_most": 0
+      }
     },
     "crippled": {
-      "text": "Trish left her briefcase in a station locker. Gain all of her possessions. You crack her one-time pad (Observation).",
-      "skill": "observation",
-      "mod": 0,
-      "pass_text": "Her decoded cables expose the enemy network; retreat Doom by 1.",
-      "fail_text": "Without the key phrase, the cipher is unbreakable."
-    },
-    "insane": {
-      "text": "Trish is burning codebook after codebook in a furnace. Gain all of her possessions. You convince her you know the recognition signal (Influence).",
+      "text": "Trish falls in and out of consciousness when you visit her in the hospital, but she happily turns over her equipment. Gain all of her possessions. Unfortunately, her journal has been sized by the police. You'll have to convince the local authorities to turn the book over to you (Influence).",
       "skill": "influence",
       "mod": 0,
-      "pass_text": "She hands you the master dossier; retreat Doom by 1.",
-      "fail_text": "She swallows the last key page and says nothing."
+      "pass_text": "you can read through all of Trish's notes; retreat Doom by 1.",
+      "fail_text": "the knowledge is lost."
+    },
+    "insane": {
+      "text": "The doctor grimly hands you the items Trish had when she was brought in. Gain all of her possessions. \"It's not good,\" he warns. Inside her padded cell, she's written on every surface with a thick black pen. The text is a mix of dozens of codes. You start searching for anything you recognize (Observation).",
+      "skill": "observation",
+      "mod": 0,
+      "pass_text": "you spot a hidden message in a familiar code; retreat Doom by 1.",
+      "fail_text": "Trish's message remains locked away."
+    },
+    "perks": {
+      "clue_two_dice": 1
     }
   }
 ]

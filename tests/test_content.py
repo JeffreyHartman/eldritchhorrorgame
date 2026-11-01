@@ -111,7 +111,8 @@ def test_every_ability_and_back_resolves_without_error(content: Content) -> None
             run_effects(adef.action.effects, Ctx(game, inv, adef.id))
         for back in adef.backs:
             inv.health, inv.sanity, inv.defeated = inv.max_health, inv.max_sanity, False
-            run_effects(back.effects, Ctx(game, inv, adef.id))
+            monster = rules.spawn_monster(game, inv.location, trigger=False)
+            run_effects(back.effects, Ctx(game, inv, adef.id, monster=monster))
     for idef in content.investigators.values():
         if idef.action is not None:
             inv.health, inv.sanity, inv.clues = inv.max_health, inv.max_sanity, 3

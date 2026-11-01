@@ -95,11 +95,15 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
         if content.conditions[inst.def_id].replaces_encounter:
             rules.flip_condition(game, inv, inst)
             return
-    ignore_monsters = (
-        bool(game.locations[inv.location].monsters)
-        and rules.perk(game, inv, "ignore_monsters") > 0
-        and rules.confirm(game, "Choose an encounter as if no Monsters are here?", kind="ignore_monsters", inv=inv)
-    )
+    if _offer_encounter_spells(game, inv):
+        return
+    if inv.defeated:
+        return
+    ignore_monsters = game.ignore_monsters
+    game.ignore_monsters = False
+    if not ignore_monsters and game.locations[inv.location].monsters and rules.perk(game, inv, "ignore_monsters") > 0:
+        prompt = "Choose an encounter as if no Monsters are here?"
+        ignore_monsters = rules.confirm(game, prompt, kind="ignore_monsters", inv=inv)
     if not ignore_monsters and not combat.resolve_monsters(game, inv, encounter_phase=True):
         return
     state = game.locations[inv.location]
@@ -151,10 +155,7 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
     if tag == "deck":
         _draw_and_run_encounter(game, inv, choice[1])
     elif tag == "research":
-        gained_before = game.stats.get("clues_gained", 0)
-        _draw_and_run_encounter(game, inv, f"research_{game.old_one_id}")
-        if game.stats.get("clues_gained", 0) > gained_before and not inv.defeated:
-            _offer_research_mystery(game, inv)
+        _research(game, inv)
     elif tag == "other_world":
         _draw_and_run_encounter(game, inv, "other_world")
     elif tag == "expedition":
@@ -173,6 +174,37 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
     elif tag == "fallen" and choice[1] < len(state.fallen):
         fallen = state.fallen.pop(choice[1])
         _resolve_fallen_encounter(game, inv, fallen)
+
+
+def _research(game: Game, inv: Investigator) -> None:
+    gained_before = game.stats.get("clues_gained", 0)
+    _draw_and_run_encounter(game, inv, f"research_{game.old_one_id}")
+    if game.stats.get("clues_gained", 0) > gained_before and not inv.defeated:
+        _offer_research_mystery(game, inv)
+
+
+def _offer_encounter_spells(game: Game, inv: Investigator) -> bool:
+    """Offer Spells that start in the Encounter Phase. Returns True if one used the encounter."""
+    for card in list(inv.assets):
+        adef = game.asset_def(card)
+        here = bool(game.locations[inv.location].monsters)
+        far = any(st.clue for loc, st in game.locations.items() if loc != inv.location)
+        wanted = (adef.encounter_when == "monsters" and here) or (adef.encounter_when == "clue" and far)
+        if not wanted or game.ignore_monsters:
+            continue
+        if rules.confirm(game, adef.trigger_prompt, kind="cast_spell", inv=inv):
+            rules.cast(game, inv, card, adef.on_encounter)
+        loc_id, game.remote_clue = game.remote_clue, None
+        if loc_id is not None and game.locations[loc_id].clue and not inv.defeated:
+            home = inv.location
+            inv.location = loc_id
+            _research(game, inv)
+            game.boosts.clear()
+            if inv.location == loc_id:
+                inv.location = home
+            return True
+        game.boosts.clear()
+    return False
 
 
 def _encounter_section(game: Game, inv: Investigator, edef: EncounterDef) -> EncounterSection | None:
@@ -404,6 +436,7 @@ def start_round(game: Game) -> None:
     for inv in game.investigators:
         inv.actions_taken = []
         inv.bonus_actions = 0
+        inv.used_this_round = []
         for card in inv.assets:
             card.exhausted = False
 

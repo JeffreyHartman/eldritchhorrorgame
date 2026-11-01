@@ -33,6 +33,9 @@ Sources:
 | Conditions | All 11 Conditions use the wiki Reckoning text and the Core back of each card |
 | Difficulty | Easy removes hard Mythos cards and Hard removes easy Mythos cards. Doom does not change |
 | Solo game | One investigator removes the cards with the Teamwork trait |
+| Spells | Each of the 20 cards has its own Core back. Triggers, chosen targets, and result lines follow the wiki |
+| Investigators | Stats, starting possessions, abilities, and Defeated Encounters follow the wiki |
+| Optional rules | The Starting Rumor option and the Reference Guide score |
 
 The game follows the wiki for one conflict with the rulebook. The rulebook page 16 picture
 shows Shub-Niggurath spawning on a random space. The wiki gives The Heart of Africa as the
@@ -45,32 +48,19 @@ The wiki does not list the icons of each Mythos card, so the game uses these rul
 - Blue cards: Spawn Clues, and the Rumor and Eldritch icons from each wiki page. The Reference
   Guide mentions the Spawn Clues icon on Rumors.
 
-The Reference Guide does not say that Silver Key applies to a Clue reroll, so the discount
-applies only to a Clue cost.
+The wiki lists no starting travel tickets for any investigator, so no investigator starts with
+one.
+
+Norman Withers can use Sanity in place of a Clue on a cost or a Clue reroll. Other Clue spends,
+such as a group spend, take only Clues.
+
+Conjuration can gain cards from both its test line and its back line, because the card does
+not say "instead".
+
+The Reference Guide does not say that The Silver Key applies to a Clue reroll, so the
+discount applies only to a Clue cost.
 
 ## Known gaps
-
-### Spells
-
-The 20 cards, the names, and the card text match. The effects do not match:
-
-- Each Spell uses a Lore action and small invented backs. The real cards use the triggers
-  on the wiki, and many of them apply in combat.
-- The Core backs on the wiki are not in `spells.json`.
-
-### Investigators
-
-The health, sanity, and skills match. These abilities differ from the wiki:
-
-- Akachi Onyele: the passive applies to any closed Gate, not only an Other World Encounter.
-- Diana Stanley: the action and the passive are invented.
-- Jacqueline Fine: the action and the passive are invented.
-- Leo Anderson: the action needs a City space and takes no card from the discard pile. The
-  passive applies only to Leo.
-- Lola Hayes: the action and the passive are invented.
-- Mark Harrigan: the action and the passive are invented.
-- Norman Withers: the action and the passive are invented.
-- Trish Scarborough: the action and the passive are invented.
 
 ### Simplifications
 
@@ -80,11 +70,6 @@ The health, sanity, and skills match. These abilities differ from the wiki:
 - The Rest roll for an Injury or Madness Condition always occurs, because it has no downside.
 - A space holds 1 Gate.
 - A Rumor Epic Monster stays on the board if its Rumor ends with no Eldritch tokens.
-
-### Optional rules
-
-The game does not have the Starting Rumor option or the scoring rules from the Reference
-Guide.
 
 ## Wiki sync
 

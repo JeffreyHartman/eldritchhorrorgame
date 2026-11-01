@@ -27,12 +27,14 @@ class AssetCard:
     uid: int
     def_id: str
     exhausted: bool = False
+    back: int = 0
 
 
 @dataclass
 class ConditionInst:
     uid: int
     def_id: str
+    back: int | None = None
 
 
 @dataclass
@@ -89,6 +91,7 @@ class Investigator:
     conditions: list[ConditionInst] = field(default_factory=list)
     delayed: bool = False
     actions_taken: list[str] = field(default_factory=list)
+    used_this_round: list[str] = field(default_factory=list)
     bonus_actions: int = 0
     defeated: bool = False
     defeated_awake: bool = False
@@ -219,6 +222,10 @@ class Game:
     casting: bool = field(default=False, repr=False, compare=False)
     force_ones: bool = field(default=False, repr=False, compare=False)
     boosts: list[tuple[str, Modifier]] = field(default_factory=list, repr=False, compare=False)
+    free_rerolls: int = field(default=0, repr=False, compare=False)
+    prevented: int = field(default=0, repr=False, compare=False)
+    ignore_monsters: bool = field(default=False, repr=False, compare=False)
+    remote_clue: str | None = field(default=None, repr=False, compare=False)
     ctl: Controller = field(default_factory=NullController, repr=False, compare=False)
     roll: Callable[[], int] | None = field(default=None, repr=False, compare=False)
 

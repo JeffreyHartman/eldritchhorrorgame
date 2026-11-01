@@ -10,7 +10,7 @@ from pursuit.content.loader import Content
 from pursuit.controller import Controller
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine import rules
-from pursuit.engine.state import AssetCard, ConditionInst, Deck, Game, Investigator, LocationState
+from pursuit.engine.state import ActiveMythos, AssetCard, ConditionInst, Deck, Game, Investigator, LocationState
 
 
 class SetupError(ValueError):
@@ -23,6 +23,7 @@ class GameConfig:
     investigators: tuple[str, ...]
     difficulty: str = "normal"
     seed: int | None = None
+    starting_rumor: bool = False
 
 
 def new_game(content: Content, config: GameConfig, ctl: Controller | None = None) -> Game:
@@ -64,7 +65,21 @@ def new_game(content: Content, config: GameConfig, ctl: Controller | None = None
 
     rules.draw_mystery(game)
     run_effects(old.setup, Ctx(game, None, f"setup:{old.id}"))
+    if config.starting_rumor:
+        _place_starting_rumor(game)
     return game
+
+
+def _place_starting_rumor(game: Game) -> None:
+    """Put an unused Rumor in play without its Spawn Clues icon, as the Reference Guide says."""
+    rumors = [m for m in game.mythos_box if "rumor" in game.content.mythos[m].traits]
+    pick = game.rng.choice(rumors)
+    game.mythos_box.remove(pick)
+    mdef = game.content.mythos[pick]
+    card = ActiveMythos(mdef.id, mdef.eldritch, mdef.rumor_space)
+    game.active_mythos.append(card)
+    rules.emit(game, "mythos", f"Starting Rumor: {mdef.name}. {mdef.text}", title=mdef.name)
+    run_effects(mdef.effects, Ctx(game, None, f"mythos:{mdef.id}", mythos=card))
 
 
 def _validate(content: Content, config: GameConfig) -> None:
@@ -93,7 +108,7 @@ def _build_decks(game: Game, *, solo: bool, removes: str | None) -> None:
             if solo and "teamwork" in adef.traits:
                 continue
             if adef.kind in kinds and adef.id != "bank_loan":
-                out.extend(AssetCard(game.uid(), adef.id) for _ in range(adef.count))
+                out.extend(AssetCard(game.uid(), adef.id, back=i) for i in range(adef.count))
         rng.shuffle(out)
         return out
 
@@ -162,5 +177,6 @@ def create_investigator(game: Game, def_id: str, seat: int) -> Investigator:
     )
     inv.assets = [card for a in d.assets if (card := rules.take_starting_card(game, a)) is not None]
     inv.conditions = [ConditionInst(game.uid(), c) for c in d.conditions]
+    run_effects(d.on_start, Ctx(game, inv, f"start:{d.id}"))
     return inv
 

@@ -125,6 +125,7 @@ class App:
         self.console.clear()
         pick = self.menu("Difficulty?", [Option(d.label, detail=d.text) for d in diffs])
         difficulty = diffs[pick].id
+        starting_rumor = self.ui.ask_yes_no("Begin with a starting Rumor? (a greater challenge)")
 
         most = content.rules.max_investigators
         count = 1 + self.menu(
@@ -152,7 +153,7 @@ class App:
             if self.ui.ask_yes_no(f"Take {idef.name}?"):
                 chosen.append(idef.id)
 
-        config = GameConfig(old.id, tuple(chosen), difficulty)
+        config = GameConfig(old.id, tuple(chosen), difficulty, starting_rumor=starting_rumor)
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         path = save.saves_dir() / f"{old.id}-{stamp}.json"
         self.ui.save_path = path

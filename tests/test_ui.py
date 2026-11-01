@@ -147,6 +147,7 @@ def test_new_game_wizard_then_save_and_quit_then_continue(content: Content, save
         "1",
         "y",  # first Old One (lowest difficulty), confirm
         "2",  # normal difficulty
+        "n",  # no starting Rumor
         "2",  # two investigators
         "1",
         "y",  # first investigator, confirm

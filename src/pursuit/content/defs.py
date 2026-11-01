@@ -68,6 +68,12 @@ PERKS = (
     "no_delay",
     "clue_discount",
     "ignore_monsters",
+    "horror_to_one",
+    "watch_conditions",
+    "lend_die",
+    "no_detained",
+    "sanity_for_clue",
+    "clue_two_dice",
 )
 BLOCKABLE_ACTIONS = ("travel", "rest", "trade", "prepare", "acquire", "component", "move")
 MYTHOS_BLOCKS = ("reserve", "close_gate", "rest", "expedition")
@@ -95,6 +101,7 @@ class LocationFilter:
     monsters: bool | None = None
     expedition: bool | None = None
     eldritch: bool | None = None
+    monster: str | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> LocationFilter:
@@ -107,6 +114,7 @@ class LocationFilter:
             monsters=r.get_bool("monsters", None),
             expedition=r.get_bool("expedition", None),
             eldritch=r.get_bool("eldritch", None),
+            monster=r.get_str("monster", None),
         )
         r.done()
         return f
@@ -123,6 +131,7 @@ class LocationFilter:
             self.monsters is None or bool(state.monsters) == self.monsters,
             self.expedition is None or (game.active_expedition == loc_id) == self.expedition,
             self.eldritch is None or (state.eldritch > 0) == self.eldritch,
+            self.monster is None or any(m.def_id == self.monster for m in state.monsters),
         )
         return all(checks)
 
@@ -165,6 +174,10 @@ class InvestigatorFilter:
     at: LocationFilter | None = None
     alone: bool | None = None
     lead: bool | None = None
+    lacks_condition: str | None = None
+    clues_at_most: int | None = None
+    has_improvement: bool | None = None
+    monster_at_gate: bool | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> InvestigatorFilter:
@@ -181,6 +194,10 @@ class InvestigatorFilter:
             at=read_location_filter(r, "at"),
             alone=r.get_bool("alone", None),
             lead=r.get_bool("lead", None),
+            lacks_condition=r.get_str("lacks_condition", None),
+            clues_at_most=r.get_int("clues_at_most", None),
+            has_improvement=r.get_bool("has_improvement", None),
+            monster_at_gate=r.get_bool("monster_at_gate", None),
         )
         r.done()
         return f
@@ -209,6 +226,16 @@ class InvestigatorFilter:
             return False
         if self.at is not None and not self.at.matches(game, inv.location):
             return False
+        if self.lacks_condition is not None and any(c.id == self.lacks_condition for c in conds):
+            return False
+        if self.clues_at_most is not None and inv.clues > self.clues_at_most:
+            return False
+        if self.has_improvement is not None and any(v > 0 for v in inv.improvements.values()) != self.has_improvement:
+            return False
+        if self.monster_at_gate is not None:
+            found = any(st.gate and st.monsters for st in game.locations.values())
+            if found != self.monster_at_gate:
+                return False
         if self.alone is not None:
             others = [o for o in game.active_investigators() if o is not inv and o.location == inv.location]
             if (not others) != self.alone:
@@ -218,6 +245,8 @@ class InvestigatorFilter:
     def refs(self) -> Iterable[tuple[str, str]]:
         if self.condition:
             yield ("condition", self.condition)
+        if self.lacks_condition:
+            yield ("condition", self.lacks_condition)
         if self.asset:
             yield ("asset", self.asset)
         if self.at:
@@ -457,7 +486,7 @@ class ActionAbility:
             effects=read_effects(r, "effects"),
             cost=read_cost(r, "cost"),
             discard=r.get_bool("discard", False),
-            target=r.get_enum("target", ("self", "investigator_here", "any_investigator"), "self"),
+            target=r.get_enum("target", ("self", "investigator_here", "any_investigator", "anyone"), "self"),
             local=r.get_bool("local", False),
             requires=read_investigator_filter(r, "requires"),
             free=r.get_bool("free", False),
@@ -483,6 +512,7 @@ class CardBack:
     min_successes: int | None = None
     max_successes: int | None = None
     keep: bool = False
+    face: int = 0
 
     @classmethod
     def parse(cls, r: Reader) -> CardBack:
@@ -493,6 +523,7 @@ class CardBack:
             min_successes=r.get_int("min_successes", None),
             max_successes=r.get_int("max_successes", None),
             keep=r.get_bool("keep", False),
+            face=r.get_int("face", 0),
         )
         r.done()
         if b.weight < 1:
@@ -551,6 +582,12 @@ class AssetDef:
     rest_aura: tuple[Effect, ...] = ()
     on_close_gate: tuple[Effect, ...] = ()
     on_combat_win: tuple[Effect, ...] = ()
+    trigger_prompt: str = ""
+    on_combat: tuple[Effect, ...] = ()
+    on_encounter: tuple[Effect, ...] = ()
+    encounter_when: str | None = None
+    on_ward: tuple[Effect, ...] = ()
+    ward_stat: str | None = None
 
     def is_a(self, kind: str) -> bool:
         return self.kind == kind or kind in self.traits
@@ -773,6 +810,7 @@ class InvestigatorDef:
     action: ActionAbility | None
     crippled: DefeatedEncounterDef
     insane: DefeatedEncounterDef
+    on_start: tuple[Effect, ...] = ()
 
 
 @dataclass(frozen=True)

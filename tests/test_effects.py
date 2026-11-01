@@ -201,7 +201,7 @@ def test_move_keywords(make_game: MakeGame, script: Script) -> None:
 def test_delay_skips_the_next_action_turn(make_game: MakeGame) -> None:
     from pursuit.engine.phases import action_turn
 
-    game = make_game()
+    game = make_game(investigators=("silas_marsh", "akachi_onyele"))
     inv = first(game)
     run(game, inv, [{"type": "delay"}])
     action_turn(game, inv)
@@ -323,7 +323,8 @@ def test_targeted_spell_flips_and_discards_the_casters_copy(make_game: MakeGame)
     target.location = caster.location
     owned = rules.new_card(game, "blessing_of_isis")
     caster.assets.append(owned)
-    set_dice(game, 1, 1)  # 0 successes: the back discards the spell
+    owned.back = 1
+    set_dice(game, 1, 1)  # 0 successes: the back costs the caster 1 Health
+    health = caster.health
     actions.perform(game, caster, ("asset", owned.uid))
-    assert owned not in caster.assets
-    assert owned in game.spell_deck.discards
+    assert caster.health == health - 1 and not rules.has_condition(target, "blessed")

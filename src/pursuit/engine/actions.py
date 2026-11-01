@@ -25,7 +25,13 @@ def actions_left(game: Game, inv: Investigator) -> int:
 def _ability_ok(game: Game, inv: Investigator, ability: ActionAbility) -> bool:
     if not rules.can_pay(game, inv, ability.cost):
         return False
+    if ability.target == "any_investigator" and not _other_investigators(game, inv):
+        return False
     return ability.requires is None or ability.requires.matches(game, inv)
+
+
+def _other_investigators(game: Game, inv: Investigator) -> list[Investigator]:
+    return [p for p in game.active_investigators() if not p.defeated and not p.delayed and p is not inv]
 
 
 def _available_ticket_kinds(game: Game, loc_id: str) -> list[str]:
@@ -405,7 +411,10 @@ def trade_with(game: Game, inv: Investigator, other: Investigator) -> bool:
             traded = True
 
 
-def _run_ability(game: Game, inv: Investigator, ability: ActionAbility, source: str, **ctx_kwargs: Any) -> bool:
+def _run_ability(
+    game: Game, inv: Investigator, ability: ActionAbility, source: str, *, spell: bool = False, **ctx_kwargs: Any
+) -> bool:
+    """Spell effects keep the caster as `ctx.inv`, because the caster tests and flips the card."""
     target = inv
     if ability.target == "investigator_here":
         people = game.investigators_at(inv.location)
@@ -419,7 +428,7 @@ def _run_ability(game: Game, inv: Investigator, ability: ActionAbility, source: 
             )
         ]
     elif ability.target == "any_investigator":
-        people = [p for p in game.active_investigators() if not p.defeated and p is not inv] or [inv]
+        people = _other_investigators(game, inv)
         options = [
             Option(p.name, p.seat, f"in {rules.loc_name(game, p.location)}")
             for p in people
@@ -429,8 +438,15 @@ def _run_ability(game: Game, inv: Investigator, ability: ActionAbility, source: 
                 game, "Choose an investigator.", options, kind="ability_target", inv=inv, auto_single=True
             )
         ]
+    elif ability.target == "anyone":
+        people = [p for p in game.active_investigators() if not p.defeated]
+        options = [Option(p.name, p.seat, f"in {rules.loc_name(game, p.location)}") for p in people]
+        target = people[rules.choose(game, "Choose an investigator.", options, kind="ability_target", inv=inv)]
     rules.pay_cost(game, inv, ability.cost)
-    run_effects(ability.effects, Ctx(game, target, source, **ctx_kwargs))
+    if spell:
+        run_effects(ability.effects, Ctx(game, inv, source, chosen=target, **ctx_kwargs))
+    else:
+        run_effects(ability.effects, Ctx(game, target, source, **ctx_kwargs))
     return True
 
 
@@ -440,25 +456,13 @@ def _use_asset(game: Game, inv: Investigator, card: AssetCard) -> bool:
     rules.emit(game, "info", f"{inv.name} uses {adef.name}.")
     card.exhausted = True
     game.spell_lore_passed = False
-    game.casting = adef.kind == "spell"
-    _run_ability(game, inv, adef.action, f"asset:{adef.id}", asset=card)
+    spell = adef.kind == "spell"
+    game.casting = spell
+    _run_ability(game, inv, adef.action, f"asset:{adef.id}", spell=spell, asset=card)
     game.casting = False
     if adef.action.discard and card in inv.assets:
         rules.discard_asset(game, inv, card)
-    if game.spell_lore_passed and adef.kind == "spell" and card in inv.assets:
-        _offer_spell_mystery(game, inv, card)
     return True
-
-
-def _offer_spell_mystery(game: Game, inv: Investigator, card: AssetCard) -> None:
-    for mys in game.active_mysteries():
-        mdef = game.mystery_def(mys)
-        if mdef.kind == "spell" and not mys.ready and inv.clues >= mdef.clue_cost:
-            prompt = f"Spend {mdef.clue_cost} Clue and discard {game.asset_def(card).name} to advance '{mdef.name}'?"
-            if rules.confirm(game, prompt, kind="mystery_spend", inv=inv):
-                rules.change_clues(game, inv, -mdef.clue_cost)
-                rules.discard_asset(game, inv, card)
-                rules.add_mystery_progress(game, mys, mdef.amount)
 
 
 def _use_condition(game: Game, actor: Investigator, owner: Investigator, inst: ConditionInst) -> bool:

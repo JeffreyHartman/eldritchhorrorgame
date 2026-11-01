@@ -26,7 +26,7 @@ from pursuit.engine.state import (
     Phase,
 )
 
-SAVE_VERSION = 5
+SAVE_VERSION = 6
 
 
 class SaveError(Exception):

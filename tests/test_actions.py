@@ -71,7 +71,7 @@ def test_rest_and_acquire_are_blocked_by_monsters(make_game: MakeGame) -> None:
 
 
 def test_detained_condition_blocks_travel_and_prepare(make_game: MakeGame) -> None:
-    game = make_game()
+    game = make_game(investigators=("silas_marsh", "akachi_onyele"))
     inv = first(game)
     rules.gain_condition(game, inv, "detained")
     avail = kinds(options(game, inv))
@@ -115,8 +115,9 @@ def test_acquire_assets_with_no_purchases_can_discard_one_reserve_card(make_game
 
 
 def test_component_actions_from_different_components_can_both_run(make_game: MakeGame, script: Script) -> None:
-    game = make_game()
+    game = make_game(investigators=("silas_marsh", "akachi_onyele"))
     inv = first(game)
+    inv.location = "sydney"
     dynamite = rules.new_card(game, "dynamite")
     inv.assets.append(dynamite)
     actions.perform(game, inv, ("asset", dynamite.uid))

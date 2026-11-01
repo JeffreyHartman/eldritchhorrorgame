@@ -292,6 +292,7 @@ class _Loader:
                 action=read_action(r, "action"),
                 crippled=self._defeated_encounter(r.get_obj("crippled")),
                 insane=self._defeated_encounter(r.get_obj("insane")),
+                on_start=read_effects(r, "on_start"),
             )
             r.done()
             out.append(inv)
@@ -376,6 +377,12 @@ class _Loader:
                     rest_aura=read_effects(r, "rest_aura"),
                     on_close_gate=read_effects(r, "on_close_gate"),
                     on_combat_win=read_effects(r, "on_combat_win"),
+                    trigger_prompt=r.get_str("trigger_prompt", ""),
+                    on_combat=read_effects(r, "on_combat"),
+                    on_encounter=read_effects(r, "on_encounter"),
+                    encounter_when=r.get_enum("encounter_when", ("monsters", "clue"), None),
+                    on_ward=read_effects(r, "on_ward"),
+                    ward_stat=r.get_enum("ward_stat", ("health", "sanity"), None),
                 )
                 r.done()
                 if bool(a.on_rest) != bool(a.rest_prompt):
@@ -384,6 +391,10 @@ class _Loader:
                     raise ContentError(f"{r.path}: count must be at least 1 and cost at least 0")
                 if a.kind == "service" and not a.on_gain and a.action is None and a.id != "bank_loan":
                     raise ContentError(f"{r.path}: a service needs on_gain effects or an action")
+                if bool(a.on_ward) != bool(a.ward_stat) or bool(a.on_encounter) != bool(a.encounter_when):
+                    raise ContentError(f"{r.path}: a trigger needs its condition field")
+                if (a.on_combat or a.on_encounter or a.on_ward) and not a.trigger_prompt:
+                    raise ContentError(f"{r.path}: a trigger needs 'trigger_prompt'")
                 if a.kind == "spell" and not a.backs:
                     raise ContentError(f"{r.path}: a spell needs at least one back")
                 out.append(a)
@@ -800,6 +811,9 @@ class _Checker:
             yield f"asset '{a.id}' rest_aura", a.rest_aura, False
             yield f"asset '{a.id}' on_close_gate", a.on_close_gate, False
             yield f"asset '{a.id}' on_combat_win", a.on_combat_win, False
+            yield f"asset '{a.id}' on_combat", a.on_combat, False
+            yield f"asset '{a.id}' on_encounter", a.on_encounter, False
+            yield f"asset '{a.id}' on_ward", a.on_ward, False
             if a.action:
                 yield f"asset '{a.id}' action", a.action.effects, False
             for i, back in enumerate(a.backs):
@@ -811,6 +825,7 @@ class _Checker:
             for i, back in enumerate(cond.backs):
                 yield f"conditions.json '{cond.id}' back {i}", back.effects, False
         for inv in c.investigators.values():
+            yield f"investigators.json '{inv.id}' on_start", inv.on_start, False
             if inv.action:
                 yield f"investigators.json '{inv.id}' action", inv.action.effects, False
 
