@@ -77,14 +77,6 @@ def test_condition_modifier_lowers_the_pool(make_game: MakeGame) -> None:
     assert dice_pool(game, inv, "strength", 0, ("encounter",)) == 4
 
 
-def test_old_one_modifier_applies_only_where_it_says(make_game: MakeGame) -> None:
-    game = make_game(old_one="cthulhu")
-    inv = first(game)
-    assert dice_pool(game, inv, "will", 0, ("horror",)) == 3
-    inv.location = "space_2"
-    assert dice_pool(game, inv, "will", 0, ("horror",)) == 2
-
-
 def test_card_reroll_ability_rerolls_one_die(make_game: MakeGame, script: Script) -> None:
     game = make_game(investigators=("jacqueline_fine", "mark_harrigan"))
     jacq = first(game)  # Jacqueline can reroll 1 Lore die

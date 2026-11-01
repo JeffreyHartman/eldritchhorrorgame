@@ -58,7 +58,8 @@ def modifier_sources(game: Game, inv: Investigator, skill: str, contexts: tuple[
     for inst in inv.conditions:
         cdef = content.conditions[inst.def_id]
         add(cdef.name, cdef.modifiers)
-    add(game.old_one.name, game.old_one.modifiers)
+    if not game.awakened:
+        add(game.old_one.name, game.old_one.modifiers)
 
     found: list[tuple[str, int]] = []
     if bonuses:

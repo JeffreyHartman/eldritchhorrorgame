@@ -299,14 +299,17 @@ def advance_omen(game: Game, amount: int = 1, *, advance_doom_from_gates: bool =
         color = game.omen_color
         emit(game, "omen", f"The Omen advances to {color} ({game.omen_space}).", omen=game.omen_space, color=color)
         if advance_doom_from_gates:
-            matching = len(game.matching_gates())
-            if matching:
-                advance_doom(game, matching, f"{matching} {color} Gate(s) match the Omen")
+            gates = game.matching_gates()
+            if gates and game.awakened:
+                for loc_id in gates:
+                    advance_doom(game, 1, f"the {color} Gate at {loc_name(game, loc_id)}", gate=loc_id)
+            elif gates:
+                advance_doom(game, len(gates), f"{len(gates)} {color} Gate(s) match the Omen")
         if game.old_one.omen_green_eldritch_doom and game.omen_space == "green" and game.green_eldritch > 0:
             advance_doom(game, game.green_eldritch, f"{game.green_eldritch} Eldritch token(s) on the green Omen")
 
 
-def advance_doom(game: Game, amount: int, reason: str = "") -> None:
+def advance_doom(game: Game, amount: int, reason: str = "", *, gate: str | None = None) -> None:
     if amount <= 0 or game.outcome:
         return
     why = f" ({reason})" if reason else ""
@@ -317,7 +320,7 @@ def advance_doom(game: Game, amount: int, reason: str = "") -> None:
                 return
             emit(game, "doom", f"Doom would advance{why}.", value=0)
             if old.awakening.doom_advance_effects:
-                run_effects(old.awakening.doom_advance_effects, Ctx(game, None, f"awakened_doom:{old.id}"))
+                run_effects(old.awakening.doom_advance_effects, Ctx(game, None, f"awakened_doom:{old.id}", gate=gate))
         return
     game.doom = max(0, game.doom - amount)
     emit(game, "doom", f"Doom advances by {amount}{why}. Doom: {game.doom}.", value=game.doom)
@@ -345,14 +348,27 @@ def awaken(game: Game) -> None:
     if final is not None:
         n = len(game.investigators)
         game.final_mystery = MysteryState(final.id, final.required(n), final=True)
-        if final.kind == "defeat" and final.monster:
-            _spawn_mystery_monster(game, final.monster, final.spawn_at)
+        _spawn_final_monster(game)
         run_effects(final.on_enter, Ctx(game, None, f"mystery:{final.id}"))
     run_effects(old.awakening.effects, Ctx(game, None, f"awakening:{old.id}"))
     check_mysteries(game)
 
 
 # --- mysteries ------------------------------------------------------------------------
+
+
+def enough_mysteries(game: Game) -> bool:
+    return len(game.solved_mysteries) >= game.old_one.mysteries_needed
+
+
+def _spawn_final_monster(game: Game) -> None:
+    final = game.old_one.awakening.final_mystery
+    if final is None or final.kind != "defeat" or final.monster is None or not game.awakened:
+        return
+    if final.spawn_when_solved and not enough_mysteries(game):
+        return
+    if monster_available(game, final.monster):
+        _spawn_mystery_monster(game, final.monster, final.spawn_at)
 
 
 def _spawn_mystery_monster(game: Game, monster_id: str, spawn_at: str | None) -> None:
@@ -397,8 +413,13 @@ def solve_mystery(game: Game, mys: MysteryState) -> None:
         game.solved_mysteries.append(mys.def_id)
         game.bump("mysteries_solved")
     emit(game, "mystery", f"The Mystery '{mdef.name}' is solved!", mystery=mdef.id, done=True)
+    run_effects(mdef.on_solve, Ctx(game, None, f"mystery:{mdef.id}"))
     check_mysteries(game)
-    if not game.outcome and not mys.final and len(game.solved_mysteries) < game.old_one.mysteries_needed:
+    if game.outcome or mys.final:
+        return
+    if enough_mysteries(game):
+        _spawn_final_monster(game)
+    else:
         draw_mystery(game)
 
 
@@ -449,7 +470,8 @@ def spawn_gate(game: Game, loc_id: str | None = None) -> str | None:
     return loc_id
 
 
-def discard_gate(game: Game, loc_id: str) -> bool:
+def discard_gate(game: Game, loc_id: str, *, to_stack: bool = True) -> bool:
+    """Take a Gate off the board. With `to_stack` False, the token leaves the game."""
     state = game.locations[loc_id]
     if not state.gate:
         return False
@@ -457,7 +479,8 @@ def discard_gate(game: Game, loc_id: str) -> bool:
     if state.other_world is not None:
         game.other_world_deck.discard(state.other_world)
         state.other_world = None
-    game.gate_deck.discard(loc_id)
+    if to_stack:
+        game.gate_deck.discard(loc_id)
     return True
 
 
@@ -465,24 +488,20 @@ def close_gate(game: Game, inv: Investigator, loc_id: str) -> None:
     state = game.locations[loc_id]
     if not state.gate:
         return
-    discard_gate(game, loc_id)
     game.bump("gates_closed")
     emit(game, "gate", f"{inv.name} closes the Gate at {loc_name(game, loc_id)}!", location=loc_id, closed=True)
-
+    matches_omen = game.content.locations[loc_id].gate_color == game.omen_color
+    sealed = False
     for mys in game.active_mysteries():
         mdef = game.mystery_def(mys)
-        if mdef.kind == "gate" and not mys.done and (mdef.where is None or mdef.where.matches(game, loc_id)):
-            if mdef.clue_cost > 0:
-                if inv.clues >= mdef.clue_cost and confirm(
-                    game,
-                    f"Spend {mdef.clue_cost} Clue(s) to advance '{mdef.name}'?",
-                    kind="mystery_spend",
-                    inv=inv,
-                ):
-                    change_clues(game, inv, -mdef.clue_cost)
-                    add_mystery_progress(game, mys, 1)
-            else:
-                add_mystery_progress(game, mys, 1)
+        if mdef.kind != "gate" or mys.ready or (mdef.omen_match and not matches_omen):
+            continue
+        if mdef.where is not None and not mdef.where.matches(game, loc_id):
+            continue
+        if _pay_mystery(game, inv, mdef.name, mdef.clue_cost, mdef.spell_cost):
+            add_mystery_progress(game, mys, mdef.amount)
+            sealed = sealed or mdef.remove_gate
+    discard_gate(game, loc_id, to_stack=not sealed)
 
     if inv.def_id == "akachi_onyele":
         targets = [
@@ -502,6 +521,27 @@ def close_gate(game: Game, inv: Investigator, loc_id: str) -> None:
             dest = options[pick].value
             if dest:
                 move_investigator(game, inv, dest)
+
+
+def _pay_mystery(game: Game, inv: Investigator, name: str, clues: int, spells: int) -> bool:
+    held = [c for c in inv.assets if game.asset_def(c).kind == "spell"]
+    if inv.clues < clues or len(held) < spells:
+        return False
+    cost = " and ".join(p for p in (f"{clues} Clue(s)" if clues else "", f"{spells} Spell(s)" if spells else "") if p)
+    if not confirm(game, f"Spend {cost or 'nothing'} to advance '{name}'?", kind="mystery_spend", inv=inv):
+        return False
+    change_clues(game, inv, -clues)
+    for _ in range(spells):
+        cards = [c for c in inv.assets if game.asset_def(c).kind == "spell"]
+        options = [Option(game.asset_def(c).name, c.uid) for c in cards]
+        pick = choose(game, "Discard which Spell?", options, kind="lose_asset", inv=inv, auto_single=True)
+        discard_asset(game, inv, cards[pick])
+    return True
+
+
+def pay_for_mystery(game: Game, inv: Investigator, mys: MysteryState) -> bool:
+    mdef = game.mystery_def(mys)
+    return _pay_mystery(game, inv, mdef.name, mdef.clue_cost, mdef.spell_cost)
 
 
 def monster_surge(game: Game) -> None:
@@ -591,10 +631,13 @@ def defeat_monster(game: Game, inv: Investigator | None, loc_id: str, monster: M
         run_effects(mdef.on_defeat, Ctx(game, inv, f"monster:{mdef.id}"))
     for mys in game.active_mysteries():
         mys_def = game.mystery_def(mys)
-        if mys_def.kind == "defeat" and mys_def.monster == mdef.id and not mys.done:
+        if mys_def.kind == "defeat" and mys_def.monster == mdef.id and not mys.ready:
             add_mystery_progress(game, mys, mys.required - mys.progress)
-        elif mys_def.kind == "combat" and not mys.done:
-            add_mystery_progress(game, mys, 1)
+        elif mys_def.kind == "trophy" and inv is not None and not mdef.epic and not mys.ready:
+            health = toughness(game, mdef.id)
+            if _pay_mystery(game, inv, mys_def.name, mys_def.clue_cost, 0):
+                game.monster_cup.remove(mdef.id)
+                add_mystery_progress(game, mys, health)
 
 
 def discard_monster(game: Game, loc_id: str, monster: MonsterInst) -> None:
@@ -963,6 +1006,10 @@ def move_investigator(game: Game, inv: Investigator, loc_id: str, how: str = "")
     inv.location = loc_id
     suffix = f" by {how}" if how else ""
     emit(game, "travel", f"{inv.name} moves{suffix} to {loc_name(game, loc_id)}.", location=loc_id)
+    if game.locations[loc_id].eldritch:
+        old = game.old_one
+        effects = old.awakening.on_eldritch_move if game.awakened else old.on_eldritch_move
+        run_effects(effects, Ctx(game, inv, f"eldritch_move:{old.id}"))
 
 
 def pay_cost(game: Game, inv: Investigator, cost: Cost) -> None:

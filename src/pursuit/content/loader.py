@@ -32,6 +32,7 @@ from pursuit.content.defs import (
     RESERVE_KINDS,
     ROUTE_KINDS,
     SKILLS,
+    SPECIAL_DECKS,
     TERRAINS,
     TICKET_KINDS,
     ActionAbility,
@@ -441,12 +442,22 @@ class _Loader:
             monster=r.get_str("monster", None),
             spawn_at=r.get_str("spawn_at", None),
             on_enter=read_effects(r, "on_enter"),
+            on_solve=read_effects(r, "on_solve"),
+            deck=r.get_enum("deck", SPECIAL_DECKS, None),
+            omen_match=r.get_bool("omen_match", False),
+            spell_cost=r.get_int("spell_cost", 0),
+            remove_gate=r.get_bool("remove_gate", False),
+            token=r.get_bool("token", False),
+            needs_solved=r.get_bool("needs_solved", False),
+            spawn_when_solved=r.get_bool("spawn_when_solved", False),
         )
         r.done()
         if m.amount < 1:
             raise ContentError(f"{r.path}: amount must be at least 1")
-        if m.kind == "defeat" and m.monster is None:
-            raise ContentError(f"{r.path}: a defeat mystery needs a monster")
+        if m.kind in ("defeat", "ambush") and m.monster is None:
+            raise ContentError(f"{r.path}: a {m.kind} mystery needs a monster")
+        if m.kind == "special" and m.deck is None:
+            raise ContentError(f"{r.path}: a special mystery needs a deck")
         return m
 
     def _stage(self, r: Reader) -> StageComp:
@@ -468,6 +479,7 @@ class _Loader:
                 lose_immediately=aw.get_bool("lose_immediately", False),
                 final_mystery=self.mystery(fm_r) if fm_r is not None else None,
                 cultist=self.monster(cult_back, cultist=True) if cult_back is not None else None,
+                on_eldritch_move=read_effects(aw, "on_eldritch_move"),
             )
             aw.done()
             stages_list = [self._stage(sr) for sr in r.objects("stages")]
@@ -492,6 +504,7 @@ class _Loader:
                 awakening=awakening,
                 cultist=self.monster(r.get_obj("cultist"), cultist=True),
                 set_aside=r.get_str_tuple("set_aside"),
+                on_eldritch_move=read_effects(r, "on_eldritch_move"),
             )
             r.done()
             if o.doom < 1:
@@ -524,7 +537,7 @@ class _Loader:
         encounters: dict[str, EncounterDef] = {}
         decks: dict[str, tuple[str, ...]] = {}
         research_decks = {f"research_{oid}" for oid in old_ones}
-        valid = {*BASE_ENCOUNTER_DECKS, *research_decks, *OTHER_WORLD_DECKS}
+        valid = {*BASE_ENCOUNTER_DECKS, *research_decks, *OTHER_WORLD_DECKS, *SPECIAL_DECKS}
         for path in sorted(folder.glob("*.json")):
             deck = path.stem
             name = f"encounters/{path.name}"
@@ -668,7 +681,9 @@ class _Checker:
             if o.awakening.final_mystery is not None:
                 mysteries.append(o.awakening.final_mystery)
             for mys in mysteries:
-                if mys.monster and (mys.monster not in c.monsters or not c.monsters[mys.monster].epic):
+                if mys.kind == "ambush" and mys.monster not in c.monsters:
+                    self.fail(f"{where}: mystery '{mys.id}' ambushes with unknown monster '{mys.monster}'")
+                if mys.kind == "defeat" and (mys.monster not in c.monsters or not c.monsters[mys.monster].epic):
                     self.fail(f"{where}: mystery '{mys.id}' needs an epic monster, not '{mys.monster}'")
                 if mys.spawn_at and mys.spawn_at != "random" and mys.spawn_at not in c.locations:
                     self.fail(f"{where}: mystery '{mys.id}' spawns at unknown location '{mys.spawn_at}'")
@@ -746,8 +761,11 @@ class _Checker:
             cultists = [o.cultist] if o.awakening.cultist is None else [o.cultist, o.awakening.cultist]
             for cultist in cultists:
                 yield from self.monster_lists(f"old_ones.json '{o.id}' cultist", cultist)
+            yield f"old_ones.json '{o.id}' on_eldritch_move", o.on_eldritch_move, False
+            yield f"old_ones.json '{o.id}' awakening on_eldritch_move", o.awakening.on_eldritch_move, False
             for mys in o.mysteries:
                 yield f"old_ones.json '{o.id}' mystery '{mys.id}' on_enter", mys.on_enter, True
+                yield f"old_ones.json '{o.id}' mystery '{mys.id}' on_solve", mys.on_solve, True
             if o.awakening.final_mystery:
                 yield (
                     f"old_ones.json '{o.id}' final_mystery on_enter",

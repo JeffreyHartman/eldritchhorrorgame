@@ -71,6 +71,9 @@ def test_doom_reaching_zero_awakens_the_old_one(make_game: MakeGame) -> None:
     rules.advance_doom(game, game.doom)
     assert game.awakened
     assert game.final_mystery is not None
+    assert not any(m.def_id == "cthulhu_epic" for m in game.locations["space_3"].monsters)
+    game.solved_mysteries = ["a", "b", "c"]
+    rules._spawn_final_monster(game)
     assert any(m.def_id == "cthulhu_epic" for m in game.locations["space_3"].monsters)
 
 
@@ -119,6 +122,7 @@ def test_monster_surge_spawns_at_matching_gates_or_spawns_a_new_gate(make_game: 
         game.locations[g].gate = False
     game.locations["san_francisco"].gate = True
     game.omen_index = 0  # green
+    game.monster_cup = ["cultist"] * 5
     before = len(game.locations["san_francisco"].monsters)
     rules.monster_surge(game)
     assert len(game.locations["san_francisco"].monsters) == before + game.reference.monster_surge

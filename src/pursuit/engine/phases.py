@@ -117,10 +117,10 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
             options.append(Option(f"Rumor Encounter: {mdef.name}", ("rumor", active.def_id), mdef.encounter_text))
     for mys in game.active_mysteries():
         mys_def = game.mystery_def(mys)
-        if mys_def.kind in ("encounter", "spend") and (
-            mys_def.where is None or mys_def.where.matches(game, inv.location)
-        ):
-            options.append(Option(f"Mystery Encounter: {mys_def.name}", ("mystery", mys.def_id), mys_def.text))
+        if _mystery_encounter_open(game, inv, mys):
+            enabled = mys_def.kind != "spend" or inv.clues >= mys_def.clue_cost
+            why = mys_def.text if enabled else f"needs {mys_def.clue_cost} Clues"
+            options.append(Option(f"Mystery Encounter: {mys_def.name}", ("mystery", mys.def_id), why, enabled=enabled))
     for i, fallen in enumerate(state.fallen):
         kind_label = "Crippled" if fallen.cause == "health" else "Insane"
         options.append(
@@ -139,7 +139,10 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
     if tag == "deck":
         _draw_and_run_encounter(game, inv, choice[1])
     elif tag == "research":
+        gained_before = game.stats.get("clues_gained", 0)
         _draw_and_run_encounter(game, inv, f"research_{game.old_one_id}")
+        if game.stats.get("clues_gained", 0) > gained_before and not inv.defeated:
+            _offer_research_mystery(game, inv)
     elif tag == "other_world":
         other_world = state.other_world
         if other_world is None:
@@ -200,31 +203,51 @@ def _draw_and_run_encounter(game: Game, inv: Investigator, deck_name: str) -> No
     deck.discard(enc_id)
 
 
+def _mystery_encounter_open(game: Game, inv: Investigator, mys: MysteryState) -> bool:
+    mdef = game.mystery_def(mys)
+    if mdef.kind not in ("encounter", "spend", "ambush", "special") or mys.ready:
+        return False
+    if mdef.needs_solved and not rules.enough_mysteries(game):
+        return False
+    return mdef.where is None or mdef.where.matches(game, inv.location)
+
+
+def _offer_research_mystery(game: Game, inv: Investigator) -> None:
+    for mys in game.active_mysteries():
+        mdef = game.mystery_def(mys)
+        if mdef.kind == "research" and not mys.ready and inv.clues > 0:
+            prompt = f"Place 1 Clue you gained on '{mdef.name}'?"
+            if rules.confirm(game, prompt, kind="mystery_spend", inv=inv):
+                rules.change_clues(game, inv, -1)
+                rules.add_mystery_progress(game, mys, mdef.amount)
+
+
+def _advance_mystery(game: Game, inv: Investigator, mys: MysteryState) -> None:
+    """Pay for a Mystery and put its token on the card. A token leaves the investigator's space."""
+    mdef = game.mystery_def(mys)
+    if not rules.pay_for_mystery(game, inv, mys):
+        return
+    if mdef.token:
+        game.locations[inv.location].eldritch -= 1
+    rules.add_mystery_progress(game, mys, mdef.amount)
+
+
 def _resolve_mystery_encounter(game: Game, inv: Investigator, mys: MysteryState) -> None:
     mdef = game.mystery_def(mys)
+    if mdef.kind == "special":
+        assert mdef.deck is not None
+        _draw_and_run_encounter(game, inv, mdef.deck)
+        return
     rules.emit(game, "encounter", mdef.text, title=mdef.name, deck="mystery", location=inv.location)
     if mdef.kind == "spend":
-        if inv.clues >= max(1, mdef.clue_cost):
-            cost = max(1, mdef.clue_cost)
-            rules.change_clues(game, inv, -cost)
-            rules.add_mystery_progress(game, mys, 1)
-        else:
-            rules.emit(game, "info", f"{inv.name} does not have enough Clues ({max(1, mdef.clue_cost)} needed).")
-        return
-    if mdef.skill is not None:
+        _advance_mystery(game, inv, mys)
+    elif mdef.kind == "ambush":
+        if combat.ambush(game, inv, mdef.monster) == combat.DEFEATED:
+            _advance_mystery(game, inv, mys)
+    elif mdef.skill is not None:
         res = dice.run_test(game, inv, mdef.skill, mdef.mod, contexts=("mystery", "encounter"), label=mdef.name)
         if res.passed:
-            if mdef.clue_cost > 0:
-                if inv.clues >= mdef.clue_cost and rules.confirm(
-                    game,
-                    f"Spend {mdef.clue_cost} Clue(s) to advance '{mdef.name}'?",
-                    kind="mystery_spend",
-                    inv=inv,
-                ):
-                    rules.change_clues(game, inv, -mdef.clue_cost)
-                    rules.add_mystery_progress(game, mys, 1)
-            else:
-                rules.add_mystery_progress(game, mys, 1)
+            _advance_mystery(game, inv, mys)
 
 
 def _resolve_fallen_encounter(game: Game, inv: Investigator, fallen: FallenInvestigator) -> None:

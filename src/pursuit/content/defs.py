@@ -79,7 +79,8 @@ PERKS = (
 )
 BLOCKABLE_ACTIONS = ("travel", "rest", "trade", "prepare", "acquire", "component")
 MONSTER_FORMS = ("beast", "humanoid", "horror", "swarm", "spirit")
-MYSTERY_KINDS = ("encounter", "gate", "combat", "defeat", "spend")
+MYSTERY_KINDS = ("encounter", "research", "gate", "trophy", "defeat", "spend", "spell", "ambush", "special")
+SPECIAL_DECKS = ("special_cthulhu", "special_yog_sothoth")
 
 
 def _skill_or_none(r: Reader, key: str) -> str | None:
@@ -98,6 +99,7 @@ class LocationFilter:
     clue: bool | None = None
     monsters: bool | None = None
     expedition: bool | None = None
+    eldritch: bool | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> LocationFilter:
@@ -109,6 +111,7 @@ class LocationFilter:
             clue=r.get_bool("clue", None),
             monsters=r.get_bool("monsters", None),
             expedition=r.get_bool("expedition", None),
+            eldritch=r.get_bool("eldritch", None),
         )
         r.done()
         return f
@@ -124,6 +127,7 @@ class LocationFilter:
             self.clue is None or state.clue == self.clue,
             self.monsters is None or bool(state.monsters) == self.monsters,
             self.expedition is None or (game.active_expedition == loc_id) == self.expedition,
+            self.eldritch is None or (state.eldritch > 0) == self.eldritch,
         )
         return all(checks)
 
@@ -590,6 +594,14 @@ class MysteryDef:
     monster: str | None
     spawn_at: str | None
     on_enter: tuple[Effect, ...]
+    on_solve: tuple[Effect, ...] = ()
+    deck: str | None = None
+    omen_match: bool = False
+    spell_cost: int = 0
+    remove_gate: bool = False
+    token: bool = False
+    needs_solved: bool = False
+    spawn_when_solved: bool = False
 
     def required(self, investigators: int) -> int:
         if self.half_players:
@@ -615,6 +627,7 @@ class AwakeningDef:
     lose_immediately: bool
     final_mystery: MysteryDef | None
     cultist: MonsterDef | None = None
+    on_eldritch_move: tuple[Effect, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -637,6 +650,7 @@ class OldOneDef:
     awakening: AwakeningDef
     cultist: MonsterDef
     set_aside: tuple[str, ...]
+    on_eldritch_move: tuple[Effect, ...] = ()
 
 
 @dataclass(frozen=True)

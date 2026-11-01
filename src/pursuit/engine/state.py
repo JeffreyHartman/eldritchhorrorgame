@@ -63,6 +63,7 @@ class ActiveMythos:
 class LocationState:
     id: str
     clue: bool = False
+    eldritch: int = 0
     gate: bool = False
     other_world: str | None = None
     monsters: list[MonsterInst] = field(default_factory=list)
@@ -209,7 +210,9 @@ class Game:
     outcome_reason: str = ""
     log: list[str] = field(default_factory=list)
     stats: dict[str, int] = field(default_factory=dict)
-    # Not saved. `ctl` receives every decision and event. `roll` makes dice scriptable in tests.
+    # Not saved. `spell_lore_passed` lasts for one Spell action. `ctl` receives every decision
+    # and event. `roll` makes dice scriptable in tests.
+    spell_lore_passed: bool = field(default=False, repr=False, compare=False)
     ctl: Controller = field(default_factory=NullController, repr=False, compare=False)
     roll: Callable[[], int] | None = field(default=None, repr=False, compare=False)
 

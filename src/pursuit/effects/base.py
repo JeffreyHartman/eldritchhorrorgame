@@ -28,6 +28,7 @@ class Ctx:
     asset: AssetCard | None = None
     mythos: ActiveMythos | None = None
     monster: MonsterInst | None = None
+    gate: str | None = None
     test_successes: int | None = None
 
     def stopped(self) -> bool:

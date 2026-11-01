@@ -177,6 +177,9 @@ def location_panel(game: Game, loc_id: str) -> Panel:
         g_color = (ldef.gate_color or "red").upper()
         flags.append(f" {g_color} GATE ", style="bold white on red")
         flags.append(" ")
+    if state.eldritch:
+        flags.append(f" ELDRITCH x{state.eldritch} ", style="bold white on purple")
+        flags.append(" ")
     if state.clue:
         flags.append(" CLUE ", style="bold black on cyan")
         flags.append(" ")

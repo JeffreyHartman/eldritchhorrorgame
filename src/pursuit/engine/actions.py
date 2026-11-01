@@ -211,7 +211,7 @@ def _travel(game: Game, inv: Investigator) -> bool:
     kind = dict(near)[dest]
     rules.move_investigator(game, inv, dest, kind)
 
-    while inv.tickets:
+    while inv.tickets and not inv.defeated:
         onward = [
             (d, k)
             for d, k in rules.neighbors(game, inv.location)
@@ -418,10 +418,24 @@ def _use_asset(game: Game, inv: Investigator, card: AssetCard) -> bool:
     assert adef.action is not None
     rules.emit(game, "info", f"{inv.name} uses {adef.name}.")
     card.exhausted = True
+    game.spell_lore_passed = False
     _run_ability(game, inv, adef.action, f"asset:{adef.id}", asset=card)
     if adef.action.discard and card in inv.assets:
         rules.discard_asset(game, inv, card)
+    if game.spell_lore_passed and adef.kind == "spell" and card in inv.assets:
+        _offer_spell_mystery(game, inv, card)
     return True
+
+
+def _offer_spell_mystery(game: Game, inv: Investigator, card: AssetCard) -> None:
+    for mys in game.active_mysteries():
+        mdef = game.mystery_def(mys)
+        if mdef.kind == "spell" and not mys.ready and inv.clues >= mdef.clue_cost:
+            prompt = f"Spend {mdef.clue_cost} Clue and discard {game.asset_def(card).name} to advance '{mdef.name}'?"
+            if rules.confirm(game, prompt, kind="mystery_spend", inv=inv):
+                rules.change_clues(game, inv, -mdef.clue_cost)
+                rules.discard_asset(game, inv, card)
+                rules.add_mystery_progress(game, mys, mdef.amount)
 
 
 def _use_condition(game: Game, actor: Investigator, owner: Investigator, inst: ConditionInst) -> bool:

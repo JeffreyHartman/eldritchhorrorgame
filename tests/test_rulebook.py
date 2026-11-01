@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from conftest import MakeGame, Script, first, set_dice
+from pursuit.effects import library
+from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine import actions, combat, dice, phases, rules
-from pursuit.engine.state import Game, Investigator, MonsterInst, Phase
+from pursuit.engine.state import Game, Investigator, MonsterInst, MysteryState, Phase
 
 
 def test_acquire_assets_offers_clue_rerolls_after_the_first_success(make_game: MakeGame, script: Script) -> None:
@@ -273,3 +275,188 @@ def test_set_aside_monsters_are_not_in_the_cup(make_game: MakeGame) -> None:
     game = make_game(old_one="shub_niggurath", clean=False)
     assert sorted(game.set_aside) == ["dark_young", "ghoul", "ghoul", "goat_spawn", "goat_spawn"]
     assert not {"dark_young", "ghoul", "goat_spawn"} & set(game.monster_cup)
+
+
+def set_mystery(game: Game, def_id: str) -> MysteryState:
+    mdef = next(m for m in game.old_one.mysteries if m.id == def_id)
+    game.active_mystery = MysteryState(def_id, mdef.required(len(game.investigators)))
+    run_effects(mdef.on_enter, Ctx(game, None, "test"))
+    return game.active_mystery
+
+
+def test_omen_of_devastation_needs_a_gate_that_matches_the_omen(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    mys = set_mystery(game, "az_omen_of_devastation")
+    inv = first(game)
+    inv.clues = 2
+    game.omen_index = 0
+    game.locations["arkham"].gate = True
+    rules.close_gate(game, inv, "arkham")
+    assert mys.progress == 0
+    game.locations["san_francisco"].gate = True
+    script.add("mystery_spend", True)
+    rules.close_gate(game, inv, "san_francisco")
+    assert mys.progress == 1 and inv.clues == 1
+
+
+def test_where_the_old_ones_broke_through_removes_the_gate_from_the_game(make_game: MakeGame, script: Script) -> None:
+    game = make_game(old_one="yog_sothoth")
+    mys = set_mystery(game, "ys_where_the_old_ones_broke_through")
+    inv = first(game)
+    inv.assets += [rules.new_card(game, "blessing_of_isis"), rules.new_card(game, "blessing_of_isis")]
+    game.locations["arkham"].gate = True
+    game.gate_deck.discards.clear()
+    script.add("mystery_spend", True)
+    rules.close_gate(game, inv, "arkham")
+    assert mys.progress == 1 and not game.gate_deck.discards
+    assert not [c for c in inv.assets if c.def_id == "blessing_of_isis"]
+
+
+def test_research_mystery_takes_a_clue_gained_from_the_encounter(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    mys = set_mystery(game, "az_occult_research")
+    inv = first(game)
+    game.locations[inv.location].clue = True
+    game.roll = lambda: 6
+    script.add("encounter", "Research").add("mystery_spend", True)
+    phases.encounter_turn(game, inv)
+    assert mys.progress == 1
+
+
+def test_the_true_name_places_tokens_and_spends_them(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    mys = set_mystery(game, "az_the_true_name")
+    inv = first(game)
+    spaces = [loc for loc, st in game.locations.items() if st.eldritch]
+    assert sum(game.locations[loc].eldritch for loc in spaces) == 1
+    inv.location = spaces[0]
+    inv.clues = 2
+    script.add("encounter", "Mystery").add("mystery_spend", True)
+    phases.encounter_turn(game, inv)
+    assert mys.progress == 1 and game.locations[spaces[0]].eldritch == 0 and inv.clues == 0
+
+
+def test_hunting_the_thousand_counts_toughness_and_keeps_the_monster(make_game: MakeGame, script: Script) -> None:
+    game = make_game(old_one="shub_niggurath")
+    mys = set_mystery(game, "sn_hunting_the_thousand")
+    inv = first(game)
+    inv.clues = 2
+    lloigor = rules.spawn_monster(game, "arkham", "lloigor")
+    assert lloigor is not None
+    script.add("mystery_spend", True)
+    rules.defeat_monster(game, inv, "arkham", lloigor)
+    assert mys.progress == 4 and "lloigor" not in game.monster_cup
+
+
+def test_deep_ones_attack_needs_the_ambush_won(make_game: MakeGame, script: Script) -> None:
+    game = make_game(old_one="cthulhu")
+    mys = set_mystery(game, "cth_the_deep_ones_attack")
+    inv = first(game)
+    loc = next(loc for loc, st in game.locations.items() if st.eldritch)
+    inv.location = loc
+    inv.clues = 1
+    game.roll = lambda: 6
+    script.add("encounter", "Mystery").add("mystery_spend", True)
+    phases.encounter_turn(game, inv)
+    assert mys.progress == 1 and game.locations[loc].eldritch == 0
+
+
+def test_rlyeh_risen_uses_special_encounters(make_game: MakeGame, script: Script) -> None:
+    game = make_game(old_one="cthulhu")
+    mys = set_mystery(game, "cth_ryleh_risen")
+    inv = first(game)
+    inv.location = "space_3"
+    game.roll = lambda: 6
+    script.add("encounter", "Mystery")
+    phases.encounter_turn(game, inv)
+    assert mys.progress == 1
+
+
+def test_moving_onto_an_eldritch_token_delays_under_cthulhu(make_game: MakeGame) -> None:
+    game = make_game(old_one="cthulhu")
+    inv = first(game)
+    game.locations["space_2"].eldritch = 1
+    sanity = inv.sanity
+    rules.move_investigator(game, inv, "space_2")
+    assert inv.delayed and inv.sanity == sanity - 1
+
+
+def test_cthulhu_reckoning_places_a_token_on_an_empty_sea_space(make_game: MakeGame) -> None:
+    game = make_game(old_one="cthulhu")
+    first(game).location = "space_2"
+    rules.resolve_reckoning(game)
+    assert game.locations["space_2"].eldritch == 1
+
+
+def test_shub_niggurath_reckoning_spawns_and_advances_doom_at_ten_monsters(make_game: MakeGame) -> None:
+    game = make_game(old_one="shub_niggurath")
+    game.monster_cup = ["nightgaunt"] * 12
+    for _ in range(9):
+        rules.spawn_monster(game, "arkham")
+    doom = game.doom
+    rules.resolve_reckoning(game)
+    assert game.doom == doom - 2
+
+
+def test_shub_niggurath_awakening_gathers_her_young_and_loses_at_six(make_game: MakeGame) -> None:
+    game = make_game(old_one="shub_niggurath")
+    game.set_aside.append("ghoul")
+    ghoul = rules.spawn_monster(game, "london", "ghoul")
+    assert ghoul is not None
+    game.monster_cup = ["nightgaunt"] * 8
+    rules.advance_doom(game, game.doom)
+    heart = game.locations["the_heart_of_africa"].monsters
+    assert {m.def_id for m in heart} == {"shub_niggurath_epic", "ghoul"}
+    for _ in range(4):
+        rules.advance_doom(game, 1)
+    assert len(heart) == 6 and game.outcome == "loss"
+
+
+def test_yog_sothoth_awakened_doom_places_gates_on_the_sheet(make_game: MakeGame) -> None:
+    game = make_game(old_one="yog_sothoth")
+    rules.advance_doom(game, game.doom)
+    game.locations["arkham"].gate = True
+    game.omen_index = 1
+    rules.advance_omen(game, 1)
+    assert game.omen_color == "red" and game.sheet_tokens == 1 and not game.locations["arkham"].gate
+    rules.advance_doom(game, 2)
+    assert game.sheet_tokens == 3 and game.outcome == "loss"
+
+
+def test_yog_sothoth_final_mystery_needs_three_solved_mysteries(make_game: MakeGame) -> None:
+    game = make_game(old_one="yog_sothoth")
+    rules.advance_doom(game, game.doom)
+    inv = first(game)
+    game.locations[inv.location].gate = True
+    assert game.final_mystery is not None
+    assert not phases._mystery_encounter_open(game, inv, game.final_mystery)
+    game.solved_mysteries = ["a", "b", "c"]
+    assert phases._mystery_encounter_open(game, inv, game.final_mystery)
+
+
+def test_cthulhu_awakened_reckoning_scales_with_sheet_sanity(make_game: MakeGame) -> None:
+    game = make_game(old_one="cthulhu")
+    rules.advance_doom(game, game.doom)
+    rules.advance_doom(game, 2)
+    inv = first(game)
+    sanity = inv.sanity
+    rules.resolve_reckoning(game)
+    assert game.sheet_tokens == 2 and inv.sanity == sanity - 2
+
+
+def test_key_and_gate_clue_bonus_adds_successes(make_game: MakeGame, script: Script) -> None:
+    game = make_game(old_one="yog_sothoth")
+    rules.advance_doom(game, game.doom)
+    mys = game.final_mystery
+    assert mys is not None
+    game.solved_mysteries = ["a", "b", "c"]
+    game.active_mystery = None
+    inv = first(game)
+    inv.clues = 3
+    game.roll = lambda: 1
+    effect = library.Test("influence", 0, 3, "encounter", (library.MysteryProgress(1),), (), (), True, False, None)
+    script.add("reroll", False)
+    for _ in range(3):
+        script.add("spend_for_test", True)
+    effect.apply(Ctx(game, inv, "test"))
+    assert mys.progress == 1 and inv.clues == 0

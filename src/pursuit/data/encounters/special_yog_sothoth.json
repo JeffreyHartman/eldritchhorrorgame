@@ -1,0 +1,364 @@
+[
+  {
+    "id": "special_key_1",
+    "title": "A mass of glowing spheres, mouths, and...",
+    "text": "A mass of glowing spheres, mouths, and tentacles burst forth from the portal. You feel a terrible intelligence searching your mind for signs of corruption. If you have a Dark Pact Condition, you are devoured. The Lurker then fills your thoughts with forbidden knowledge (Will-1).",
+    "effects": [
+      {
+        "type": "if",
+        "has": {
+          "condition": "dark_pact"
+        },
+        "then": [
+          {
+            "type": "text",
+            "text": "The Lurker finds your Dark Pact."
+          },
+          {
+            "type": "devour"
+          }
+        ]
+      },
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": -1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You exercise extreme mental discipline to regain control of your mind. By examining the images the Lurker has chosen to reveal, you believe that you can bind it between dimensions (Lore). If you pass, you may discard 1 Spell to place 1 Eldritch token on the Ancient One sheet. If you fail or do not discard the Spell, lose 3 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "pass": [
+              {
+                "type": "if",
+                "has": {
+                  "asset_kind": "spell"
+                },
+                "then": [
+                  {
+                    "type": "choice",
+                    "prompt": "Discard 1 Spell to place 1 Eldritch token on the Ancient One sheet?",
+                    "options": [
+                      {
+                        "label": "Discard 1 Spell",
+                        "effects": [
+                          {
+                            "type": "lose_asset",
+                            "kind": "spell"
+                          },
+                          {
+                            "type": "mystery_progress",
+                            "amount": 1
+                          }
+                        ]
+                      },
+                      {
+                        "label": "Lose 3 Sanity",
+                        "effects": [
+                          {
+                            "type": "sanity",
+                            "amount": -3
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "else": [
+                  {
+                    "type": "sanity",
+                    "amount": -3
+                  }
+                ]
+              }
+            ],
+            "fail": [
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "In one horrifying flash, your mind is flooded with knowledge of all places and all times as your molecules are torn apart. You are devoured."
+          },
+          {
+            "type": "devour"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "special_key_2",
+    "title": "Yog-Sothoth's avatar 'Umr-At-Tawil, stands...",
+    "text": "Yog-Sothoth's avatar 'Umr-At-Tawil, stands before the Ultimate Gate. He is a tall figure, wrapped in gray fabric, and you can hear his thoughts thundering in your head. He warns you to proceed no further if you are afraid (Will-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": -1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "'Umr-At-Tawil guides you through the gates to encounter Yog-Sothoth (Influence). You may spend any number of Clues to add 1 success to your test result for each Clue spent. If your test result is 3 or greater, you are allowed to return home; place 1 Eldritch token on the Ancient One sheet. Otherwise, Yog-Sothoth threatens to trap you on the doomed planet Yaddith; lose 3 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "pass": [
+              {
+                "type": "mystery_progress",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ],
+            "needed": 3,
+            "clue_bonus": true
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "'Umr-At-Tawil holds a large metallic sphere that radiates powerful pulses of energy. The rhythmic waves shake you to your core, tearing your body to pieces. You are devoured."
+          },
+          {
+            "type": "devour"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "special_key_3",
+    "title": "Carl Sanford stands high atop a mountain in a...",
+    "text": "Carl Sanford stands high atop a mountain in a swirling dimension of his own creation. He claims that the Silver Twilight Lodge has harnessed the power of Yog-Sothoth to transform him into a god. However, you suspect much of what you see is an illusion (Observation-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Hoping to catch Sanford off guard, you lunge at him (Strength). You may spend any number of Sanity to roll 1 additional die for each Sanity spent. If your test result is 3 or greater, you overpower him; place 1 Eldritch token on the Ancient One sheet. Otherwise, he manages to chant an incantation; gain a Cursed Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "pass": [
+              {
+                "type": "mystery_progress",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ],
+            "needed": 3,
+            "sanity_dice": true
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You attempt to speak to Sanford, either to reason with him or to threaten him, but all that comes out of your mouth is a ritual chant, binding you to the Silver Twilight Lodge. You are devoured."
+          },
+          {
+            "type": "devour"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "special_key_4",
+    "title": "You can sense Yog-Sothoth in your thoughts,...",
+    "text": "You can sense Yog-Sothoth in your thoughts, trying to consume your identity by filling your memories with ultimate knowledge. You struggle against the swirling energy that drags you forward, into the gate (Strength-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": -1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Rather than being consumed by knowledge, you repeat a chant that can allegedly purge a mind of all memories (Lore). If you pass, you may gain an Amnesia Condition to place 1 Eldritch token on the Ancient One sheet. If you fail or do not gain the Condition, lose 3 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "pass": [
+              {
+                "type": "choice",
+                "prompt": "Gain an Amnesia Condition to place 1 Eldritch token on the Ancient One sheet?",
+                "options": [
+                  {
+                    "label": "Gain Amnesia",
+                    "effects": [
+                      {
+                        "type": "gain_condition",
+                        "id": "amnesia"
+                      },
+                      {
+                        "type": "mystery_progress",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Lose 3 Sanity",
+                    "effects": [
+                      {
+                        "type": "sanity",
+                        "amount": -3
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "fail": [
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You know the gate. You are the gate. You are the key and guardian of the gate. Past, present, future, all are one in you. You are devoured."
+          },
+          {
+            "type": "devour"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "special_key_5",
+    "title": "Despite the reports of the mad albino woman's...",
+    "text": "Despite the reports of the mad albino woman's death, she stands at this gate to wait for her child, the so-called Dunwich Horror, to call its father's name. As soon as she sees you, she casts a hex, and you attempt to produce a protective ward (Lore-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Your protective ward surprises her. You tell her that she's the last of the Whateley clan, hoping to intimidate her (Influence). Roll 1 less die for each Cultist Monster on the game board (minimum 1 die). If you pass, place 1 Eldritch token on the Ancient One sheet. If you fail, she recognizes your deceit; advance Doom by 1."
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "pass": [
+              {
+                "type": "mystery_progress",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ],
+            "minus_per": "cultist"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You know of no way to shield yourself from her powerful sorcery. Gain a Cursed Condition, a Madness Condition, and an Injury Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "cursed"
+          },
+          {
+            "type": "gain_condition",
+            "id": "paranoia"
+          },
+          {
+            "type": "gain_condition",
+            "id": "back_injury"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "special_key_6",
+    "title": "You see a circle of stones, each covered with...",
+    "text": "You see a circle of stones, each covered with magic runes. You sense that this is some sort of test of your knowledge (Lore-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You touch each rune in order, identifying yourself as a wizard. To your horror, you feel Yog-Sothoth taking over your mind, claiming you as its own (Will). Roll 1 less die for each Spell you have (minimum 1 die). If you pass, place 1 Eldritch token on the Ancient One sheet. If you fail, lose 3 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "pass": [
+              {
+                "type": "mystery_progress",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "sanity",
+                "amount": -3
+              }
+            ],
+            "minus_per": "spell"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Yog-Sothoth does not recognize you as a sorcerer and ejects you from the gate; gain 2 Spells and a Dark Pact Condition."
+          },
+          {
+            "type": "gain_asset",
+            "kind": "spell",
+            "count": 2
+          },
+          {
+            "type": "gain_condition",
+            "id": "dark_pact"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -23,6 +23,7 @@ from pursuit.controller import Option
 from pursuit.effects.base import Ctx, Effect, read_effects, register, run_effects, walk
 from pursuit.engine import actions, combat, rules
 from pursuit.engine.dice import run_test
+from pursuit.engine.state import Investigator
 
 
 def _nonzero(r: Reader, key: str) -> int:
@@ -68,6 +69,9 @@ class Test(Effect):
     passed: tuple[Effect, ...]
     failed: tuple[Effect, ...]
     after: tuple[Effect, ...]
+    clue_bonus: bool
+    sanity_dice: bool
+    minus_per: str | None
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
@@ -79,24 +83,60 @@ class Test(Effect):
             passed=read_effects(r, "pass"),
             failed=read_effects(r, "fail"),
             after=read_effects(r, "after"),
+            clue_bonus=r.get_bool("clue_bonus", False),
+            sanity_dice=r.get_bool("sanity_dice", False),
+            minus_per=r.get_enum("minus_per", ("spell", "cultist"), None),
         )
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
         counts_successes = any(e.kind == "flip_self" for lst in self.children() for e in walk(lst))
+        mod = self.mod - self._penalty(ctx, inv) + self._buy_dice(ctx, inv)
         result = run_test(
             ctx.game,
             inv,
             self.skill,
-            self.mod,
+            mod,
             contexts=(self.context,),
             needed=self.needed,
             open_ended=counts_successes,
         )
-        sub_ctx = replace(ctx, test_successes=result.successes)
-        run_effects(self.passed if result.passed else self.failed, sub_ctx)
+        successes = result.successes + self._spend_clues(ctx, inv, result.successes)
+        if ctx.asset is not None and self.skill == "lore" and successes >= self.needed:
+            ctx.game.spell_lore_passed = True
+        sub_ctx = replace(ctx, test_successes=successes)
+        run_effects(self.passed if successes >= self.needed else self.failed, sub_ctx)
         if self.after:
             run_effects(self.after, sub_ctx)
+
+    def _penalty(self, ctx: Ctx, inv: Investigator) -> int:
+        game = ctx.game
+        if self.minus_per == "spell":
+            return sum(game.asset_def(c).kind == "spell" for c in inv.assets)
+        if self.minus_per == "cultist":
+            return sum(m.def_id == "cultist" for _loc, m in game.all_monsters())
+        return 0
+
+    def _buy_dice(self, ctx: Ctx, inv: Investigator) -> int:
+        bought = 0
+        while self.sanity_dice and inv.sanity - bought > 1:
+            prompt = "Spend 1 Sanity to roll 1 additional die?"
+            if not rules.confirm(ctx.game, prompt, kind="spend_for_test", inv=inv):
+                break
+            bought += 1
+        if bought:
+            rules.change_sanity(ctx.game, inv, -bought)
+        return bought
+
+    def _spend_clues(self, ctx: Ctx, inv: Investigator, successes: int) -> int:
+        added = 0
+        while self.clue_bonus and inv.clues > 0 and successes + added < self.needed:
+            prompt = f"{successes + added}/{self.needed} successes. Spend 1 Clue to add 1 success?"
+            if not rules.confirm(ctx.game, prompt, kind="spend_for_test", inv=inv):
+                break
+            rules.change_clues(ctx.game, inv, -1)
+            added += 1
+        return added
 
     def children(self) -> Iterable[Sequence[Effect]]:
         return (self.passed, self.failed, self.after)
@@ -1761,3 +1801,257 @@ class RollUnderInvestigators(Effect):
 
     def needs_investigator(self) -> bool:
         return False
+
+
+# --- board Eldritch tokens, sheet tokens, and Ancient One sheets ----------------------
+
+
+PLACE_AT = ("here", "random", "nearest_free_sea")
+
+
+@register("place_eldritch")
+@dataclass(frozen=True)
+class PlaceEldritch(Effect):
+    at: str | None
+    ids: tuple[str, ...]
+    half_investigators: bool
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_enum("at", PLACE_AT, None), r.get_str_tuple("ids"), r.get_bool("half_investigators", False))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        count = (len(game.investigators) + 1) // 2 if self.half_investigators else 1
+        places: list[str] = list(self.ids)
+        for _ in range(count if self.at else 0):
+            if self.at == "random":
+                places.append(rules.random_space(game))
+            elif self.at == "here":
+                places.append(ctx.need_inv(self.kind).location)
+            else:
+                dist = rules.distances(game, ctx.need_inv(self.kind).location)
+                seas = [
+                    loc.id
+                    for loc in game.content.locations.values()
+                    if loc.terrain == "sea" and not game.locations[loc.id].eldritch
+                ]
+                if seas:
+                    places.append(min(seas, key=lambda loc: (dist.get(loc, 999), loc)))
+        for loc_id in places:
+            game.locations[loc_id].eldritch += 1
+            rules.emit(game, "info", f"An Eldritch token is placed on {rules.loc_name(game, loc_id)}.")
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("location", i) for i in self.ids]
+
+    def needs_investigator(self) -> bool:
+        return self.at in ("here", "nearest_free_sea")
+
+
+@register("clear_eldritch")
+@dataclass(frozen=True)
+class ClearEldritch(Effect):
+    ids: tuple[str, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str_tuple("ids"))
+
+    def apply(self, ctx: Ctx) -> None:
+        for loc_id in self.ids:
+            ctx.game.locations[loc_id].eldritch = 0
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("location", i) for i in self.ids]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("move_clues")
+@dataclass(frozen=True)
+class MoveClues(Effect):
+    """Move each Clue to the nearest `terrain` space. A space holds 1 Clue token here, so
+    each Clue goes to the nearest such space that has no Clue yet."""
+
+    terrain: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_enum("terrain", TERRAINS))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        terrain_ids = [loc.id for loc in game.content.locations.values() if loc.terrain == self.terrain]
+        clues = [loc for loc in sorted(game.locations) if game.locations[loc].clue and loc not in terrain_ids]
+        for loc_id in clues:
+            dist = rules.distances(game, loc_id)
+            free = [t for t in terrain_ids if not game.locations[t].clue]
+            if free:
+                game.locations[loc_id].clue = False
+                game.locations[min(free, key=lambda t: (dist.get(t, 999), t))].clue = True
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("sheet_gate")
+@dataclass(frozen=True)
+class SheetGate(Effect):
+    """Yog-Sothoth: put a Gate on the sheet, from the space of `ctx.gate`, the investigator's
+    space with `here`, or else the Gate stack."""
+
+    here: bool
+    lose_at: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_bool("here", False), r.get_int("lose_at", 3))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        loc_id = ctx.need_inv(self.kind).location if self.here else ctx.gate
+        if loc_id is not None:
+            rules.discard_gate(game, loc_id, to_stack=False)
+        elif game.gate_deck.draw(game.rng) is None:
+            return
+        game.sheet_tokens += 1
+        rules.emit(game, "info", f"Gates on {game.old_one.name}: {game.sheet_tokens}.")
+        if game.sheet_tokens >= self.lose_at:
+            rules.lose(game, f"There are {game.sheet_tokens} Gates on {game.old_one.name}! The world is lost.")
+
+    def needs_investigator(self) -> bool:
+        return self.here
+
+
+@register("monsters_on_board_at_least")
+@dataclass(frozen=True)
+class MonstersOnBoardAtLeast(Effect):
+    count: int
+    then: tuple[Effect, ...]
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(_positive(r, "count"), read_effects(r, "then"))
+
+    def apply(self, ctx: Ctx) -> None:
+        if sum(1 for _ in ctx.game.all_monsters()) >= self.count:
+            run_effects(self.then, ctx)
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.then,)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+def _monster_space(ctx: Ctx, monster_id: str) -> str | None:
+    return next((loc for loc, m in ctx.game.all_monsters() if m.def_id == monster_id), None)
+
+
+@register("spawn_at_monster")
+@dataclass(frozen=True)
+class SpawnAtMonster(Effect):
+    monster: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("id"))
+
+    def apply(self, ctx: Ctx) -> None:
+        loc_id = _monster_space(ctx, self.monster)
+        if loc_id is not None:
+            rules.spawn_monster(ctx.game, loc_id)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", self.monster)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("lose_if_crowded")
+@dataclass(frozen=True)
+class LoseIfCrowded(Effect):
+    monster: str
+    count: int
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("id"), _positive(r, "count"))
+
+    def apply(self, ctx: Ctx) -> None:
+        loc_id = _monster_space(ctx, self.monster)
+        if loc_id is not None and len(ctx.game.locations[loc_id].monsters) >= self.count:
+            name = rules.loc_name(ctx.game, loc_id)
+            rules.lose(ctx.game, f"{self.count} Monsters gather at {name}. The world is lost.")
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", self.monster)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("gather_monsters")
+@dataclass(frozen=True)
+class GatherMonsters(Effect):
+    ids: tuple[str, ...]
+    monster: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str_tuple("ids"), r.get_str("to_monster"))
+
+    def apply(self, ctx: Ctx) -> None:
+        dest = _monster_space(ctx, self.monster)
+        if dest is None:
+            return
+        for _loc, monster in list(ctx.game.all_monsters()):
+            if monster.def_id in self.ids:
+                rules.move_monster(ctx.game, monster, dest)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", i) for i in (*self.ids, self.monster)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("encounter_monster")
+@dataclass(frozen=True)
+class EncounterMonster(Effect):
+    monster: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_str("id"))
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        loc_id = _monster_space(ctx, self.monster)
+        if loc_id is None:
+            return
+        for inv in game.investigators_at(loc_id):
+            target = next((m for m in game.locations[loc_id].monsters if m.def_id == self.monster), None)
+            if target is None or game.outcome:
+                return
+            combat.combat(game, inv, target)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", self.monster)]
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("sanity_per_sheet_token")
+@dataclass(frozen=True)
+class SanityPerSheetToken(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.change_sanity(ctx.game, ctx.need_inv(self.kind), -ctx.game.sheet_tokens)
