@@ -700,6 +700,13 @@ class EncounterDef:
     location: str | None = None
     sections: tuple[EncounterSection, ...] = ()
 
+    @property
+    def deck_name(self) -> str:
+        """The player-facing deck name, such as "Asia/Australia Encounter" or "Research Encounter"."""
+        group = self.deck.partition("_")[0] if self.deck.startswith(("research_", "special_")) else self.deck
+        label = "Other World" if group == "other_world" else group.replace("_", "/").title()
+        return f"{label} Encounter"
+
 
 @dataclass(frozen=True)
 class MythosDef:

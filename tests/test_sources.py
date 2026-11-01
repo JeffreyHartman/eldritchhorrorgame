@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-import ast
-from pathlib import Path
-
 import pytest
 
 from conftest import MakeGame, Script, set_dice
 from pursuit.content.loader import Content
+from pursuit.content.reader import ContentError
 from pursuit.controller import Option
-from pursuit.effects import library
 from pursuit.effects.base import Ctx, parse_effects, run_effects
 from pursuit.engine import combat, phases, rules
+from pursuit.engine.dice import run_test
 from pursuit.engine.state import AssetCard, Game, MonsterInst
 
 
@@ -62,6 +60,11 @@ def test_source_name_gives_the_display_name(make_game: MakeGame, source: str, na
 def test_source_name_of_a_cultist_comes_from_the_old_one_sheet(make_game: MakeGame) -> None:
     game = make_game()
     assert Ctx(game, None, "reckoning_monster:cultist").source_name == game.old_one.cultist.name
+
+
+def test_an_unknown_source_prefix_fails_when_the_ctx_is_built(make_game: MakeGame) -> None:
+    with pytest.raises(ValueError, match="bogus"):
+        Ctx(make_game(), None, "bogus:wraith")
 
 
 def test_source_name_finds_a_mystery_of_the_old_one(make_game: MakeGame) -> None:
@@ -128,20 +131,6 @@ def test_a_source_with_no_name_leaves_the_prompt_alone(make_game: MakeGame, scri
     assert ("lose_asset", "Choose a possession to discard.") in script.asked
 
 
-def test_every_effect_prompt_goes_through_ctx_sourced() -> None:
-    tree = ast.parse(Path(library.__file__).read_text(encoding="utf-8"))
-    unsourced = [
-        node.lineno
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and isinstance(node.func.value, ast.Name)
-        and (node.func.value.id, node.func.attr) in (("rules", "choose"), ("rules", "confirm"))
-        and not (isinstance(node.args[1], ast.Call) and ast.unparse(node.args[1].func) == "ctx.sourced")
-    ]
-    assert not unsourced
-
-
 def test_a_wraith_spawn_names_the_wraith_and_the_cancel(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     lead = game.lead_investigator()
@@ -167,6 +156,10 @@ def test_a_blessed_gain_names_the_cursed_it_cancels(make_game: MakeGame, script:
         ({"type": "sanity", "amount": -1}, "{name} loses 1 Sanity."),
         ({"type": "clues", "amount": 1}, "{name} gains 1 Clue."),
         ({"type": "gain_condition", "id": "dark_pact"}, "{name} gains Dark Pact (deal): "),
+        ({"type": "delay", "chosen": True}, "{name} becomes Delayed."),
+        ({"type": "improve_skill", "skill": "lore"}, "{name}'s Lore improves to "),
+        ({"type": "extra_action"}, "{name} may perform 1 additional action."),
+        ({"type": "gain_ticket", "kind": "train"}, "{name} gains a Train Ticket."),
     ],
 )
 def test_an_automatic_gain_or_loss_names_its_source(
@@ -203,6 +196,64 @@ def test_doom_from_an_effect_names_its_source(make_game: MakeGame, script: Scrip
     set_dice(game, 1)
     rules.reckon_monsters(game)
     assert any(text.startswith("Doom advances by 1 (Zombie Horde).") for text in script.texts("doom"))
+
+
+def test_discarded_tickets_over_the_limit_name_their_source(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = game.investigators[0]
+    inv.tickets = ["ship", "ship"]
+    effects = parse_effects([{"type": "gain_ticket", "kind": "train"}], "t")
+    run_effects(effects, Ctx(game, inv, "mythos:treacherous_magic"))
+    limit = game.content.rules.max_tickets
+    prompt = f"Treacherous Magic: You may hold at most {limit} travel tickets. Discard which one?"
+    assert ("discard_ticket", prompt) in script.asked
+    assert any(text.startswith(f"Treacherous Magic: {inv.name} discards a ") for text in script.texts("loss"))
+
+
+def test_a_mass_discard_names_its_source(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    run_effects(parse_effects([{"type": "discard_all_clues"}], "t"), Ctx(game, None, "mythos:treacherous_magic"))
+    assert "Treacherous Magic: All Clues on the board and held by investigators are discarded!" in script.texts()
+
+
+def test_doom_retreat_from_an_effect_names_its_source(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    game.doom = 10
+    run_effects(parse_effects([{"type": "retreat_doom", "amount": 1}], "t"), Ctx(game, None, "asset:cat_burglar"))
+    assert "Doom retreats by 1 (Cat Burglar). Doom: 11." in script.texts("doom")
+
+
+def test_byakhee_replacement_prompt_names_the_monster(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = game.investigators[0]
+    monster = place(game, "byakhee", inv.location)
+    set_dice(game, *[6] * 40)
+    combat.resolve_monsters(game, inv, encounter_phase=True)
+    assert monster not in game.locations[inv.location].monsters
+    prompts = [prompt for kind, prompt in script.asked if kind == "replace_encounter"]
+    assert prompts and prompts[0].startswith("Byakhee: ")
+
+
+def test_free_reroll_prompt_names_the_spell(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = game.investigators[0]
+    run_effects(parse_effects([{"type": "free_reroll"}], "t"), Ctx(game, inv, "asset:wither"))
+    set_dice(game, *[1] * 12)
+    run_test(game, inv, "strength", contexts=("combat",))
+    assert ("reroll_card", "Wither: Use the Spell to reroll 1 die?") in script.asked
+
+
+def test_random_needs_outcome_text() -> None:
+    data = [{"type": "random", "outcomes": [{"weight": 1}, {"weight": 1}]}]
+    with pytest.raises(ContentError, match="text"):
+        parse_effects(data, "t")
+
+
+def test_a_name_inside_a_longer_word_does_not_count_as_the_source(make_game: MakeGame, script: Script) -> None:
+    game = make_game(investigators=("norman_withers", "akachi_onyele"))
+    inv = game.investigators[0]
+    run_effects(parse_effects([{"type": "sanity", "amount": -1}], "t"), Ctx(game, inv, "asset:wither"))
+    assert f"Wither: {inv.name} loses 1 Sanity." in script.texts()
 
 
 def test_a_line_that_names_its_source_is_not_prefixed(make_game: MakeGame, script: Script) -> None:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -13,8 +14,8 @@ if TYPE_CHECKING:
 
 
 def sourced(name: str, text: str) -> str:
-    """Prefix `text` with a source's display name, unless the name is empty or already in the text."""
-    return f"{name}: {text}" if name and name not in text else text
+    """Prefix `text` with a source's display name, unless the name is empty or a whole phrase in the text."""
+    return f"{name}: {text}" if name and not re.search(rf"\b{re.escape(name)}\b", text) else text
 
 
 def _investigator_name(game: Game, def_id: str) -> str:
@@ -47,11 +48,7 @@ def _mystery_name(game: Game, def_id: str) -> str:
 
 
 def _encounter_name(game: Game, def_id: str) -> str:
-    """Encounter titles are cut-off card text, so a source names the deck."""
-    deck = game.content.encounters[def_id].deck
-    group = deck.partition("_")[0] if deck.startswith(("research_", "special_")) else deck
-    label = "Other World" if group == "other_world" else group.replace("_", "/").title()
-    return f"{label} Encounter"
+    return game.content.encounters[def_id].deck_name
 
 
 _SOURCE_NAMES: dict[str, Callable[[Game, str], str]] = {
@@ -80,6 +77,12 @@ _SOURCE_NAMES: dict[str, Callable[[Game, str], str]] = {
 }
 
 
+def source_name(game: Game, source: str) -> str:
+    """The player-facing name of a `prefix:id` source. A source with no `prefix:id` shape has no name."""
+    prefix, _, def_id = source.partition(":")
+    return _SOURCE_NAMES[prefix](game, def_id) if def_id else ""
+
+
 @dataclass(frozen=True)
 class Ctx:
     """Who and what an effect applies to.
@@ -103,11 +106,14 @@ class Ctx:
     chosen: Investigator | None = None
     test_rolls: tuple[int, ...] = ()
 
+    def __post_init__(self) -> None:
+        prefix, separator, _ = self.source.partition(":")
+        if separator and prefix not in _SOURCE_NAMES:
+            raise ValueError(f"source '{self.source}' has an unknown prefix")
+
     @property
     def source_name(self) -> str:
-        """The player-facing name of `source`. A source with no `prefix:id` shape has no name."""
-        prefix, _, def_id = self.source.partition(":")
-        return _SOURCE_NAMES[prefix](self.game, def_id) if def_id else ""
+        return source_name(self.game, self.source)
 
     def sourced(self, text: str) -> str:
         return sourced(self.source_name, text)

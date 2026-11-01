@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from pursuit.controller import Option
+from pursuit.effects.base import sourced
 from pursuit.engine import rules
 from pursuit.engine.state import AssetCard, Game, Investigator
 
@@ -235,7 +236,8 @@ def run_test(
         rolls = _offer_card_rerolls(game, inv, skill, contexts, rolls, success_on, needed, score)
         if skill == "strength" and "combat" in contexts and game.free_rerolls > 0:
             failed = [i for i, r in enumerate(rolls) if r < success_on]
-            if failed and rules.confirm(game, "Use the Spell to reroll 1 die?", kind="reroll_card", inv=inv):
+            prompt = sourced(game.free_reroll_source, "Use the Spell to reroll 1 die?")
+            if failed and rules.confirm(game, prompt, kind="reroll_card", inv=inv):
                 game.free_rerolls -= 1
                 rolls[min(failed, key=lambda i: rolls[i])] = game.roll_die()
         successes = score(rolls)

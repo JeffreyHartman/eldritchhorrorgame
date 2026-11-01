@@ -10,7 +10,7 @@ from typing import Any
 
 from pursuit.content.defs import ActionAbility
 from pursuit.controller import Option
-from pursuit.effects.base import Ctx, run_effects, sourced
+from pursuit.effects.base import Ctx, run_effects, source_name, sourced
 from pursuit.engine import rules
 from pursuit.engine.dice import dice_pool, run_test
 from pursuit.engine.state import AssetCard, ConditionInst, Game, Investigator
@@ -261,18 +261,16 @@ def _rest(game: Game, inv: Investigator) -> bool:
     rules.change_sanity(game, inv, 1 + rules.perk(game, inv, "rest_sanity"))
     for inst in list(inv.conditions):
         cdef = game.content.conditions[inst.def_id]
-        if cdef.rest_roll:
-            die = game.roll_die()
-            rules.emit(game, "info", sourced(cdef.name, f"the die shows {die}."))
-            if die >= 5:
-                rules.remove_condition(game, inv, inst, source=cdef.name)
+        if cdef.rest_roll and rules.roll_die(game, cdef.name) >= 5:
+            rules.remove_condition(game, inv, inst, source_name=cdef.name)
     for person in game.investigators_at(inv.location):
         for card in list(person.assets):
             adef = game.asset_def(card)
             run_effects(adef.rest_aura, Ctx(game, inv, f"asset:{adef.id}", asset=card))
     for card in list(inv.assets):
         adef = game.asset_def(card)
-        if adef.on_rest and not inv.defeated and rules.confirm(game, adef.rest_prompt, kind="rest_card", inv=inv):
+        prompt = sourced(adef.name, adef.rest_prompt)
+        if adef.on_rest and not inv.defeated and rules.confirm(game, prompt, kind="rest_card", inv=inv):
             run_effects(adef.on_rest, Ctx(game, inv, f"asset:{adef.id}", asset=card))
     return True
 
@@ -416,7 +414,7 @@ def _run_ability(
 ) -> bool:
     """Spell effects keep the caster as `ctx.inv`, because the caster tests and flips the card."""
     target = inv
-    name = Ctx(game, inv, source).source_name
+    name = source_name(game, source)
     if ability.target == "investigator_here":
         people = game.investigators_at(inv.location)
         options = [
