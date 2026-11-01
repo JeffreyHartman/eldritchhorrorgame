@@ -29,7 +29,7 @@ def resolve_monsters(game: Game, inv: Investigator, *, encounter_phase: bool = F
     state = game.locations[inv.location]
     fought: set[int] = set()
     blocked = False
-    replacement = None
+    replacer = None
     while True:
         if inv.defeated or game.outcome:
             return False
@@ -53,19 +53,21 @@ def resolve_monsters(game: Game, inv: Investigator, *, encounter_phase: bool = F
         mdef = game.monster_def(monster.def_id)
         if combat(game, inv, monster) == DEFEATED:
             blocked = blocked or mdef.blocks_encounter
-            replacement = replacement or mdef.replace_encounter
+            replacer = replacer or (mdef if mdef.replace_encounter else None)
     if state.monsters or inv.defeated:
         return False
     if encounter_phase and blocked:
         return False
+    replacement = replacer.replace_encounter if replacer else None
     if (
         encounter_phase
+        and replacer is not None
         and replacement is not None
         and rules.can_pay(game, inv, replacement.cost)
         and rules.confirm(game, replacement.text, kind="replace_encounter", inv=inv)
     ):
         rules.pay_cost(game, inv, replacement.cost)
-        run_effects(replacement.effects, Ctx(game, inv, "replace_encounter"))
+        run_effects(replacement.effects, Ctx(game, inv, f"monster:{replacer.id}"))
         return False
     return True
 
@@ -103,7 +105,7 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
     rules.emit(
         game,
         "combat",
-        f"{inv.name} encounters the {mdef.name}. {mdef.text}",
+        f"{inv.name} encounters {mdef.the_name}. {mdef.text}",
         monster=mdef.id,
         start=True,
         wounds=monster.wounds,
@@ -147,7 +149,7 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
         mdef.fight_mod,
         contexts=("combat", "fight"),
         needed=max(1, full - monster.wounds, mdef.damage),
-        label=f"Strength test against the {mdef.name}",
+        label=f"Strength test against {mdef.the_name}",
         allow_clues=not mdef.no_clue_rerolls,
     )
     reduction = sum(game.asset_def(c).damage_reduction for c in inv.assets)
@@ -164,7 +166,7 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
             run_effects(mdef.after_hit, replace(ctx, inv=None))
         if not ambush:
             left = full - monster.wounds
-            rules.emit(game, "combat", f"The {mdef.name} remains ({left}/{full} Health).", monster=mdef.id)
+            rules.emit(game, "combat", f"{mdef.sentence_name} remains ({left}/{full} Health).", monster=mdef.id)
     return finish()
 
 
@@ -178,7 +180,7 @@ def _will_test(game: Game, inv: Investigator, mdef: MonsterDef, ctx: Ctx) -> boo
         mdef.horror_mod,
         contexts=("combat", "horror"),
         needed=max(1, horror),
-        label=f"Will test against the {mdef.name}",
+        label=f"Will test against {mdef.the_name}",
         allow_clues=not mdef.no_clue_rerolls,
     )
     reduction = sum(game.asset_def(c).sanity_reduction for c in inv.assets)

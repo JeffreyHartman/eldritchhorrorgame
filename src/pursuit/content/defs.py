@@ -656,6 +656,16 @@ class MonsterDef:
     needs_mysteries: bool = False
     sanity_to_sheet: bool = False
 
+    @property
+    def the_name(self) -> str:
+        """The name with "the" for mid-sentence text. A name that starts with "The " stays as it is."""
+        return self.name if self.name.startswith("The ") else f"the {self.name}"
+
+    @property
+    def sentence_name(self) -> str:
+        """`the_name` capitalized for the start of a sentence."""
+        return self.the_name[0].upper() + self.the_name[1:]
+
     def combat_hooks(self) -> dict[str, tuple[Effect, ...]]:
         return {
             "before_will": self.before_will,

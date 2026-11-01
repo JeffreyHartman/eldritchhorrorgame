@@ -42,6 +42,13 @@ def _positive(r: Reader, key: str, default: int = 1) -> int:
     return value
 
 
+def _roll_die(ctx: Ctx) -> int:
+    """Roll 1 die that is not a test and show the result with its source."""
+    die = ctx.game.roll_die()
+    rules.emit(ctx.game, "info", ctx.sourced(f"the die shows {die}."))
+    return die
+
+
 OPEN_ENDED = ("flip_self", "clues_per_success")
 
 
@@ -131,20 +138,20 @@ class Test(Effect):
         bought = 0
         while self.sanity_dice and inv.sanity - bought > 1:
             prompt = "Spend 1 Sanity to roll 1 additional die?"
-            if not rules.confirm(ctx.game, prompt, kind="spend_for_test", inv=inv):
+            if not rules.confirm(ctx.game, ctx.sourced(prompt), kind="spend_for_test", inv=inv):
                 break
             bought += 1
         if bought:
-            rules.change_sanity(ctx.game, inv, -bought, preventable=False)
+            rules.change_sanity(ctx.game, inv, -bought, preventable=False, source=ctx.source_name)
         return bought
 
     def _spend_clues(self, ctx: Ctx, inv: Investigator, successes: int) -> int:
         added = 0
         while self.clue_bonus and inv.clues > 0 and successes + added < self.needed:
             prompt = f"{successes + added}/{self.needed} successes. Spend 1 Clue to add 1 success?"
-            if not rules.confirm(ctx.game, prompt, kind="spend_for_test", inv=inv):
+            if not rules.confirm(ctx.game, ctx.sourced(prompt), kind="spend_for_test", inv=inv):
                 break
-            rules.change_clues(ctx.game, inv, -1)
+            rules.change_clues(ctx.game, inv, -1, source=ctx.source_name)
             added += 1
         return added
 
@@ -165,7 +172,7 @@ class Health(Effect):
         return cls(_nonzero(r, "amount"))
 
     def apply(self, ctx: Ctx) -> None:
-        rules.change_health(ctx.game, ctx.need_inv(self.kind), self.amount)
+        rules.change_health(ctx.game, ctx.need_inv(self.kind), self.amount, source=ctx.source_name)
 
 
 @register("sanity")
@@ -178,7 +185,7 @@ class Sanity(Effect):
         return cls(_nonzero(r, "amount"))
 
     def apply(self, ctx: Ctx) -> None:
-        rules.change_sanity(ctx.game, ctx.need_inv(self.kind), self.amount)
+        rules.change_sanity(ctx.game, ctx.need_inv(self.kind), self.amount, source=ctx.source_name)
 
 
 @register("recover_all")
@@ -195,9 +202,9 @@ class RecoverAll(Effect):
         game = ctx.game
         inv = ctx.need_inv(self.kind)
         if self.health and inv.health < inv.max_health:
-            rules.change_health(game, inv, inv.max_health - inv.health)
+            rules.change_health(game, inv, inv.max_health - inv.health, source=ctx.source_name)
         if self.sanity and not inv.defeated and inv.sanity < inv.max_sanity:
-            rules.change_sanity(game, inv, inv.max_sanity - inv.sanity)
+            rules.change_sanity(game, inv, inv.max_sanity - inv.sanity, source=ctx.source_name)
 
 
 @register("clues")
@@ -210,7 +217,7 @@ class Clues(Effect):
         return cls(_nonzero(r, "amount"))
 
     def apply(self, ctx: Ctx) -> None:
-        rules.change_clues(ctx.game, ctx.need_inv(self.kind), self.amount)
+        rules.change_clues(ctx.game, ctx.need_inv(self.kind), self.amount, source=ctx.source_name)
 
 
 @register("clues_per_success")
@@ -221,7 +228,7 @@ class CluesPerSuccess(Effect):
         return cls()
 
     def apply(self, ctx: Ctx) -> None:
-        rules.change_clues(ctx.game, ctx.need_inv(self.kind), ctx.test_successes or 0)
+        rules.change_clues(ctx.game, ctx.need_inv(self.kind), ctx.test_successes or 0, source=ctx.source_name)
 
 
 @register("claim_clue")
@@ -236,9 +243,9 @@ class ClaimClue(Effect):
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
         if rules.discard_clue(ctx.game, inv.location):
-            rules.change_clues(ctx.game, inv, 1 + self.bonus)
+            rules.change_clues(ctx.game, inv, 1 + self.bonus, source=ctx.source_name)
         elif self.bonus > 0:
-            rules.change_clues(ctx.game, inv, self.bonus)
+            rules.change_clues(ctx.game, inv, self.bonus, source=ctx.source_name)
 
 
 @register("discard_clue")
@@ -269,9 +276,9 @@ class GainTicket(Effect):
         kind = self.ticket_kind
         if kind == "choose":
             options = [Option("Train Ticket", "train"), Option("Ship Ticket", "ship")]
-            pick = rules.choose(game, "Gain which travel ticket?", options, kind="prepare_ticket", inv=inv)
+            pick = rules.choose(game, ctx.sourced("Gain which travel ticket?"), options, kind="prepare_ticket", inv=inv)
             kind = options[pick].value
-        rules.gain_ticket(game, inv, kind)
+        rules.gain_ticket(game, inv, kind, source=ctx.source_name)
 
 
 @register("improve_skill")
@@ -296,7 +303,7 @@ class ImproveSkill(Effect):
             ]
             if not any(o.enabled for o in options):
                 return
-            skill = SKILLS[rules.choose(game, "Improve which skill?", options, kind="improve", inv=inv)]
+            skill = SKILLS[rules.choose(game, ctx.sourced("Improve which skill?"), options, kind="improve", inv=inv)]
         current = inv.improvements.get(skill, 0)
         delta = self.amount
         if delta > 0 and tokens.get(skill, 0) == 0 and rules.perk(game, inv, "double_improve") > 0:
@@ -375,7 +382,9 @@ class GainAsset(Effect):
                 ]
                 if matching_res:
                     opts = [Option("Take from the reserve", "reserve"), Option("Draw from the deck", "deck")]
-                    src = opts[rules.choose(game, "Gain asset from where?", opts, kind="gain_source", inv=inv)].value
+                    src = opts[
+                        rules.choose(game, ctx.sourced("Gain asset from where?"), opts, kind="gain_source", inv=inv)
+                    ].value
                 else:
                     src = "deck"
 
@@ -393,7 +402,9 @@ class GainAsset(Effect):
                     return
                 options = [Option(game.asset_def(c).name, c.uid, game.asset_def(c).text) for c in cards]
                 card = cards[
-                    rules.choose(game, "Take one Asset from the reserve.", options, kind="gain_reserve", inv=inv)
+                    rules.choose(
+                        game, ctx.sourced("Take one Asset from the reserve."), options, kind="gain_reserve", inv=inv
+                    )
                 ]
                 game.reserve.remove(card)
                 rules.refill_reserve(game)
@@ -403,7 +414,7 @@ class GainAsset(Effect):
                     rules.emit(game, "info", "There are no matching cards left.")
                     return
                 card = found
-            rules.gain_card(game, inv, card)
+            rules.gain_card(game, inv, card, source=ctx.source_name)
 
     def _take_named(self, ctx: Ctx, inv: Investigator) -> None:
         """Take a card of the player's choice from the reserve or the Asset discard pile."""
@@ -416,13 +427,15 @@ class GainAsset(Effect):
         if not pool:
             return
         options = [Option(game.asset_def(c).name, c.uid, game.asset_def(c).text) for c in pool]
-        card = pool[rules.choose(game, "Gain which card?", options, kind="gain_reserve", inv=inv, auto_single=True)]
+        card = pool[
+            rules.choose(game, ctx.sourced("Gain which card?"), options, kind="gain_reserve", inv=inv, auto_single=True)
+        ]
         if card in game.reserve:
             game.reserve.remove(card)
             rules.refill_reserve(game)
         else:
             game.asset_deck.discards.remove(card)
-        rules.gain_card(game, inv, card)
+        rules.gain_card(game, inv, card, source=ctx.source_name)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("asset", self.asset_id)] if self.asset_id else []
@@ -471,10 +484,15 @@ class LoseAsset(Effect):
                 options = [Option(game.asset_def(c).name, c.uid) for c in cards]
                 card = cards[
                     rules.choose(
-                        game, "Choose a possession to discard.", options, kind="lose_asset", inv=inv, auto_single=True
+                        game,
+                        ctx.sourced("Choose a possession to discard."),
+                        options,
+                        kind="lose_asset",
+                        inv=inv,
+                        auto_single=True,
                     )
                 ]
-            rules.discard_asset(game, inv, card)
+            rules.discard_asset(game, inv, card, source=ctx.source_name)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("asset", self.asset_id)] if self.asset_id else []
@@ -496,9 +514,9 @@ class GainCondition(Effect):
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
         if self.condition:
-            rules.gain_condition(ctx.game, inv, self.condition)
+            rules.gain_condition(ctx.game, inv, self.condition, source=ctx.source_name)
         elif self.trait:
-            rules.gain_condition_trait(ctx.game, inv, self.trait)
+            rules.gain_condition_trait(ctx.game, inv, self.trait, source=ctx.source_name)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("condition", self.condition)] if self.condition else []
@@ -523,7 +541,7 @@ class RemoveCondition(Effect):
         for inst in list(inv.conditions):
             cdef = game.content.conditions[inst.def_id]
             if (self.condition and cdef.id == self.condition) or (self.trait and self.trait in cdef.traits):
-                rules.remove_condition(game, inv, inst)
+                rules.remove_condition(game, inv, inst, source=ctx.source_name)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("condition", self.condition)] if self.condition else []
@@ -543,10 +561,10 @@ class RemoveAnyCondition(Effect):
             return
         options = [Option(game.content.conditions[c.def_id].name, c.uid) for c in inv.conditions]
         pick = rules.choose(
-            game, "Discard which Condition?", options, kind="remove_condition", inv=inv, auto_single=True
+            game, ctx.sourced("Discard which Condition?"), options, kind="remove_condition", inv=inv, auto_single=True
         )
         inst = next(c for c in inv.conditions if c.uid == options[pick].value)
-        rules.remove_condition(game, inv, inst)
+        rules.remove_condition(game, inv, inst, source=ctx.source_name)
 
 
 @register("remove_self")
@@ -560,12 +578,12 @@ class RemoveSelf(Effect):
         if ctx.condition is not None:
             for person in ctx.game.investigators:
                 if ctx.condition in person.conditions:
-                    rules.remove_condition(ctx.game, person, ctx.condition)
+                    rules.remove_condition(ctx.game, person, ctx.condition, source=ctx.source_name)
                     return
         elif ctx.asset is not None:
             owner = next((i for i in ctx.game.investigators if ctx.asset in i.assets), ctx.inv)
             if owner is not None:
-                rules.discard_asset(ctx.game, owner, ctx.asset)
+                rules.discard_asset(ctx.game, owner, ctx.asset, source=ctx.source_name)
         elif ctx.mythos is not None:
             rules.solve_rumor(ctx.game, ctx.mythos)
 
@@ -580,7 +598,7 @@ class FlipSelf(Effect):
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
         if ctx.condition is not None:
-            rules.flip_condition(ctx.game, inv, ctx.condition, ctx.test_successes)
+            rules.flip_condition(ctx.game, inv, ctx.condition, ctx.test_successes, source=ctx.source_name)
         elif ctx.asset is not None:
             owner = next((i for i in ctx.game.investigators if ctx.asset in i.assets), None)
             if owner is not None:
@@ -605,7 +623,7 @@ class FlipConditions(Effect):
             if (self.condition_id is None or cdef.id == self.condition_id) and (
                 self.trait is None or self.trait in cdef.traits
             ):
-                rules.flip_condition(game, inv, inst)
+                rules.flip_condition(game, inv, inst, source=ctx.source_name)
                 if inv.defeated or game.outcome:
                     return
 
@@ -658,19 +676,21 @@ class Move(Effect):
         elif self.to == "choose_adjacent":
             near = rules.neighbors(game, inv.location)
             options = [Option(rules.loc_name(game, loc), loc, k) for loc, k in near]
-            dest = near[rules.choose(game, "Where do you move?", options, kind="move", inv=inv)][0]
+            dest = near[rules.choose(game, ctx.sourced("Where do you move?"), options, kind="move", inv=inv)][0]
         elif self.to == "ship_path":
             near = [(loc, k) for loc, k in rules.neighbors(game, inv.location) if k == "ship"]
             if not near:
                 return
             options = [Option(rules.loc_name(game, loc), loc, "ship path") for loc, _ in near]
-            pick = rules.choose(game, "Move along which Ship path?", options, kind="move", inv=inv, auto_single=True)
+            pick = rules.choose(
+                game, ctx.sourced("Move along which Ship path?"), options, kind="move", inv=inv, auto_single=True
+            )
             dest = near[pick][0]
         elif self.to == "any_space":
             places = sorted(content.locations, key=lambda loc: rules.loc_name(game, loc))
             options = [Option(rules.loc_name(game, loc), loc) for loc in places]
             options.append(Option("Stay here", None))
-            dest = options[rules.choose(game, "Where do you move?", options, kind="move", inv=inv)].value
+            dest = options[rules.choose(game, ctx.sourced("Where do you move?"), options, kind="move", inv=inv)].value
         elif self.to == "choose_within":
             dist = rules.distances(game, inv.location)
             places = sorted(
@@ -679,7 +699,7 @@ class Move(Effect):
             )
             options = [Option(rules.loc_name(game, loc), loc, f"{dist[loc]} space(s)") for loc in places]
             options.append(Option("Stay here", None))
-            dest = options[rules.choose(game, "Where do you move?", options, kind="move", inv=inv)].value
+            dest = options[rules.choose(game, ctx.sourced("Where do you move?"), options, kind="move", inv=inv)].value
         else:
             dest = self.to
         if dest:
@@ -758,19 +778,21 @@ class SwapHealthSanity(Effect):
             Option("Spend Sanity to recover Health", "s_to_h", enabled=most_s_to_h > 0),
             Option("Done", None),
         ]
-        way = options[rules.choose(game, "Martial Arts focus:", options, kind="effect_choice", inv=inv)].value
+        way = options[
+            rules.choose(game, ctx.sourced("Martial Arts focus:"), options, kind="effect_choice", inv=inv)
+        ].value
         if way is None:
             return
         most = most_h_to_s if way == "h_to_s" else most_s_to_h
         amounts = [Option(str(n), n) for n in range(1, most + 1)]
-        pick = rules.choose(game, "Spend how many?", amounts, kind="amount", inv=inv, auto_single=True)
+        pick = rules.choose(game, ctx.sourced("Spend how many?"), amounts, kind="amount", inv=inv, auto_single=True)
         amount = amounts[pick].value
         if way == "h_to_s":
-            rules.change_health(game, inv, -amount, preventable=False)
-            rules.change_sanity(game, inv, amount)
+            rules.change_health(game, inv, -amount, preventable=False, source=ctx.source_name)
+            rules.change_sanity(game, inv, amount, source=ctx.source_name)
         else:
-            rules.change_sanity(game, inv, -amount, preventable=False)
-            rules.change_health(game, inv, amount)
+            rules.change_sanity(game, inv, -amount, preventable=False, source=ctx.source_name)
+            rules.change_health(game, inv, amount, source=ctx.source_name)
 
 
 @register("condition_penalty")
@@ -788,11 +810,11 @@ class ConditionPenalty(Effect):
         madness = traits.count("madness")
         deals = traits.count("deal")
         if injuries:
-            rules.change_health(game, inv, -injuries)
+            rules.change_health(game, inv, -injuries, source=ctx.source_name)
         if madness and not inv.defeated:
-            rules.change_sanity(game, inv, -madness)
+            rules.change_sanity(game, inv, -madness, source=ctx.source_name)
         if deals and not inv.defeated:
-            rules.change_clues(game, inv, -deals)
+            rules.change_clues(game, inv, -deals, source=ctx.source_name)
 
 
 # --- doom, omen, eldritch tokens ------------------------------------------------------
@@ -808,7 +830,7 @@ class AdvanceDoom(Effect):
         return cls(_positive(r, "amount"))
 
     def apply(self, ctx: Ctx) -> None:
-        rules.advance_doom(ctx.game, self.amount)
+        rules.advance_doom(ctx.game, self.amount, ctx.source_name)
 
     def needs_investigator(self) -> bool:
         return False
@@ -956,7 +978,7 @@ class SolveRumorInPlay(Effect):
         rumors = [a for a in game.active_mythos if "rumor" in game.content.mythos[a.def_id].traits]
         if rumors:
             options = [Option(game.content.mythos[a.def_id].name, a.def_id) for a in rumors]
-            pick = rules.choose(game, "Solve which Rumor?", options, kind="pick_rumor", auto_single=True)
+            pick = rules.choose(game, ctx.sourced("Solve which Rumor?"), options, kind="pick_rumor", auto_single=True)
             rules.solve_rumor(game, rumors[pick])
 
     def needs_investigator(self) -> bool:
@@ -1000,9 +1022,9 @@ class Choice(Effect):
         ]
         if not any(o.enabled for o in opts):
             return
-        pick = rules.choose(game, self.prompt, opts, kind="effect_choice", inv=inv, auto_single=True)
+        pick = rules.choose(game, ctx.sourced(self.prompt), opts, kind="effect_choice", inv=inv, auto_single=True)
         if sum(o.enabled for o in opts) == 1 and len(opts) > 1:
-            rules.emit(game, "info", f"The only available option is: {opts[pick].label}.")
+            rules.emit(game, "info", ctx.sourced(f"The only available option is: {opts[pick].label}."))
         run_effects(self.options[pick].effects, ctx)
 
     def children(self) -> Iterable[Sequence[Effect]]:
@@ -1043,7 +1065,7 @@ class Pay(Effect):
             actual = Cost(clues=half_n, sanity=actual.sanity, health=actual.health, tickets=actual.tickets)
         prompt = self.prompt or f"Pay {actual.describe()}?"
         full_prompt = f"{prompt} ({actual.describe()})"
-        if rules.can_pay(game, inv, actual) and rules.confirm(game, full_prompt, kind="pay", inv=inv):
+        if rules.can_pay(game, inv, actual) and rules.confirm(game, ctx.sourced(full_prompt), kind="pay", inv=inv):
             rules.pay_cost(game, inv, actual)
             run_effects(self.then, ctx)
         else:
@@ -1103,7 +1125,7 @@ class Random(Effect):
     def apply(self, ctx: Ctx) -> None:
         pick = ctx.game.rng.choices(self.outcomes, weights=[o.weight for o in self.outcomes])[0]
         if pick.text:
-            rules.emit(ctx.game, "info", pick.text)
+            rules.emit(ctx.game, "info", ctx.sourced(pick.text))
         run_effects(pick.effects, ctx)
 
     def children(self) -> Iterable[Sequence[Effect]]:
@@ -1215,7 +1237,7 @@ class OneInvestigator(Effect):
             target = game.rng.choice(pool)
         elif self.pick == "choose":
             options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in pool]
-            target = pool[rules.choose(game, "Choose an investigator.", options, kind="pick_investigator")]
+            target = pool[rules.choose(game, ctx.sourced("Choose an investigator."), options, kind="pick_investigator")]
         else:
             key = {
                 "lowest_sanity": lambda i: (i.sanity, i.seat),
@@ -1262,10 +1284,13 @@ class SpawnGate(Effect):
 
 
 def _akachi_moves(game: Game, inv: Investigator) -> None:
+    ctx = Ctx(game, inv, f"ability:{inv.def_id}")
     places = [loc for loc, st in game.locations.items() if loc != inv.location and (st.gate or st.clues)]
     if places:
         options = [Option(rules.loc_name(game, t), t) for t in places] + [Option("Stay here", None)]
-        dest = options[rules.choose(game, "Move to a space with a Gate or Clue?", options, kind="move", inv=inv)].value
+        dest = options[
+            rules.choose(game, ctx.sourced("Move to a space with a Gate or Clue?"), options, kind="move", inv=inv)
+        ].value
         if dest:
             rules.move_investigator(game, inv, dest)
 
@@ -1309,7 +1334,9 @@ class DiscardGate(Effect):
         if not gates:
             return
         options = [Option(rules.loc_name(game, loc), loc) for loc in gates]
-        pick = rules.choose(game, "Discard which Gate?", options, kind="choose_space", inv=ctx.inv, auto_single=True)
+        pick = rules.choose(
+            game, ctx.sourced("Discard which Gate?"), options, kind="choose_space", inv=ctx.inv, auto_single=True
+        )
         rules.discard_gate(game, gates[pick])
         rules.emit(game, "gate", f"The Gate at {options[pick].label} is discarded.", location=gates[pick])
 
@@ -1363,7 +1390,7 @@ class PeekGates(Effect):
             Option(f"Keep {rules.loc_name(game, top_two[1])} on top", 1),
         ]
         prompt = "Top 2 Gates in the stack. Put which on top (the other on the bottom)?"
-        pick = rules.choose(game, prompt, options, kind="peek_gates", inv=inv)
+        pick = rules.choose(game, ctx.sourced(prompt), options, kind="peek_gates", inv=inv)
         kept = top_two[pick]
         bottom = top_two[1 - pick]
         cards[:2] = [kept]
@@ -1515,7 +1542,12 @@ class DiscardMonster(Effect):
                 return
             options = [Option(rules.loc_name(game, loc), loc) for loc in with_monsters]
             pick = rules.choose(
-                game, "Choose a space with Monsters:", options, kind="choose_space", inv=ctx.inv, auto_single=True
+                game,
+                ctx.sourced("Choose a space with Monsters:"),
+                options,
+                kind="choose_space",
+                inv=ctx.inv,
+                auto_single=True,
             )
             loc_id = with_monsters[pick]
         monsters = [m for m in game.locations[loc_id].monsters if not game.monster_def(m.def_id).epic]
@@ -1527,7 +1559,7 @@ class DiscardMonster(Effect):
             return
         options = [Option(game.content.monsters[m.def_id].name, m.uid) for m in monsters]
         pick = rules.choose(
-            game, "Discard which Monster?", options, kind="discard_monster", inv=ctx.inv, auto_single=True
+            game, ctx.sourced("Discard which Monster?"), options, kind="discard_monster", inv=ctx.inv, auto_single=True
         )
         monster = next(m for m in monsters if m.uid == options[pick].value)
         rules.discard_monster(game, loc_id, monster)
@@ -1566,7 +1598,7 @@ class MoveMonsterHere(Effect):
             for i, (loc, m) in enumerate(candidates)
         ]
         pick = rules.choose(
-            game, "Move which Monster here?", options, kind="move_monster", inv=inv, auto_single=True
+            game, ctx.sourced("Move which Monster here?"), options, kind="move_monster", inv=inv, auto_single=True
         )
         _source, monster = candidates[pick]
         rules.move_monster(game, monster, inv.location)
@@ -1597,14 +1629,16 @@ class MoveAnyMonster(Effect):
             Option(f"{game.monster_def(m.def_id).name} at {rules.loc_name(game, loc)}", m.uid) for loc, m in found
         ]
         source, monster = found[
-            rules.choose(game, "Move which Monster?", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
+            rules.choose(
+                game, ctx.sourced("Move which Monster?"), options, kind="pick_monster", inv=ctx.inv, auto_single=True
+            )
         ]
         places = sorted(
             (loc for loc in game.content.locations if loc != source), key=lambda loc: rules.loc_name(game, loc)
         )
         spaces = [Option(rules.loc_name(game, loc), loc) for loc in places]
         rules.move_monster(
-            game, monster, places[rules.choose(game, "Move it where?", spaces, kind="move", inv=ctx.inv)]
+            game, monster, places[rules.choose(game, ctx.sourced("Move it where?"), spaces, kind="move", inv=ctx.inv)]
         )
 
     def needs_investigator(self) -> bool:
@@ -1638,18 +1672,25 @@ class DamageMonsters(Effect):
                 return
             options = [Option(rules.loc_name(game, loc), loc) for loc in with_monsters]
             pick = rules.choose(
-                game, "Choose a space to damage Monsters:", options, kind="choose_space", inv=ctx.inv, auto_single=True
+                game,
+                ctx.sourced("Choose a space to damage Monsters:"),
+                options,
+                kind="choose_space",
+                inv=ctx.inv,
+                auto_single=True,
             )
             loc_id = with_monsters[pick]
         targets = [m for m in game.locations[loc_id].monsters if not self.others or m is not ctx.monster]
         if self.one and targets:
             options = [Option(game.monster_def(m.def_id).name, m.uid) for m in targets]
-            pick = rules.choose(game, "Choose a Monster.", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
+            pick = rules.choose(
+                game, ctx.sourced("Choose a Monster."), options, kind="pick_monster", inv=ctx.inv, auto_single=True
+            )
             targets = [targets[pick]]
         for monster in targets:
             mdef = game.monster_def(monster.def_id)
             if not rules.wound_monster(game, ctx.inv, monster, self.amount):
-                rules.emit(game, "combat", f"The {mdef.name} loses {self.amount} Health.")
+                rules.emit(game, "combat", f"{mdef.sentence_name} loses {self.amount} Health.")
 
     def needs_investigator(self) -> bool:
         return self.where == "here"
@@ -1672,7 +1713,9 @@ class SpawnClue(Effect):
             if self.choose:
                 places = sorted(game.content.locations, key=lambda loc: rules.loc_name(game, loc))
                 options = [Option(rules.loc_name(game, loc), loc) for loc in places]
-                dest = places[rules.choose(game, "Spawn the Clue where?", options, kind="choose_space", inv=ctx.inv)]
+                dest = places[
+                    rules.choose(game, ctx.sourced("Spawn the Clue where?"), options, kind="choose_space", inv=ctx.inv)
+                ]
             rules.spawn_clue(game, dest)
 
     def needs_investigator(self) -> bool:
@@ -1840,7 +1883,7 @@ class SanityPerSpell(Effect):
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
         spells = sum(ctx.game.asset_def(c).kind == "spell" for c in inv.assets)
-        rules.change_sanity(ctx.game, inv, -spells)
+        rules.change_sanity(ctx.game, inv, -spells, source=ctx.source_name)
 
 
 @register("heal_this")
@@ -1939,7 +1982,7 @@ class ReplaceThis(Effect):
         if loc_id is None or not choices:
             return
         options = [Option(game.content.monsters[i].name, i) for i in choices]
-        pick = rules.choose(game, "Spawn which Monster?", options, kind="spawn_choice", auto_single=True)
+        pick = rules.choose(game, ctx.sourced("Spawn which Monster?"), options, kind="spawn_choice", auto_single=True)
         rules.spawn_monster(game, loc_id, choices[pick])
         rules.discard_monster(game, loc_id, monster)
 
@@ -2017,7 +2060,9 @@ class CarryOrChase(Effect):
             victim = here[0]
             near = rules.neighbors(game, loc_id)
             options = [Option(rules.loc_name(game, loc), loc, k) for loc, k in near]
-            dest = near[rules.choose(game, "Move where?", options, kind="move", inv=victim, auto_single=True)][0]
+            dest = near[
+                rules.choose(game, ctx.sourced("Move where?"), options, kind="move", inv=victim, auto_single=True)
+            ][0]
             rules.move_investigator(game, victim, dest)
             rules.move_monster(game, monster, dest)
             rules.delay(game, victim)
@@ -2082,7 +2127,7 @@ class RollUnderInvestigators(Effect):
         return cls(read_effects(r, "effects"))
 
     def apply(self, ctx: Ctx) -> None:
-        if ctx.game.roll_die() <= len(ctx.game.investigators):
+        if _roll_die(ctx) <= len(ctx.game.investigators):
             run_effects(self.effects, ctx)
 
     def children(self) -> Iterable[Sequence[Effect]]:
@@ -2359,7 +2404,7 @@ class SanityPerSheetToken(Effect):
         return cls()
 
     def apply(self, ctx: Ctx) -> None:
-        rules.change_sanity(ctx.game, ctx.need_inv(self.kind), -ctx.game.sheet_tokens)
+        rules.change_sanity(ctx.game, ctx.need_inv(self.kind), -ctx.game.sheet_tokens, source=ctx.source_name)
 
 
 @dataclass(frozen=True)
@@ -2388,12 +2433,11 @@ class Roll(Effect):
         return cls(tuple(outcomes))
 
     def apply(self, ctx: Ctx) -> None:
-        die = ctx.game.roll_die()
-        rules.emit(ctx.game, "info", f"The die shows {die}.")
+        die = _roll_die(ctx)
         for outcome in self.outcomes:
             if outcome.low <= die <= outcome.high:
                 if outcome.text:
-                    rules.emit(ctx.game, "info", outcome.text)
+                    rules.emit(ctx.game, "info", ctx.sourced(outcome.text))
                 run_effects(outcome.effects, ctx)
                 return
 
@@ -2422,16 +2466,18 @@ class GroupSpend(Effect):
         people = [i for i in game.turn_order() if not i.eliminated and not i.defeated]
         lead = game.lead_investigator()
         prompt = f"Spend {need} Clue(s) as a group?"
-        if sum(i.clues for i in people) < need or not rules.confirm(game, prompt, kind="group_spend", inv=lead):
+        if sum(i.clues for i in people) < need or not rules.confirm(
+            game, ctx.sourced(prompt), kind="group_spend", inv=lead
+        ):
             run_effects(self.otherwise, ctx)
             return
         for _ in range(need):
             payers = [i for i in people if i.clues > 0]
             options = [Option(i.name, i.seat, f"{i.clues} Clue(s)") for i in payers]
             pick = rules.choose(
-                game, "Who spends the next Clue?", options, kind="group_payer", inv=lead, auto_single=True
+                game, ctx.sourced("Who spends the next Clue?"), options, kind="group_payer", inv=lead, auto_single=True
             )
-            rules.change_clues(game, payers[pick], -1)
+            rules.change_clues(game, payers[pick], -1, source=ctx.source_name)
         run_effects(self.then, ctx)
 
     def children(self) -> Iterable[Sequence[Effect]]:
@@ -2535,10 +2581,12 @@ class SacrificeMonster(Effect):
         options = [
             Option(f"{game.monster_def(m.def_id).name} at {rules.loc_name(game, loc)}", m.uid) for loc, m in found
         ]
-        loc_id, monster = found[rules.choose(game, "Discard which Monster?", options, kind="discard_monster", inv=inv)]
+        loc_id, monster = found[
+            rules.choose(game, ctx.sourced("Discard which Monster?"), options, kind="discard_monster", inv=inv)
+        ]
         health = rules.toughness(game, monster.def_id)
         rules.discard_monster(game, loc_id, monster)
-        rules.change_health(game, inv, -health)
+        rules.change_health(game, inv, -health, source=ctx.source_name)
 
 
 @register("discard_chosen_gate")
@@ -2556,7 +2604,7 @@ class DiscardChosenGate(Effect):
         if not gates:
             return
         options = [Option(rules.loc_name(game, g), g, game.content.locations[g].gate_color or "") for g in gates]
-        pick = rules.choose(game, "Discard which Gate?", options, kind="pick_gate", auto_single=True)
+        pick = rules.choose(game, ctx.sourced("Discard which Gate?"), options, kind="pick_gate", auto_single=True)
         matched = gates[pick] in game.matching_gates()
         rules.discard_gate(game, gates[pick])
         if not matched:
@@ -2581,7 +2629,7 @@ class TornAsunder(Effect):
             return
         for inv in game.turn_order():
             if not inv.eliminated and not inv.defeated:
-                rules.change_health(game, inv, -count)
+                rules.change_health(game, inv, -count, source=ctx.source_name)
 
     def needs_investigator(self) -> bool:
         return False
@@ -2599,7 +2647,9 @@ class ChooseOmen(Effect):
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         options = [Option(space.replace("_", " ").title(), i) for i, space in enumerate(OMEN_TRACK)]
-        game.omen_index = rules.choose(game, "Move the Omen to which space?", options, kind="pick_omen", inv=ctx.inv)
+        game.omen_index = rules.choose(
+            game, ctx.sourced("Move the Omen to which space?"), options, kind="pick_omen", inv=ctx.inv
+        )
         rules.emit(game, "omen", f"The Omen moves to {game.omen_color}.", omen=game.omen_space, color=game.omen_color)
 
 
@@ -2635,7 +2685,9 @@ class ShuffleBackMystery(Effect):
             rules.unsolve_mystery(game, game.rng.choice(solved))
             return
         options = [Option(next(m.name for m in game.old_one.mysteries if m.id == s), s) for s in solved]
-        pick = rules.choose(game, "Shuffle back which Mystery?", options, kind="pick_mystery", auto_single=True)
+        pick = rules.choose(
+            game, ctx.sourced("Shuffle back which Mystery?"), options, kind="pick_mystery", auto_single=True
+        )
         rules.unsolve_mystery(game, solved[pick])
 
     def needs_investigator(self) -> bool:
@@ -2696,10 +2748,10 @@ class ShedPossessions(Effect):
         while held := self._held(ctx, inv):
             options = [Option(f"Discard {game.asset_def(c).name}", c.uid) for c in held]
             options.append(Option("Keep the rest", None))
-            uid = options[rules.choose(game, "Discard a possession?", options, kind="shed", inv=inv)].value
+            uid = options[rules.choose(game, ctx.sourced("Discard a possession?"), options, kind="shed", inv=inv)].value
             if uid is None:
                 break
-            rules.discard_asset(game, inv, next(c for c in held if c.uid == uid))
+            rules.discard_asset(game, inv, next(c for c in held if c.uid == uid), source=ctx.source_name)
         kept = len(self._held(ctx, inv))
         for _ in range(kept):
             run_effects(self.each, ctx)
@@ -2724,10 +2776,10 @@ class KeepOneItem(Effect):
         if len(items) < 2:
             return
         options = [Option(game.asset_def(c).name, c.uid) for c in items]
-        keep = items[rules.choose(game, "Keep which Item?", options, kind="keep_item", inv=inv)]
+        keep = items[rules.choose(game, ctx.sourced("Keep which Item?"), options, kind="keep_item", inv=inv)]
         for card in items:
             if card is not keep:
-                rules.discard_asset(game, inv, card)
+                rules.discard_asset(game, inv, card, source=ctx.source_name)
 
 
 @register("the_storm")
@@ -2743,7 +2795,7 @@ class TheStorm(Effect):
         if rumors:
             for inv in game.turn_order():
                 if not inv.eliminated and not inv.defeated:
-                    rules.change_clues(game, inv, -rumors)
+                    rules.change_clues(game, inv, -rumors, source=ctx.source_name)
             return
         boxed = [m for m in game.mythos_box if "rumor" in game.content.mythos[m].traits]
         if boxed:
@@ -2870,7 +2922,7 @@ class Sickness(Effect):
         ctx.mythos.health_tokens += 1
         for inv in game.turn_order():
             if not inv.eliminated and not inv.defeated:
-                rules.change_health(game, inv, -ctx.mythos.health_tokens)
+                rules.change_health(game, inv, -ctx.mythos.health_tokens, source=ctx.source_name)
 
     def needs_investigator(self) -> bool:
         return False
@@ -2892,7 +2944,7 @@ class CureSickness(Effect):
             return
         cost = Cost(clues=max(0, len(game.investigators) - ctx.mythos.health_tokens))
         prompt = f"Spend {cost.clues} Clue(s) to solve this Rumor?"
-        if rules.can_pay(game, inv, cost) and rules.confirm(game, prompt, kind="pay", inv=inv):
+        if rules.can_pay(game, inv, cost) and rules.confirm(game, ctx.sourced(prompt), kind="pay", inv=inv):
             rules.pay_cost(game, inv, cost)
             rules.solve_rumor(game, ctx.mythos)
 
@@ -2956,11 +3008,11 @@ class GiveItems(Effect):
         if not others:
             return
         options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in others]
-        target = others[rules.choose(game, "Give Items to whom?", options, kind="ability_target", inv=inv)]
+        target = others[rules.choose(game, ctx.sourced("Give Items to whom?"), options, kind="ability_target", inv=inv)]
         while items := [c for c in inv.assets if "item" in game.asset_def(c).traits]:
             options = [Option(game.asset_def(c).name, c.uid) for c in items]
             options.append(Option("Done giving", None))
-            uid = options[rules.choose(game, "Give which Item?", options, kind="give_item", inv=inv)].value
+            uid = options[rules.choose(game, ctx.sourced("Give which Item?"), options, kind="give_item", inv=inv)].value
             if uid is None:
                 return
             card = next(c for c in items if c.uid == uid)
@@ -2985,9 +3037,9 @@ class GiveClues(Effect):
         if not others or inv.clues == 0:
             return
         options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in others]
-        target = others[rules.choose(game, "Give Clues to whom?", options, kind="ability_target", inv=inv)]
+        target = others[rules.choose(game, ctx.sourced("Give Clues to whom?"), options, kind="ability_target", inv=inv)]
         amounts = [Option(str(n), n) for n in range(inv.clues + 1)]
-        amount = amounts[rules.choose(game, "Give how many Clues?", amounts, kind="amount", inv=inv)].value
+        amount = amounts[rules.choose(game, ctx.sourced("Give how many Clues?"), amounts, kind="amount", inv=inv)].value
         inv.clues -= amount
         target.clues += amount
         if amount:
@@ -3010,9 +3062,11 @@ class BrainCase(Effect):
         if not others:
             return
         options = [Option(i.name, i.seat, rules.loc_name(game, i.location)) for i in others]
-        other = others[rules.choose(game, "Trade with whom?", options, kind="trade_partner", inv=inv)]
+        other = others[rules.choose(game, ctx.sourced("Trade with whom?"), options, kind="trade_partner", inv=inv)]
         actions.trade_with(game, inv, other)
-        if rules.confirm(game, f"Move {other.name} to your space and swap?", kind="swap_spaces", inv=other):
+        if rules.confirm(
+            game, ctx.sourced(f"Move {other.name} to your space and swap?"), kind="swap_spaces", inv=other
+        ):
             mine, theirs = inv.location, other.location
             rules.move_investigator(game, other, mine)
             if other.location == mine:
@@ -3034,11 +3088,11 @@ class Kleptomania(Effect):
         card = rules.draw_matching(game, kind="item")
         if card is None:
             return
-        rules.gain_card(game, inv, card)
+        rules.gain_card(game, inv, card, source=ctx.source_name)
         result = run_test(game, inv, "observation", open_ended=True, label="Kleptomania")
         if result.successes < game.asset_def(card).cost and card in inv.assets:
-            rules.discard_asset(game, inv, card)
-            rules.gain_condition(game, inv, "detained")
+            rules.discard_asset(game, inv, card, source=ctx.source_name)
+            rules.gain_condition(game, inv, "detained", source=ctx.source_name)
 
 
 @register("gain_boost")
@@ -3100,7 +3154,7 @@ class RemoteClue(Effect):
             return
         options = [Option(rules.loc_name(game, loc), loc) for loc in places]
         options.append(Option("Do not encounter a Clue", None))
-        pick = rules.choose(game, "Encounter which Clue?", options, kind="pick_clue", inv=ctx.inv)
+        pick = rules.choose(game, ctx.sourced("Encounter which Clue?"), options, kind="pick_clue", inv=ctx.inv)
         game.remote_clue = options[pick].value
 
 
@@ -3135,7 +3189,9 @@ class WithMonsterHere(Effect):
         if not monsters:
             return
         options = [Option(game.monster_def(m.def_id).name, m.uid) for m in monsters]
-        pick = rules.choose(game, "Choose a Monster.", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
+        pick = rules.choose(
+            game, ctx.sourced("Choose a Monster."), options, kind="pick_monster", inv=ctx.inv, auto_single=True
+        )
         run_effects(self.effects, replace(ctx, monster=monsters[pick]))
 
     def children(self) -> Iterable[Sequence[Effect]]:
@@ -3184,7 +3240,7 @@ class DiscardUnlessRolled(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         if self.value not in ctx.test_rolls and ctx.asset is not None:
-            rules.discard_asset(ctx.game, ctx.need_inv(self.kind), ctx.asset)
+            rules.discard_asset(ctx.game, ctx.need_inv(self.kind), ctx.asset, source=ctx.source_name)
 
 
 @register("prevent_loss")
@@ -3229,13 +3285,15 @@ class ReserveBudget(Effect):
                 break
             options = [Option(game.asset_def(c).name, c.uid, game.asset_def(c).text) for c in cards]
             options.append(Option("Stop", None))
-            uid = options[rules.choose(game, f"Value left: {budget}.", options, kind="gain_reserve", inv=inv)].value
+            uid = options[
+                rules.choose(game, ctx.sourced(f"Value left: {budget}."), options, kind="gain_reserve", inv=inv)
+            ].value
             if uid is None:
                 break
             card = next(c for c in cards if c.uid == uid)
             game.reserve.remove(card)
             budget -= game.asset_def(card).cost
-            rules.gain_card(game, inv, card)
+            rules.gain_card(game, inv, card, source=ctx.source_name)
         rules.refill_reserve(game)
 
 
@@ -3255,11 +3313,15 @@ class TradeClues(Effect):
         if not others:
             return
         options = [Option(i.name, i.seat, f"{i.clues} Clue(s)") for i in others]
-        other = others[rules.choose(game, "Trade Clues with whom?", options, kind="ability_target", inv=inv)]
+        other = others[
+            rules.choose(game, ctx.sourced("Trade Clues with whom?"), options, kind="ability_target", inv=inv)
+        ]
         for giver, taker in ((inv, other), (other, inv)):
             amounts = [Option(str(n), n) for n in range(giver.clues + 1)]
             prompt = f"How many Clues does {giver.name} give?"
-            amount = amounts[rules.choose(game, prompt, amounts, kind="amount", inv=inv, auto_single=True)].value
+            amount = amounts[
+                rules.choose(game, ctx.sourced(prompt), amounts, kind="amount", inv=inv, auto_single=True)
+            ].value
             giver.clues -= amount
             taker.clues += amount
 
@@ -3280,7 +3342,9 @@ class LolaRehearse(Effect):
         while held := [s for s in SKILLS if inv.improvements.get(s, 0) > 0]:
             options = [Option(f"Spend the {s.title()} token", s, f"+{inv.improvements[s]}") for s in held]
             options.append(Option("Stop", None))
-            skill = options[rules.choose(game, "Spend which token?", options, kind="spend_token", inv=inv)].value
+            skill = options[
+                rules.choose(game, ctx.sourced("Spend which token?"), options, kind="spend_token", inv=inv)
+            ].value
             if skill is None:
                 break
             spent += inv.improvements.pop(skill)
@@ -3307,7 +3371,7 @@ class CultistElsewhere(Effect):
         places = sorted(game.content.locations, key=lambda loc: rules.loc_name(game, loc))
         places.remove(here)
         options = [Option(rules.loc_name(game, loc), loc) for loc in places]
-        pick = rules.choose(game, "Move it where?", options, kind="move", inv=ctx.inv)
+        pick = rules.choose(game, ctx.sourced("Move it where?"), options, kind="move", inv=ctx.inv)
         rules.move_monster(game, monster, places[pick])
 
 

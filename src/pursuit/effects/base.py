@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -10,6 +10,74 @@ from pursuit.content.reader import ContentError, Reader
 
 if TYPE_CHECKING:
     from pursuit.engine.state import ActiveMythos, AssetCard, ConditionInst, Game, Investigator, MonsterInst
+
+
+def sourced(name: str, text: str) -> str:
+    """Prefix `text` with a source's display name, unless the name is empty or already in the text."""
+    return f"{name}: {text}" if name and name not in text else text
+
+
+def _investigator_name(game: Game, def_id: str) -> str:
+    return game.content.investigators[def_id].name
+
+
+def _asset_name(game: Game, def_id: str) -> str:
+    return game.content.assets[def_id].name
+
+
+def _condition_name(game: Game, def_id: str) -> str:
+    return game.content.conditions[def_id].name
+
+
+def _monster_name(game: Game, def_id: str) -> str:
+    return game.monster_def(def_id).name
+
+
+def _mythos_name(game: Game, def_id: str) -> str:
+    return game.content.mythos[def_id].name
+
+
+def _old_one_name(game: Game, def_id: str) -> str:
+    return game.content.old_ones[def_id].name
+
+
+def _mystery_name(game: Game, def_id: str) -> str:
+    old = game.old_one
+    return next(m.name for m in (*old.mysteries, old.awakening.final_mystery) if m is not None and m.id == def_id)
+
+
+def _encounter_name(game: Game, def_id: str) -> str:
+    """Encounter titles are cut-off card text, so a source names the deck."""
+    deck = game.content.encounters[def_id].deck
+    group = deck.partition("_")[0] if deck.startswith(("research_", "special_")) else deck
+    label = "Other World" if group == "other_world" else group.replace("_", "/").title()
+    return f"{label} Encounter"
+
+
+_SOURCE_NAMES: dict[str, Callable[[Game, str], str]] = {
+    "ability": _investigator_name,
+    "start": _investigator_name,
+    "asset": _asset_name,
+    "asset_back": _asset_name,
+    "reckoning_asset": _asset_name,
+    "condition": _condition_name,
+    "condition_action": _condition_name,
+    "reckoning_condition": _condition_name,
+    "monster": _monster_name,
+    "monster_spawn": _monster_name,
+    "reckoning_monster": _monster_name,
+    "mythos": _mythos_name,
+    "mythos_zero": _mythos_name,
+    "reckoning_mythos": _mythos_name,
+    "rumor": _mythos_name,
+    "setup": _old_one_name,
+    "awakening": _old_one_name,
+    "awakened_doom": _old_one_name,
+    "reckoning_ao": _old_one_name,
+    "eldritch_move": _old_one_name,
+    "mystery": _mystery_name,
+    "encounter": _encounter_name,
+}
 
 
 @dataclass(frozen=True)
@@ -34,6 +102,15 @@ class Ctx:
     tag: str | None = None
     chosen: Investigator | None = None
     test_rolls: tuple[int, ...] = ()
+
+    @property
+    def source_name(self) -> str:
+        """The player-facing name of `source`. A source with no `prefix:id` shape has no name."""
+        prefix, _, def_id = self.source.partition(":")
+        return _SOURCE_NAMES[prefix](self.game, def_id) if def_id else ""
+
+    def sourced(self, text: str) -> str:
+        return sourced(self.source_name, text)
 
     def stopped(self) -> bool:
         if self.game.outcome is not None:

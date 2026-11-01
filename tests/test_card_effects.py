@@ -146,7 +146,7 @@ def test_reserve_or_deck_text_offers_both(make_game: MakeGame, script: Script) -
     script.add("gain_source", "Draw from the deck")
     resolve(game, inv, "general_1", "city")
     assert len(inv.assets) == held + 1
-    assert ("gain_source", "Gain asset from where?") in script.asked
+    assert ("gain_source", "General Encounter: Gain asset from where?") in script.asked
 
 
 def test_weapon_rewards_can_be_a_trinket_weapon(make_game: MakeGame) -> None:

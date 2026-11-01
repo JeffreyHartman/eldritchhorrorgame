@@ -422,6 +422,7 @@ def resolve_mythos(game: Game, mdef: MythosDef) -> None:
     if active_card is not None:
         game.active_mythos.append(active_card)
     if mdef.effects and not game.outcome:
+        rules.emit(game, "mythos", f"{mdef.name}: {mdef.text}", mythos=mdef.id)
         run_effects(mdef.effects, Ctx(game, None, f"mythos:{mdef.id}", mythos=active_card))
         rules.process_defeats(game)
 
