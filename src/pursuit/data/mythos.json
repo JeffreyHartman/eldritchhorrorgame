@@ -1,0 +1,923 @@
+[
+  {
+    "id": "calling_the_elder_things",
+    "name": "Calling the Elder Things",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "monster_surge",
+      "spawn_clues"
+    ],
+    "flavor": "According to the police report, several individuals entered the warehouse in the middle of the night. They performed some sort of ritual which culminated in their death. What you know that the police don't is that, afterward, something inhuman left that warehouse.",
+    "text": "Spawn 1 Monster on each space that contains a Cultist Monster.",
+    "effects": [
+      {
+        "type": "spawn_monster",
+        "at": "cultist_spaces"
+      }
+    ]
+  },
+  {
+    "id": "patrolling_the_border",
+    "name": "Patrolling the Border",
+    "color": "green",
+    "traits": [
+      "ongoing"
+    ],
+    "icons": [
+      "advance_omen",
+      "monster_surge",
+      "spawn_clues"
+    ],
+    "flavor": "The soldiers refuse to explain why you must pass through this checkpoint, and simply asking makes you more suspicious in their eyes.",
+    "text": "When this card enters play, the Lead Investigator chooses 1 investigator to become Delayed. Reckoning: Each investigator on a City space tests Observation. If he fails, he becomes Delayed and gains a Detained Condition. Then discard this card.",
+    "effects": [],
+    "reckoning": [
+      {
+        "type": "each_investigator",
+        "where": {
+          "at": {
+            "terrain": "city"
+          }
+        },
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "fail": [
+              {
+                "type": "delay"
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "solve_rumor",
+        "solved": false
+      }
+    ]
+  },
+  {
+    "id": "a_proposition",
+    "name": "A Proposition",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "You had told everyone the parchment was indecipherable, but you were lying. You know the ritual necessary to summon and bind the dark power. You could strike a bargain with it. The situation is desperate, but you know that a solution is within its power. But what will it ask of you in return?",
+    "text": "The Lead Investigator may gain a Dark Pact Condition to immediately solve 1 Rumor Mythos card in play.",
+    "effects": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Gain a Dark Pact to solve a Rumor in play?",
+            "options": [
+              {
+                "label": "Gain a Dark Pact",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "dark_pact"
+                  },
+                  {
+                    "type": "solve_rumor_in_play"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse the bargain",
+                "effects": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "heart_of_corruption",
+    "name": "Heart of Corruption",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "monster_surge",
+      "spawn_clues"
+    ],
+    "flavor": "You compared the picture in the magazine to the drawing on the old, tattered map. It was definitely a match, but what could be so valuable that it required so much secrecy, and why was that particular point on the map marked with blood?",
+    "text": "The Lead Investigator gains 1 Artifact, then rolls 1 die. On a 1 or 2, he loses 2 Health and 2 Sanity.",
+    "effects": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "gain_asset",
+            "kind": "artifact"
+          },
+          {
+            "type": "random",
+            "outcomes": [
+              {
+                "weight": 4,
+                "text": "The artifact is yours, and nothing follows you.",
+                "effects": []
+              },
+              {
+                "weight": 2,
+                "text": "Something reaches back through the relic!",
+                "effects": [
+                  {
+                    "type": "health",
+                    "amount": -2
+                  },
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "support_of_the_church",
+    "name": "Support of the Church",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "monster_surge",
+      "spawn_clues"
+    ],
+    "flavor": "You hang your head in exhaustion and frustration. You jump suddenly when a hand rests on your shoulder. To your relief, you turn to find the local priest. \"Have faith, my child,\" he tells you. \"Your good works have not gone unseen. Your brave acts are making a difference.\"",
+    "text": "The Lead Investigator gains a Blessed Condition.",
+    "effects": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "gain_condition",
+            "id": "blessed"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "buying_information",
+    "name": "Buying Information",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "\"When you get there, stop at this address.\" The nervous little man hands you a business card for a restaurant. \"Ask for the catch of the day and then tuck a sawbuck into your napkin. These guys can get you the answers you need.\" When you get the bill for your meal, it includes directions to a payphone. It's already ringing by the time you find it. You answer and explain your situation to the gruff voice on the other end of the line.",
+    "text": "The Lead Investigator tests Influence and gains a number of Clues equal to his test result.",
+    "effects": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "pass": [
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "driven_to_bankruptcy",
+    "name": "Driven to Bankruptcy",
+    "color": "green",
+    "traits": [
+      "ongoing"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "Walking down the street, you are surrounded by locked doors and boarded up windows. You see only a few people striding down the sidewalk, and almost all of them avoid eye contact. Those that do look you in the eye glare at you suspiciously.",
+    "text": "When this card enters play, discard all cards from the reserve. Cards cannot be placed in the reserve. Reckoning: Discard this card and place the top 4 cards of the Asset deck in the reserve.",
+    "effects": [
+      {
+        "type": "refresh_reserve"
+      }
+    ],
+    "reckoning": [
+      {
+        "type": "refresh_reserve"
+      },
+      {
+        "type": "solve_rumor",
+        "solved": false
+      }
+    ]
+  },
+  {
+    "id": "unexpected_betrayal",
+    "name": "Unexpected Betrayal",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "monster_surge",
+      "spawn_clues"
+    ],
+    "flavor": "After weeks of encountering ancient and monstrous creatures, you were unprepared for something so cold and personal as being betrayed by an associate. Lies can be every bit as destructive as any wizard's curse.",
+    "text": "Each investigator with at least 1 Ally Asset loses 3 Health and discards 1 Ally Asset.",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "where": {
+          "asset_kind": "ally"
+        },
+        "effects": [
+          {
+            "type": "health",
+            "amount": -3
+          },
+          {
+            "type": "lose_asset",
+            "kind": "ally"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "a_dark_power",
+    "name": "A Dark Power",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "Lightning cracks across the sky. You have a sinking dread that all the good you've accomplished is about to be undone.",
+    "text": "Each Monster recovers all Health. Then each investigator immediately encounters each Monster on his space in the order of his choice.",
+    "effects": [
+      {
+        "type": "monsters_heal"
+      },
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "encounter_monsters"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "legitimate_banking",
+    "name": "Legitimate Banking",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "The man in the suit slides the contract across the desk. \"We've spoken to the police and the customs agents, and all of the necessary payments have been made. If you'll just sign this, indicating that you understand your obligations, you can be on your way.\" His assistant places a pen in your hand.",
+    "text": "The Lead Investigator gains a Debt Condition. If the Lead Investigator already had a Debt Condition, he resolves the Reckoning effect on that card, treating all die rolls as l's.",
+    "effects": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "if",
+            "has": {
+              "condition": "debt"
+            },
+            "then": [
+              {
+                "type": "flip_conditions",
+                "id": "debt"
+              }
+            ],
+            "else": [
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dimensional_instability",
+    "name": "Dimensional Instability",
+    "color": "green",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "You cannot believe that this gibbering lunatic was once the smiling, lucid lawyer you spoke to this morning. \"Collapsed,\" his trembling hands indicated empty air. \"The worlds collided, and the door collapsed!\" He abruptly pulls himself off the floor and looks out the small window of his cell. \"But so too will they pull. They will rip and tear, and a new door will open elsewhere.\"",
+    "text": "Discard each Gate that corresponds to the current Omen and advance Doom by 1 for each Gate discarded.",
+    "effects": [
+      {
+        "type": "discard_matching_gates",
+        "doom_per_gate": 1
+      }
+    ]
+  },
+  {
+    "id": "desperate_times",
+    "name": "Desperate Times",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "You hear it again and again on the news. Every day the world takes another step toward utter annihilation. You ask yourself, how much would you sacrifice to prevent that disaster? Even if you could only grant humanity one more day of existence, could you honestly say that the price was too high?",
+    "text": "Doom advances by 2 unless the Lead Investigator gains a Dark Pact Condition.",
+    "effects": [
+      {
+        "type": "one_investigator",
+        "pick": "lead",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "Take a Dark Pact to prevent Doom from advancing by 2?",
+            "options": [
+              {
+                "label": "Gain Dark Pact",
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "dark_pact"
+                  }
+                ]
+              },
+              {
+                "label": "Let Doom advance by 2",
+                "effects": [
+                  {
+                    "type": "advance_doom",
+                    "amount": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "from_bad_to_worse",
+    "name": "From Bad to Worse",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "Piece by piece, you are falling apart. It's getting harder to successfully negotiate simple human interactions. Your wounds won't stop bleeding, and your hands won't stop shaking.",
+    "text": "Each investigator loses 1 Health for each Injury Condition he has, loses 1 Sanity for each Madness Condition he has, and discards 1 Clue for each Deal Condition he has.",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "condition_penalty"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ancient_guardians",
+    "name": "Ancient Guardians",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "An article on the back page of the newspaper catches your attention. An unexplained attack on a remote outpost left no survivors. You've read about two other similar attacks happening in the same region. You can see that the forgotten corners of the globe are growing more dangerous.",
+    "text": "Spawn 2 Monsters on the Active Expedition space.",
+    "effects": [
+      {
+        "type": "spawn_monster",
+        "count": 2,
+        "at": "active_expedition"
+      }
+    ]
+  },
+  {
+    "id": "arrests_made_in_murder_case",
+    "name": "Arrests Made in Murder Case!",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "You open the door of your hotel to find several stone-faced policemen. There's been a lot of unexplained deaths and nothing attracts suspicion like being a stranger.",
+    "text": "Each investigator on a City space with a Weapon possession test Influence. If he fails, he discards 1 Weapon possession and gains a Detained Condition.",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "where": {
+          "at": {
+            "terrain": "city"
+          },
+          "asset_trait": "weapon"
+        },
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "fail": [
+              {
+                "type": "lose_asset",
+                "trait": "weapon"
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "eyes_everywhere",
+    "name": "Eyes Everywhere",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "Now that you know what to look for, you see them all around you: the man pretending to be asleep on the bench, the woman watching you in the reflection of a tobacconist's shop, the trio who have been following you since you left the station. They've been tracking your every move.",
+    "text": "Each investigator rolls 1 die and resolves the matching effect: 1-2: He is assaulted and loses 2 Health and 2 Sanity. 3-5: A Monster ambushes him. 6: No effect.",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "random",
+            "outcomes": [
+              {
+                "weight": 2,
+                "text": "They close in and beat him bloody.",
+                "effects": [
+                  {
+                    "type": "health",
+                    "amount": -2
+                  },
+                  {
+                    "type": "sanity",
+                    "amount": -2
+                  }
+                ]
+              },
+              {
+                "weight": 3,
+                "text": "Something lunges from the shadows.",
+                "effects": [
+                  {
+                    "type": "ambush"
+                  }
+                ]
+              },
+              {
+                "weight": 1,
+                "text": "The watchers lose the trail.",
+                "effects": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "heat_wave_singes_the_globe",
+    "name": "Heat Wave Singes the Globe",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "Sweating and exhausted, you stop to rest in what little shade you can find. You've already heard stories of this heat wave claiming the lives of sick or elderly individuals. You fear that if you keep going at this pace, you might fall victim to it as well.",
+    "text": "Each investigator loses 3 Health unless he becomes Delayed.",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "The heat is unbearable. Rest or push on?",
+            "options": [
+              {
+                "label": "Lose 3 Health",
+                "effects": [
+                  {
+                    "type": "health",
+                    "amount": -3
+                  }
+                ]
+              },
+              {
+                "label": "Become Delayed",
+                "effects": [
+                  {
+                    "type": "delay"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "silver_twilight_aid",
+    "name": "Silver Twilight Aid",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "One inside the lodge, your host invites you to follow him upstairs. Several members stare in astonishment. Outsiders are rarely granted such access. At the top of the stairs you are ushered into a library, filled with rare and exotic tomes. \"Now,\" he says, \"how can we help you?\"",
+    "text": "Each investigator may do one of the following: *Gain 1 Clue *Gain 1 Asset *Gain 1 Spell",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "choice",
+            "prompt": "What does the Lodge provide?",
+            "options": [
+              {
+                "label": "Gain 1 Clue",
+                "effects": [
+                  {
+                    "type": "clues",
+                    "amount": 1
+                  }
+                ]
+              },
+              {
+                "label": "Gain 1 Asset",
+                "effects": [
+                  {
+                    "type": "gain_asset",
+                    "source": "reserve"
+                  }
+                ]
+              },
+              {
+                "label": "Gain 1 Spell",
+                "effects": [
+                  {
+                    "type": "gain_asset",
+                    "kind": "spell"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "haunting_nightmares",
+    "name": "Haunting Nightmares",
+    "color": "yellow",
+    "traits": [
+      "event"
+    ],
+    "icons": [
+      "advance_omen",
+      "reckoning",
+      "spawn_gates"
+    ],
+    "flavor": "You wake up in mid-scream, and your heart is racing. What little you can remember of your nightmare was so visceral and horrific that you dread falling back asleep.",
+    "text": "Each investigator loses 2 Sanity and gains a Madness Condition unless he spends 1 Clue.",
+    "effects": [
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "pay",
+            "cost": {
+              "clues": 1
+            },
+            "prompt": "Spend 1 Clue to shake off the nightmare?",
+            "then": [],
+            "else": [
+              {
+                "type": "sanity",
+                "amount": -2
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "stars_aligned",
+    "name": "Stars Aligned",
+    "color": "blue",
+    "traits": [
+      "ongoing",
+      "rumor"
+    ],
+    "icons": [
+      "place_rumor"
+    ],
+    "rumor_space": "space_7",
+    "flavor": "A dozen unpleasant-looking strangers have settled into Panama with a large collection of astronomical reference books. There is something unique about this place and time that allows them to rip apart the fabric of reality.",
+    "text": "As an encounter, an investigator on space 7 may attempt to find these strangers based on his observations of the stars (Observation). If he passes, he convinces la policía to remove these strangers; he may spend Clues equal to half investigators to solve this Rumor. Reckoning: Advance the Omen by 1.",
+    "encounter_text": "On Space 7, test Observation. If you pass, you may spend Clues equal to half players to solve this Rumor.",
+    "effects": [],
+    "reckoning": [
+      {
+        "type": "advance_omen",
+        "amount": 1
+      }
+    ],
+    "encounter_effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "pass": [
+          {
+            "type": "pay",
+            "half_players_clues": true,
+            "prompt": "Spend Clues to solve Stars Aligned?",
+            "then": [
+              {
+                "type": "solve_rumor",
+                "solved": true
+              }
+            ],
+            "else": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "the_wind_walker",
+    "name": "The Wind-Walker",
+    "color": "blue",
+    "traits": [
+      "ongoing",
+      "rumor"
+    ],
+    "icons": [
+      "place_rumor",
+      "place_eldritch"
+    ],
+    "rumor_space": "space_4",
+    "eldritch": 3,
+    "flavor": "The weather grows worse. Snow and ice cover cities that have never seen such weather before in their history.",
+    "text": "When this card enters play, spawn the Wind-Walker Epic Monster on space 4. When it is defeated, solve this Rumor. When there are no eldritch tokens on this card, each investigator becomes Delayed and loses 6 Health, then solve this Rumor. Reckoning: Discard 1 Eldritch token from this card.",
+    "encounter_text": "On Space 4, test Lore. If you pass, solve this Rumor.",
+    "effects": [
+      {
+        "type": "spawn_monster",
+        "id": "wind_walker",
+        "at": "space_4"
+      }
+    ],
+    "reckoning": [
+      {
+        "type": "mythos_eldritch",
+        "amount": -1
+      }
+    ],
+    "encounter_effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "pass": [
+          {
+            "type": "solve_rumor",
+            "solved": true
+          }
+        ]
+      }
+    ],
+    "on_zero_eldritch": [
+      {
+        "type": "each_investigator",
+        "effects": [
+          {
+            "type": "health",
+            "amount": -3
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "type": "solve_rumor",
+        "solved": false
+      }
+    ]
+  },
+  {
+    "id": "mysterious_lights",
+    "name": "Mysterious Lights",
+    "color": "blue",
+    "traits": [
+      "ongoing",
+      "rumor"
+    ],
+    "icons": [
+      "place_rumor",
+      "place_eldritch"
+    ],
+    "rumor_space": "space_13",
+    "eldritch": 3,
+    "flavor": "You've never seen the Aurora Borealis flashing with such intensity. Even south of the arctic circle, the air feels alive with alien energies that cannot be dispelled.",
+    "text": "Gates cannot be closed. As an encounter, an investigator on space 13 may fly a plane over the arctic ice to scout for the source of these unusually intense northern lights (Observation). If he passes, he catches sight of an unoccupied mi-go outpost and attempts to turn off their bizarre devices; he may spend Clues equal to half investigators to solve this Rumor.",
+    "encounter_text": "On Space 13, test Observation. If you pass, spend Clues equal to half players to solve this Rumor.",
+    "effects": [],
+    "reckoning": [
+      {
+        "type": "mythos_eldritch",
+        "amount": -1
+      }
+    ],
+    "encounter_effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "pass": [
+          {
+            "type": "pay",
+            "half_players_clues": true,
+            "prompt": "Spend Clues to solve Mysterious Lights?",
+            "then": [
+              {
+                "type": "solve_rumor",
+                "solved": true
+              }
+            ],
+            "else": []
+          }
+        ]
+      }
+    ],
+    "on_zero_eldritch": [
+      {
+        "type": "discard_all_clues"
+      },
+      {
+        "type": "solve_rumor",
+        "solved": false
+      }
+    ]
+  },
+  {
+    "id": "web_between_worlds",
+    "name": "Web Between Worlds",
+    "color": "blue",
+    "traits": [
+      "ongoing",
+      "rumor"
+    ],
+    "icons": [
+      "place_rumor",
+      "place_eldritch"
+    ],
+    "rumor_space": "space_16",
+    "eldritch": 3,
+    "flavor": "A sect of Atlach-Nacha worshipers have called forth the nightmarish spider.",
+    "text": "When this card enters play, spawn the Spinner of Webs Epic Monster on space 9. When it is defeated, solve this Rumor. When there are no eldritch tokens on this card, investigators lose the game. Reckoning: Discard 1 Eldritch token from this card unless investigators, as a group, spend Clues equal to half investigators.",
+    "encounter_text": "On Space 16, test Lore. If you pass, spend Clues equal to half players to solve this Rumor.",
+    "effects": [
+      {
+        "type": "spawn_monster",
+        "id": "spinner_of_webs",
+        "at": "space_9"
+      }
+    ],
+    "reckoning": [
+      {
+        "type": "mythos_eldritch",
+        "amount": -1
+      }
+    ],
+    "encounter_effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "pass": [
+          {
+            "type": "pay",
+            "half_players_clues": true,
+            "prompt": "Spend Clues to solve Web Between Worlds?",
+            "then": [
+              {
+                "type": "solve_rumor",
+                "solved": true
+              }
+            ],
+            "else": []
+          }
+        ]
+      }
+    ],
+    "on_zero_eldritch": [
+      {
+        "type": "sheet_token",
+        "amount": 1,
+        "lose_at": 1
+      }
+    ]
+  }
+]

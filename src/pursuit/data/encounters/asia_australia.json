@@ -1,0 +1,603 @@
+[
+  {
+    "id": "asia_australia_1",
+    "title": "You search through old copies of The Shanghai Courier...",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "You search through old copies of The Shanghai Courier to find strange or unexplained stories (Observation). If you pass, you discover a pattern of arcane activity in the city; improve Lore. If you fail, lose 1 Sanity as no pattern emerges from all this horror.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you discover a pattern of arcane activity in the city; improve Lore."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "lore"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Sanity as no pattern emerges from all this horror."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "You ask the enigmatic Dragon Lords to rid the world of potential threats to Japan (Influence). If you pass, each Monster on a space of your choice loses 2 Health as the mysterious group casts their spells. If you fail, the Dragon Lords lash out at you; gain a Back Injury Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "each Monster on a space of your choice loses 2 Health as the mysterious group casts their spells."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the Dragon Lords lash out at you; gain a Back Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "back_injury"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "You dream of crossing a vast desert hunted by an enormous winged creature. In the dream, you turn to face your fears (Will). If you pass, you wake up feeling more alive than ever; improve Strength. If you fail, the fear lingers; lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you wake up feeling more alive than ever; improve Strength."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "strength"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the fear lingers; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_2",
+    "title": "If you can convince Chu Min to help, he will use New...",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "If you can convince Chu Min to help, he will use New China's vast resources to provide you with any sort of instruction you require (Influence). If you pass, improve 1 skill of your choice. If you fail, lose 1 Health as his men force you out onto the street.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "improve 1 skill of your choice."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health as his men force you out onto the street."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "You may become Delayed to explore some submerged pyramids off the coast of Okinawa. If you do, you discover ancient writing that claims to \"harm one's enemies;\" 1 Monster of your choice on any space loses 3 Health.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "A group of hunters provide you with the skills to track down a bunyip. Improve Strength. When you find the massive four-legged creature, your weapons cannot pierce its leathery hide. You try to protect yourself from the beast's terrible claws and teeth (Strength-1). If you fail, lose 2 Health",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "strength"
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Health"
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_3",
+    "title": "The shrine holds an abundance of ancient relics.",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "The shrine holds an abundance of ancient relics. Improve Lore. Your eye catches strange figures written on the ceiling. You find it hard to look away (Will). If you fail, the writing seems to move on its own; gain a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "lore"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the writing seems to move on its own; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "You find a gem bearing the symbol of the Emerald Lama. In its facets, you see the image of some horrible beast. Suddenly, the creature is right next to you! Choose 1 non-Epic Monster on any space and move it to your space, then encounter it.",
+        "effects": []
+      },
+      {
+        "location": "sydney",
+        "text": "Your money and passport have been stolen! You work on the Sydney Harbor Bridge to pay the bills. Improve Strength as you meet the job's rigorous demands. When your passport is found at the scene of a crime, you need to prove your innocence (Influence). If you fail, gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "strength"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_4",
+    "title": "The Shanghai Museum recommends you speak to Mu Hsien,...",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "The Shanghai Museum recommends you speak to Mu Hsien, a preeminent scholar of the occult. You send him a message that you hope will convince him to help (Influence). If you pass, improve Lore as he shares his wealth of knowledge.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "improve Lore as he shares his wealth of knowledge."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "lore"
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "The reigning Emperor has been plagued by nightmares. His advisors ask your opinion and you assure them that these horrors are real (Influence). If you pass, they act immediately; 1 Monster of your choice on any space loses 2 Health. If you fail, gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they act immediately; 1 Monster of your choice on any space loses 2 Health."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "Several passengers on an underground train have been trapped by a tunnel collapse. The dark and claustrophobic climb through the rubble is terrifying (Will). If you pass, your nerves hold out enough to help dig a clear path for the survivors; improve Strength. If you fail, lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "your nerves hold out enough to help dig a clear path for the survivors; improve Strength."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "strength"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_5",
+    "title": "The decadent crime lord, Lin Tang-Yu, offers, you...",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "The decadent crime lord, Lin Tang-Yu, offers, you access to his library of occult treasures in exchange for information. You may spend 1 Clue to improve Lore.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "lore"
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "Captain Isoge Taro of the Imperial Japanese Navy takes particular interest in your investigations. You describe the threats that the world is facing (Influence-1). If you pass, you convince him to help you; 1 Monster of your choice on any space loses 3 Health. If you fail, he is convinced that you are a dangerous menace; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you convince him to help you; 1 Monster of your choice on any space loses 3 Health."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "he is convinced that you are a dangerous menace; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "The Theosophical Society is excited to hear what knowledge you have gained during your travels. You may spend 1 Clue. If you do, they gratefully provide you with an exercise and diet regimen that fortifies your vitality; improve Strength.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "strength"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_6",
+    "title": "You break into a warehouse filled with ancient wonders...",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "You break into a warehouse filled with ancient wonders and learn much by studying its content. Improve Lore. You must remain silent to avoid being caught (Observation). If you fail, they question you for days; become Delayed.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "lore"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "they question you for days; become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "The Brotherhood of the Black Lotus has poisoned you! You fall into a coma and confront your greatest fears (Will). If you pass, you awake and feel transformed; gain a Blessed Condition. If you fail, the nightmares follow you into the waking world; gain a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you awake and feel transformed; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the nightmares follow you into the waking world; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "Due to a city-wide shortage of supplies, shopkeepers won't even show you their wares unless you prove that you can pay top dollar (Influence-1). If you pass, gain 1 random Weapon Asset from the deck. If you fail, you are roped into a devious scheme; gain a Debt Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 random Weapon Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are roped into a devious scheme; gain a Debt Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_7",
+    "title": "The old man offers to make tea for you.",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "The old man offers to make tea for you. You see him mix in a strange, green powder that he calls \"tyuk\". You may become Delayed to wait for it to brew. If you become Delayed, the tyuk seems to heighten all of your senses; improve 1 skill of your choice.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "A strange man dressed in the charred robes of a monk offers you help in exchange for knowledge. You may spend 1 Clue to convince the Black Monk to assist you and discard 1 Monster of your choice from any space.",
+        "effects": [
+          {
+            "type": "discard_monster",
+            "where": "choose_space"
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "An old, aboriginal man is on trial for a murder that you know he didn't commit. You agree to testify to prove his innocence (Influence). If you pass, he speaks to the spirits on your behalf; gain a Blessed Condition. If you fail, you are accused of perjury; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he speaks to the spirits on your behalf; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are accused of perjury; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "asia_australia_8",
+    "title": "You spot an odd, fish-like man pull a young monk...",
+    "sections": [
+      {
+        "location": "shanghai",
+        "text": "You spot an odd, fish-like man pull a young monk underwater! You dive in to rescue him, holding your breath as long as you can (Strength). If you pass, the grateful monk prays over you; gain a Blessed Condition. If you fail, you are implicated in his disappearance; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the grateful monk prays over you; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are implicated in his disappearance; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "tokyo",
+        "text": "A translation of The Tao of Immortality is kept in the Tokyo University Library. If you are deemed trustworthy, you are granted access to the ancient text (Influence). If you pass, you can use the arcane manual to move 1 Monster of your choice from any space to another space of your choice.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you can use the arcane manual to move 1 Monster of your choice from any space to another space of your choice."
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "location": "sydney",
+        "text": "The constable sees you admire the abandoned weapon. \"Give it a bit to see if anyone claims it,\" he says. \"If not, you can help yourself.\" You may become Delayed to gain 1 random Weapon Asset from the deck.",
+        "effects": [
+          {
+            "type": "delay"
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "item"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -76,39 +76,39 @@ def test_every_view_renders(content: Content) -> None:
     from rich.console import Console
 
     console = Console(file=io.StringIO(), width=120, color_system="truecolor", force_terminal=True)
-    game = new_game(content, GameConfig("cthulhu", ("hollis_grange", "ada_penhallow"), seed=3))
+    game = new_game(content, GameConfig("cthulhu", ("mark_harrigan", "akachi_onyele"), seed=3))
     inv = game.investigators[0]
-    rules.gain_condition(game, inv, "leg_wound")
+    rules.gain_condition(game, inv, "leg_injury")
     for item in (
         render.header(game),
         render.investigator_panel(game, inv, current=True),
-        render.location_panel(game, "south_pacific"),
-        render.rites_panel(game),
+        render.location_panel(game, "arkham"),
+        render.mysteries_panel(game),
         render.log_panel(game),
-        render.market_table(game, inv),
+        render.reserve_table(game, inv),
         render.map_view(game),
         render.old_one_panel(game.old_one),
-        render.investigator_card(content.investigators["ada_penhallow"], content),
+        render.investigator_card(content.investigators["akachi_onyele"], content),
         render.monster_panel(content.monsters["ghoul"], 1, 2),
         render.stats_table(game),
     ):
         console.print(item)
     text = output(console)
-    assert "Hollis Grange" in text and "Leg Wound" in text and "South Pacific" in text
+    assert "Mark Harrigan" in text and "Leg Injury" in text and "Arkham" in text
 
 
-def test_map_marks_investigators_and_rifts(content: Content) -> None:
+def test_map_marks_investigators_and_gates(content: Content) -> None:
     console = make_console()
-    game = new_game(content, GameConfig("king_in_yellow", ("hollis_grange",), seed=3))
+    game = new_game(content, GameConfig("azathoth", ("mark_harrigan",), seed=3))
     console.print(render.map_view(game))
     text = output(console)
-    assert "CH" in text and "The World, 1926" in text
+    assert "AK" in text and "The World Map" in text
     assert "*" in text  # the legend marks where investigators stand
 
 
 def test_map_fits_a_narrow_terminal(content: Content) -> None:
     console = make_console(width=80)
-    game = new_game(content, GameConfig("king_in_yellow", ("hollis_grange",), seed=3))
+    game = new_game(content, GameConfig("azathoth", ("mark_harrigan",), seed=3))
     console.print(render.map_view(game))
     assert all(len(line) <= 80 for line in output(console).splitlines())
 
@@ -120,7 +120,7 @@ def test_random_player_finishes_a_game_through_the_ui(content: Content, saves: P
     app.ui = RandomPlayer(console, seed)
     old = sorted(content.old_ones)[seed]
     path = saves / "ui.json"
-    game = new_game(content, GameConfig(old, ("tug_mulroney", "celestine_boudreaux"), seed=seed), app.ui)
+    game = new_game(content, GameConfig(old, ("mark_harrigan", "akachi_onyele"), seed=seed), app.ui)
     app.play(game, path)
     assert game.outcome in ("win", "loss")
     assert not path.exists(), "a finished game removes its save"
@@ -167,7 +167,7 @@ def test_new_game_wizard_then_save_and_quit_then_continue(content: Content, save
     App(console, content, keys).main_menu()
     assert not keys.answers
     text = output(console)
-    assert "Rites to complete" in text and "The World, 1926" in text and "Saved to" in text
+    assert "Active Mystery" in text and "The World Map" in text and "Saved to" in text
     files = list(saves.glob("*.json"))
     assert len(files) == 1
     loaded = save.load_game(content, files[0])
@@ -175,7 +175,7 @@ def test_new_game_wizard_then_save_and_quit_then_continue(content: Content, save
 
 
 def test_broken_save_shows_an_error(content: Content, saves: Path) -> None:
-    (saves / "broken.json").write_text('{"version": 1, "old_one": "x", "round": 1, "investigators": []}')
+    (saves / "broken.json").write_text('{"version": 2, "old_one": "x", "round": 1, "investigators": []}')
     console = make_console()
     App(console, content, Keys("2", "", "5")).main_menu()
     assert "Cannot load" in output(console)

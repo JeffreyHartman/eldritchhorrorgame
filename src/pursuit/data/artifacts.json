@@ -1,0 +1,164 @@
+[
+  {
+    "id": "lightning_gun",
+    "name": "Lightning Gun",
+    "traits": [
+      "item",
+      "weapon",
+      "magical"
+    ],
+    "text": "Gain +6 Strength when resolving a Combat Encounter. Action: You and each Monster on your space lose 1 Health.",
+    "flavor": "Built in a canyon laboratory by creatures from Yuggoth.",
+    "modifiers": [
+      {
+        "amount": 6,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "sword_of_st_jerome",
+    "name": "Sword of Saint Jerome",
+    "traits": [
+      "item",
+      "weapon",
+      "magical"
+    ],
+    "text": "Gain +2 Will and +5 Strength when resolving Combat Encounters. If you defeat a Monster during a Combat Encounter, recover 1 Sanity.",
+    "flavor": "The blade still shines after a thousand years.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "will",
+        "context": "combat"
+      },
+      {
+        "amount": 5,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "glass_of_mortlan",
+    "name": "Glass of Mortlan",
+    "traits": [
+      "item",
+      "magical"
+    ],
+    "text": "Each 6 you roll when resolving a Spell effect counts as 2 successes. You may prevent the loss of 1 Sanity when resolving your Spell effects.",
+    "flavor": "Look through the lens and see the threads that bind the stars.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "observation"
+      },
+      {
+        "amount": 1,
+        "skill": "lore",
+        "additional": true
+      }
+    ]
+  },
+  {
+    "id": "t_tka_halot",
+    "name": "T'tka Halot",
+    "traits": [
+      "item",
+      "tome",
+      "magical"
+    ],
+    "text": "Action: Test Lore. If you pass, you may spend 1 Sanity to choose 1 Monster on your space to lose 3 Health.",
+    "flavor": "Bound in black iron and written in a tongue of fire.",
+    "action": {
+      "text": "Read T'tka Halot: test Will (-1). Pass: each Monster here loses 5 Health.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "will",
+          "mod": -1,
+          "pass": [
+            {
+              "type": "damage_monsters",
+              "amount": 5,
+              "where": "here"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "pallid_mask_artifact",
+    "name": "The Pallid Mask",
+    "traits": [
+      "item",
+      "magical"
+    ],
+    "text": "During the Encounter Phase, you may choose an encounter as if there are no Monsters on your space.",
+    "flavor": "Cool porcelain that fits your face as if it were made for you.",
+    "sanity_reduction": 1,
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "influence"
+      },
+      {
+        "amount": 2,
+        "skill": "lore"
+      }
+    ]
+  },
+  {
+    "id": "silver_key",
+    "name": "The Silver Key",
+    "traits": [
+      "item",
+      "magical"
+    ],
+    "text": "Once per round, you may spend 1 less Clue to pay for an effect. You may reroll 1 die when resolving a test during an Other World Encounter.",
+    "flavor": "Turn it in empty air, and the door opens.",
+    "action": {
+      "text": "Turn the Silver Key: move up to 4 spaces.",
+      "effects": [
+        {
+          "type": "move",
+          "to": "choose_within",
+          "range": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "ruby_of_rlyeh",
+    "name": "Ruby of R'lyeh",
+    "traits": [
+      "item",
+      "magical"
+    ],
+    "text": "Once per round, during the Action Phase, you may spend 1 Sanity and perform 1 additional action.",
+    "flavor": "It pulses like a slow heart under deep water.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "where": {
+          "terrain": "sea"
+        },
+        "additional": true
+      }
+    ],
+    "action": {
+      "text": "Gaze into the Ruby: lose 1 Sanity to gain 2 Clues.",
+      "cost": {
+        "sanity": 1
+      },
+      "effects": [
+        {
+          "type": "clues",
+          "amount": 2
+        }
+      ]
+    }
+  }
+]

@@ -1,87 +1,532 @@
 [
   {
-    "id": "withering_word", "name": "Withering Word", "traits": ["incantation"],
-    "text": "Once per round, lose 1 Sanity to add 3 dice to a fight.",
-    "flavor": "A word that makes flesh forget how to hold together.",
-    "boosts": [{"text": "Speak the word: lose 1 Sanity for +3 dice.", "amount": 3, "context": "combat", "cost": {"sanity": 1}}]
-  },
-  {
-    "id": "ward_of_salt", "name": "Ward of Salt and Iron", "traits": ["ward"],
-    "text": "Once per round, lose 1 Sanity to add 3 dice to a horror check.",
-    "flavor": "A circle drawn quickly, in the old way.",
-    "boosts": [{"text": "Raise the ward: lose 1 Sanity for +3 dice against horror.", "amount": 3, "context": "horror", "cost": {"sanity": 1}}]
-  },
-  {
-    "id": "veil_of_mists", "name": "Veil of Mists", "traits": ["incantation"],
-    "text": "Once per round, lose 1 Sanity to add 3 dice when you evade.",
-    "flavor": "The air thickens, and you are somewhere slightly to the left of where you were.",
-    "boosts": [{"text": "Call the mist: lose 1 Sanity for +3 dice to evade.", "amount": 3, "context": "evade", "cost": {"sanity": 1}}]
-  },
-  {
-    "id": "closing_sign", "name": "The Closing Sign", "traits": ["ward"],
-    "text": "Once per round, lose 1 Sanity to add 3 dice when you seal a rift.",
-    "flavor": "Five fingers, folded in an order that hurts.",
-    "boosts": [{"text": "Make the sign: lose 1 Sanity for +3 dice to seal.", "amount": 3, "context": "seal", "cost": {"sanity": 1}}]
-  },
-  {
-    "id": "mend_flesh", "name": "Mend Flesh", "traits": ["ritual"],
-    "text": "Action: test Lore. If you pass, recover 3 Health. If you fail, lose 1 Sanity.",
-    "flavor": "The wound closes. The scar is not quite your own skin.",
+    "id": "wither",
+    "name": "Wither",
+    "traits": [
+      "incantation"
+    ],
+    "count": 2,
+    "text": "When resolving a Combat Encounter, you may test Lore. If you pass, gain +3 Strength during that encounter. Then flip this card.",
+    "flavor": "Speak the syllable that turns bone to ash.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
     "action": {
-      "text": "Cast Mend Flesh: test Lore. Pass: recover 3 Health. Fail: lose 1 Sanity.",
-      "effects": [{"type": "test", "skill": "lore", "context": "cast",
-                   "pass": [{"type": "health", "amount": 3}],
-                   "fail": [{"type": "sanity", "amount": -1}]}]
-    }
+      "text": "Cast Wither: test Lore. Pass: each Monster here loses 2 Health. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "context": "cast",
+          "pass": [
+            {
+              "type": "damage_monsters",
+              "amount": 2,
+              "where": "here"
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The word sears your throat. Lose 1 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "text": "Your mastery holds firm.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
   },
   {
-    "id": "clarity_lamp", "name": "Clarity of the Lamp", "traits": ["ritual"],
-    "text": "Action: test Lore. If you pass, recover 2 Sanity.",
-    "flavor": "Stare into the flame until the shadows stop moving.",
+    "id": "flesh_ward",
+    "name": "Flesh Ward",
+    "traits": [
+      "incantation"
+    ],
+    "count": 2,
+    "text": "Once per round, when an investigator would lose Health, you may test Lore. If you pass, prevent that investigator from losing up to 2 Health. Then flip this card.",
+    "flavor": "Invisible plates of force interpose themselves before the blow.",
+    "damage_reduction": 1,
     "action": {
-      "text": "Cast Clarity: test Lore. Pass: recover 2 Sanity.",
-      "effects": [{"type": "test", "skill": "lore", "context": "cast", "pass": [{"type": "sanity", "amount": 2}]}]
-    }
+      "text": "Cast Flesh Ward: test Lore. Pass: recover 2 Health. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "context": "cast",
+          "pass": [
+            {
+              "type": "health",
+              "amount": 2
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The ward shatters violently! Lose 1 Sanity and discard Flesh Ward.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "remove_self"
+          }
+        ]
+      },
+      {
+        "text": "The ward settles cleanly over your skin.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
   },
   {
-    "id": "seeking_rite", "name": "Seeking Rite", "traits": ["ritual"],
-    "text": "Action: test Lore (-1). If you pass, gain 1 Clue. If you fail, lose 1 Sanity.",
-    "flavor": "A needle on a thread, dangled over a map, and a name whispered three times.",
+    "id": "mists_of_relah",
+    "name": "Mists of Releh",
+    "traits": [
+      "incantation"
+    ],
+    "count": 2,
+    "text": "During the Encounter Phase, you may test Lore. If you pass, you may choose an encounter as if there are no Monsters on your space. Then flip this card.",
+    "flavor": "A grey fog rises from nowhere to hide your steps.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "will",
+        "context": "combat"
+      }
+    ],
     "action": {
-      "text": "Cast the Seeking Rite: test Lore (-1). Pass: gain 1 Clue. Fail: lose 1 Sanity.",
-      "effects": [{"type": "test", "skill": "lore", "mod": -1, "context": "cast",
-                   "pass": [{"type": "clues", "amount": 1}],
-                   "fail": [{"type": "sanity", "amount": -1}]}]
-    }
+      "text": "Cast Mists of Releh: test Lore. Pass: move 1 space. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "context": "cast",
+          "pass": [
+            {
+              "type": "move",
+              "to": "choose_adjacent"
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "Something moves in the mist beside you. Lose 1 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "text": "The mist parts on a clear road.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
   },
   {
-    "id": "far_step", "name": "Far Step", "traits": ["incantation"],
-    "text": "Action: test Lore. If you pass, move to any location up to 2 steps away. If you fail, lose 1 Sanity.",
-    "flavor": "You step through a doorway that was not there, into a street you have never seen.",
+    "id": "shrivelling",
+    "name": "Shrivelling",
+    "traits": [
+      "incantation"
+    ],
+    "count": 2,
+    "text": "Action: Test Lore. If you pass, choose a Monster on your space to lose 2 Health. Then flip this card.",
+    "flavor": "Black lightning leaps from your outstretched fingers.",
+    "modifiers": [
+      {
+        "amount": 3,
+        "skill": "strength",
+        "context": "combat"
+      },
+      {
+        "amount": 1,
+        "skill": "will",
+        "context": "combat"
+      }
+    ],
     "action": {
-      "text": "Cast Far Step: test Lore. Pass: move up to 2 steps. Fail: lose 1 Sanity.",
-      "effects": [{"type": "test", "skill": "lore", "context": "cast",
-                   "pass": [{"type": "move", "to": "choose_within", "range": 2}],
-                   "fail": [{"type": "sanity", "amount": -1}]}]
-    }
+      "text": "Cast Shrivelling: test Lore (-1). Pass: Monsters here lose 3 Health. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": -1,
+          "context": "cast",
+          "pass": [
+            {
+              "type": "damage_monsters",
+              "amount": 3,
+              "where": "here"
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The backlash tears at your mind! Lose 2 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -2
+          }
+        ]
+      },
+      {
+        "text": "The air smells of ozone, but your mind is whole.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
   },
   {
-    "id": "binding_chain", "name": "Binding Chain", "traits": ["incantation"],
-    "text": "+1 Brawn in combat. Once per round, lose 1 Sanity to add 2 more dice to a fight.",
-    "flavor": "Links of light that wrap around things with too many limbs.",
-    "modifiers": [{"amount": 1, "skill": "brawn", "context": "combat"}],
-    "boosts": [{"text": "Tighten the chain: lose 1 Sanity for +2 dice.", "amount": 2, "context": "combat", "cost": {"sanity": 1}}]
-  },
-  {
-    "id": "speech_of_dreams", "name": "Speech of Dreams", "traits": ["ritual"],
-    "text": "Action: lose 1 Sanity and test Lore with 2 successes needed. If you pass, Doom retreats by 1. If you fail, lose 1 more Sanity.",
-    "flavor": "You speak to the sleepers of the world, and ask them to dream a little longer.",
+    "id": "blessing_of_isis",
+    "name": "Blessing of Isis",
+    "traits": [
+      "ritual"
+    ],
+    "count": 2,
+    "text": "Action: Test Lore-1. If you pass, choose an investigator on your space that does not have a Blessed Condition to gain a Blessed Condition. Then flip this card.",
+    "flavor": "An ancient invocation of the winged goddess.",
     "action": {
-      "text": "Cast Speech of Dreams: lose 1 Sanity, then test Lore (2 successes). Pass: Doom retreats by 1. Fail: lose 1 Sanity.",
-      "cost": {"sanity": 1},
-      "effects": [{"type": "test", "skill": "lore", "needed": 2, "context": "cast",
-                   "pass": [{"type": "retreat_doom", "amount": 1}],
-                   "fail": [{"type": "sanity", "amount": -1}]}]
-    }
+      "text": "Cast Blessing of Isis: test Lore (-1). Pass: an investigator here gains Blessed. Then flip this card.",
+      "target": "investigator_here",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": -1,
+          "context": "cast",
+          "pass": [
+            {
+              "type": "gain_condition",
+              "id": "blessed"
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The goddess turns her face away. Lose 1 Sanity and discard this Spell.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "remove_self"
+          }
+        ]
+      },
+      {
+        "text": "Golden light warms the room.",
+        "min_successes": 1,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "clairvoyance",
+    "name": "Clairvoyance",
+    "traits": [
+      "ritual"
+    ],
+    "count": 2,
+    "text": "During the Encounter Phase, you may test Lore. If you pass, you may choose to encounter a Clue as if you are on its space, ignoring Monsters on that space. Then flip this card.",
+    "flavor": "Close your eyes and see what lies hidden across the sea.",
+    "action": {
+      "text": "Cast Clairvoyance: test Lore (-1). Pass: gain 1 Clue. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": -1,
+          "context": "cast",
+          "pass": [
+            {
+              "type": "clues",
+              "amount": 1
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "Something in the vision looks back at you! Lose 1 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "text": "The vision fades without harm.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "plumb_the_void",
+    "name": "Plumb the Void",
+    "traits": [
+      "ritual"
+    ],
+    "count": 1,
+    "text": "Action: Test Lore-1. If you pass, an investigator of your choice may move to any space. Then flip this card.",
+    "flavor": "Whisper a question into the dark between stars.",
+    "action": {
+      "text": "Cast Plumb the Void: test Lore (-1). Pass: spawn 1 Clue and gain 1 Clue. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": -1,
+          "context": "cast",
+          "pass": [
+            {
+              "type": "spawn_clue",
+              "count": 1
+            },
+            {
+              "type": "clues",
+              "amount": 1
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The void answers with a scream. Lose 2 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -2
+          }
+        ]
+      },
+      {
+        "text": "You pull your mind back in time.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "conjuration",
+    "name": "Conjuration",
+    "traits": [
+      "ritual"
+    ],
+    "count": 2,
+    "text": "Action: Test Lore+1. If you pass, you may gain 1 Item or Trinket Asset from the reserve with value equal to or less than your test result. Then flip this card.",
+    "action": {
+      "text": "Cast Conjuration: test Lore (+1). Pass: gain 1 Item or Trinket Asset from the reserve. Then flip this card.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": 1,
+          "context": "cast",
+          "pass": [
+            {
+              "type": "gain_asset",
+              "source": "reserve"
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The spell slips away from you. Lose 1 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "text": "The casting holds.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "feed_the_mind",
+    "name": "Feed the Mind",
+    "traits": [
+      "ritual"
+    ],
+    "count": 2,
+    "text": "Action: Test Lore-1. If you pass, choose an investigator on your space to improve 1 skill of his choice. Then flip this card.",
+    "action": {
+      "text": "Cast Feed the Mind: test Lore (-1). Pass: an investigator here improves 1 skill. Then flip this card.",
+      "target": "investigator_here",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": -1,
+          "context": "cast",
+          "pass": [
+            {
+              "type": "improve_skill",
+              "skill": "choose"
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The spell slips away from you. Lose 1 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "text": "The casting holds.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "instill_bravery",
+    "name": "Instill Bravery",
+    "traits": [
+      "incantation"
+    ],
+    "count": 2,
+    "text": "Once per round, when an investigator would lose Sanity, you may test Lore. If you pass, prevent that investigator from losing up to 2 Sanity. Then flip this card.",
+    "action": {
+      "text": "Cast Instill Bravery: test Lore. Pass: an investigator here recovers 2 Sanity. Then flip this card.",
+      "target": "investigator_here",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "context": "cast",
+          "pass": [
+            {
+              "type": "sanity",
+              "amount": 2
+            }
+          ],
+          "after": [
+            {
+              "type": "flip_self"
+            }
+          ]
+        }
+      ]
+    },
+    "backs": [
+      {
+        "text": "The spell slips away from you. Lose 1 Sanity.",
+        "max_successes": 0,
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      },
+      {
+        "text": "The casting holds.",
+        "min_successes": 1,
+        "effects": []
+      }
+    ]
   }
 ]

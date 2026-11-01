@@ -1,0 +1,131 @@
+[
+  {
+    "id": "other_world_the_future_1",
+    "title": "You stand in Times Square, New York, but not as you...",
+    "text": "You stand in Times Square, New York, but not as you know it. The streets are empty, and the buildings have crumbled to dust. It appears that you will fail to save the world, and you try desperately not to fall into despair (Will-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You get to your feet and find what is left of the central library. The books you find there prove useful; close this Gate. Deep in the basement of the library, you dig through the archives, searching for clues about the downfall of man (Observation). If you pass, gain 2 Clues."
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": []
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "As you kneel sobbing on the cracked pavement, a shadow of a man falls over you. \"You caused this,\" the man says calmly. His gold headdress looks somehow familiar (Lore). If you fail, you accept the truth in his words; lose 6 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you accept the truth in his words; lose 6 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -6
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_future_2",
+    "title": "You find yourself in a familiar city, but there's no...",
+    "text": "You find yourself in a familiar city, but there's no electricity. The only light comes from the greenish moon, and the only sound is distant screaming. You can feel your reason being overrun by fear (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Resisting the urge to panic, you find a large metal and glass machine that has electricity sparking across its surface. You try to learn how to operate the device (Lore). If you pass, you return to your own time; close this Gate. If you fail, you receive an electrical shock; lose 2 Health."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you return to your own time; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you receive an electrical shock; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Without thinking, you start walking with a long line of people. You hear screams from the people ahead of you. You try to escape, but the area is being guarded (Strength). If you fail, you return home with no memory of what happened; gain an Amnesia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you return home with no memory of what happened; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

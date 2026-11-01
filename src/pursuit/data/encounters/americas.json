@@ -1,0 +1,587 @@
+[
+  {
+    "id": "americas_1",
+    "title": "In the restricted section of Miskatonic University's...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "In the restricted section of Miskatonic University's library, you study an esoteric tome. Gain 1 Incantation Spell. You try to decode a note written in the margin (Lore). If you fail, the words put strange visions into your mind; gain a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the words put strange visions into your mind; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "Inspector Jack Manion is looking for information about the Tongs in Chinatown. If you can help him, he'll teach you the basics of police work in exchange. You may spend 1 Clue to improve Observation.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "observation"
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "In an ancient underground chamber, you study strange scientific and magic paraphernalia once used by the Serpent Men (Lore). If you pass, you manipulate the devices to transform yourself and gain a Blessed Condition. If you fail, the devices remain utterly alien; lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you manipulate the devices to transform yourself and gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the devices remain utterly alien; lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "americas_2",
+    "title": "During the night, you have a nightmare about the old...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "During the night, you have a nightmare about the old witch, Keziah Mason. In the dream, she shares her power with you; gain 1 Incantation Spell. When you wake up, you fear that the old witch will someday ask you for a favor in return (Will+1). If you fail, gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "You find the husk of a squid-like creature in a tunnel. Just seeing it terrifies you (Will-1). If you pass, you identify the cthonian; improve 1 skill of your choice as scientists clamor to contribute to its study. If you fail, you run headlong through the tunnel; gain a Leg Injury Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you identify the cthonian; improve 1 skill of your choice as scientists clamor to contribute to its study."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you run headlong through the tunnel; gain a Leg Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "leg_injury"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "You sneak into the temple and overhear the rough croaking of deep ones chanting. You recognize familiar elements to the words they are intoning (Lore). If you pass, gain 1 Ritual Spell. If you fail, it's nothing more than horrific noise; lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Ritual Spell."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "it's nothing more than horrific noise; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "americas_3",
+    "title": "The Silver Twilight Lodge members ask you several...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "The Silver Twilight Lodge members ask you several riddles to prove your knowledge (Lore+1). If you pass, they instruct you in their ways; gain 1 Spell.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they instruct you in their ways; gain 1 Spell."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "spell"
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "You meet Hammett, a former Pinkerton Agent, on the street car and try to convince him to teach you how to be a detective (Influence). If you pass, he agrees; improve Observation. If you fail, he's too distracted by his financial woes; gain a Debt Condition while helping to support his family.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he agrees; improve Observation."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "observation"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "he's too distracted by his financial woes; gain a Debt Condition while helping to support his family."
+              },
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "The museum's curator shows you a unique golden jewel that was recovered from the sea. You believe that the symbols on it indicate that something is hidden inside (Lore+1). If you pass, you reveal a small scroll; gain 1 Spell. If you fail, you damage the jewel and must pay for the repairs; gain a Debt Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you reveal a small scroll; gain 1 Spell."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "spell"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you damage the jewel and must pay for the repairs; gain a Debt Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "americas_4",
+    "title": "An anonymous patient in the asylum pleads with you to...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "An anonymous patient in the asylum pleads with you to share what you've learned. You may spend 1 Clue to share what you know. If you spend the Clue, the man begins chanting in a long-dead language; gain 1 Incantation Spell.",
+        "effects": []
+      },
+      {
+        "location": "san_francisco",
+        "text": "You speak to a military prisoner on Alcatraz Island. He tells you his story of deserting after encountering a horrific creature (Will). If you pass, he thanks you for believing him and blesses your name; gain a Blessed Condition. If you fail, the story throws you into a hysterical fit, and the guards arrest you; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he thanks you for believing him and blesses your name; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the story throws you into a hysterical fit, and the guards arrest you; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "A student has been studying the university's copy of the Necronomicon and is eager to share what he's learned in exchange for hearing what you know. You may spend 1 Clue to share what you know and gain 1 Ritual Spell.",
+        "effects": []
+      }
+    ]
+  },
+  {
+    "id": "americas_5",
+    "title": "Some ritual had been performed in the Black Cave, but...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "Some ritual had been performed in the Black Cave, but the cultists are long gone. You look around for anything they may have left behind (Observation). If you pass, you find a scrap of parchment and gain 1 Incantation Spell. If you fail, lose 1 Health as you stumble around in the dark.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find a scrap of parchment and gain 1 Incantation Spell."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health as you stumble around in the dark."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "You are invited to the Hearst Castle and find yourself surrounded by the best and brightest. You may become Delayed to stay for a few days. If you become Delayed, you pick up some amazing talents; improve 1 skill of your choice.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "You sneak aboard a ship loaded with stolen antiquities, including an ancient stone table. Reading it, you gain 1 Ritual Spell. Memorizing the words, you feel yourself slipping into a trance (Will). If you fail, you wake up imprisoned for theft; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you wake up imprisoned for theft; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "americas_6",
+    "title": "Inside Ye Olde Magick Shoppe, Miriam Beecher talks to...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "Inside Ye Olde Magick Shoppe, Miriam Beecher talks to you about the finer points of the occult (Lore). If you pass, you impress her with your acumen, and she gives you a rare text; gain 1 Incantation Spell. If you fail, you lose track of time and can't seem to remember when you departed; gain an Amnesia Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you impress her with your acumen, and she gives you a rare text; gain 1 Incantation Spell."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you lose track of time and can't seem to remember when you departed; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "While patrolling in Chinatown, you become adept at spotting signs of cult activity. Improve Observation. You find their temple, but must dispel a hex on the door to enter (Lore). If you fail, lose 1 Health and 1 Sanity as the hex saps your life away.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "observation"
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health and 1 Sanity as the hex saps your life away."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "An old woman warns you that you've angered Yig and teaches you a protective chant. Gain 1 Ritual Spell. Concerned that she may be right, you learn all you can about Yig (Lore). If you fail, you learn nothing; gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you learn nothing; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "americas_7",
+    "title": "The administrators of Arkham's Historical Society take...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "The administrators of Arkham's Historical Society take great pains to show you their extensive collection of historical documents. You may become Delayed to gain 2 Spells.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "The Examiner hires you to spend a night in the Winchester Mystery House. They provide you with experts in detecting the supernatural. Improve Observation. The odd architecture and the building's history threaten to unhinge your mind as the evening passes (Will-1). If you fail, lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "observation"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "At the hospital you find a bald, old man with leathery skin and a flat face. He speaks very slowly, but his story is fascinating. You may become Delayed to gain 2 Spells as he recounts all the details of his time worshiping the Father of Serpents.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "americas_8",
+    "title": "A fortune teller in Independence Square warns you of...",
+    "sections": [
+      {
+        "location": "arkham",
+        "text": "A fortune teller in Independence Square warns you of dire events. You try to interpret her words (Lore). If you pass, you discern that you ultimately survive; gain a Blessed Condition. If you fail, you fear an inevitable doom; gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you discern that you ultimately survive; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you fear an inevitable doom; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "san_francisco",
+        "text": "A pulp author named Smith invites you to read his work. The stories disturb you (Will). If you pass, you gain insight into how the invisible world remains hidden; improve Observation. If you fail, the tale chills you to the bone; gain a Madness Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you gain insight into how the invisible world remains hidden; improve Observation."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "observation"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the tale chills you to the bone; gain a Madness Condition."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "buenos_aires",
+        "text": "A copy of the Necronomicon is kept at the University of Buenos Aires, but the librarian tells you that it's not available for viewing at this time. You try to convince him of the book's importance (Influence). If you pass, he relents and allows you a brief look at the book; gain 1 Ritual Spell.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he relents and allows you a brief look at the book; gain 1 Ritual Spell."
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  }
+]

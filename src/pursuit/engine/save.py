@@ -13,18 +13,20 @@ from typing import Any
 
 from pursuit.content.loader import Content
 from pursuit.engine.state import (
+    ActiveMythos,
     AssetCard,
     ConditionInst,
     Deck,
+    FallenInvestigator,
     Game,
     Investigator,
     LocationState,
     MonsterInst,
+    MysteryState,
     Phase,
-    RiteState,
 )
 
-SAVE_VERSION = 1
+SAVE_VERSION = 3
 
 
 class SaveError(Exception):
@@ -61,24 +63,32 @@ def to_dict(game: Game) -> dict[str, Any]:
         "difficulty": game.difficulty,
         "doom": game.doom,
         "start_doom": game.start_doom,
-        "dread": game.dread,
+        "omen_index": game.omen_index,
+        "green_eldritch": game.green_eldritch,
+        "sheet_tokens": game.sheet_tokens,
         "round": game.round,
         "phase": game.phase.value,
         "turn_index": game.turn_index,
+        "lead_seat": game.lead_seat,
         "awakened": game.awakened,
-        "endgame": game.endgame,
-        "rites": [asdict(r) for r in game.rites],
-        "final_rite": asdict(game.final_rite) if game.final_rite else None,
+        "active_expedition": game.active_expedition,
+        "mystery_deck": list(game.mystery_deck),
+        "active_mystery": asdict(game.active_mystery) if game.active_mystery else None,
+        "solved_mysteries": list(game.solved_mysteries),
+        "final_mystery": asdict(game.final_mystery) if game.final_mystery else None,
         "investigators": [asdict(i) for i in game.investigators],
         "locations": {k: asdict(v) for k, v in game.locations.items()},
-        "market": [asdict(c) for c in game.market],
+        "reserve": [asdict(c) for c in game.reserve],
         "asset_deck": _card_deck(game.asset_deck),
         "spell_deck": _card_deck(game.spell_deck),
-        "relic_deck": _card_deck(game.relic_deck),
+        "artifact_deck": _card_deck(game.artifact_deck),
         "encounter_decks": {k: _deck(v) for k, v in game.encounter_decks.items()},
-        "portent_deck": _deck(game.portent_deck),
-        "rift_deck": _deck(game.rift_deck),
+        "mythos_deck": list(game.mythos_deck),
+        "mythos_discards": list(game.mythos_discards),
+        "active_mythos": [asdict(m) for m in game.active_mythos],
+        "gate_deck": _deck(game.gate_deck),
         "clue_deck": _deck(game.clue_deck),
+        "other_world_deck": _deck(game.other_world_deck),
         "monster_cup": list(game.monster_cup),
         "unused_investigators": list(game.unused_investigators),
         "next_uid": game.next_uid,
@@ -105,13 +115,21 @@ def _investigator(raw: dict[str, Any]) -> Investigator:
     data = dict(raw)
     data["assets"] = _cards(data["assets"])
     data["conditions"] = [ConditionInst(**c) for c in data["conditions"]]
+    data["tickets"] = list(data.get("tickets", []))
     return Investigator(**data)
+
+
+def _fallen(raw: dict[str, Any]) -> FallenInvestigator:
+    data = dict(raw)
+    data["assets"] = _cards(data.get("assets", []))
+    data["tickets"] = list(data.get("tickets", []))
+    return FallenInvestigator(**data)
 
 
 def _location(raw: dict[str, Any]) -> LocationState:
     data = dict(raw)
     data["monsters"] = [MonsterInst(**m) for m in data["monsters"]]
-    data["belongings"] = _cards(data["belongings"])
+    data["fallen"] = [_fallen(f) for f in data.get("fallen", [])]
     return LocationState(**data)
 
 
@@ -132,22 +150,30 @@ def from_dict(content: Content, data: dict[str, Any]) -> Game:
             locations={k: _location(v) for k, v in data["locations"].items()},
             doom=data["doom"],
             start_doom=data["start_doom"],
-            dread=data["dread"],
+            omen_index=data.get("omen_index", 0),
+            green_eldritch=data.get("green_eldritch", 0),
+            sheet_tokens=data.get("sheet_tokens", 0),
             round=data["round"],
             phase=Phase(data["phase"]),
             turn_index=data["turn_index"],
+            lead_seat=data.get("lead_seat", 0),
             awakened=data["awakened"],
-            endgame=data["endgame"],
-            rites=[RiteState(**r) for r in data["rites"]],
-            final_rite=RiteState(**data["final_rite"]) if data["final_rite"] else None,
-            market=_cards(data["market"]),
+            active_expedition=data.get("active_expedition"),
+            mystery_deck=list(data["mystery_deck"]),
+            active_mystery=MysteryState(**data["active_mystery"]) if data.get("active_mystery") else None,
+            solved_mysteries=list(data.get("solved_mysteries", [])),
+            final_mystery=MysteryState(**data["final_mystery"]) if data.get("final_mystery") else None,
+            reserve=_cards(data["reserve"]),
             asset_deck=_load_card_deck(data["asset_deck"]),
             spell_deck=_load_card_deck(data["spell_deck"]),
-            relic_deck=_load_card_deck(data["relic_deck"]),
+            artifact_deck=_load_card_deck(data["artifact_deck"]),
             encounter_decks={k: _load_deck(v) for k, v in data["encounter_decks"].items()},
-            portent_deck=_load_deck(data["portent_deck"]),
-            rift_deck=_load_deck(data["rift_deck"]),
+            mythos_deck=list(data["mythos_deck"]),
+            mythos_discards=list(data.get("mythos_discards", [])),
+            active_mythos=[ActiveMythos(**m) for m in data.get("active_mythos", [])],
+            gate_deck=_load_deck(data["gate_deck"]),
             clue_deck=_load_deck(data["clue_deck"]),
+            other_world_deck=_load_deck(data["other_world_deck"]) if "other_world_deck" in data else Deck(),
             monster_cup=list(data["monster_cup"]),
             unused_investigators=list(data["unused_investigators"]),
             next_uid=data["next_uid"],
@@ -180,12 +206,23 @@ def _check_refs(content: Content, game: Game) -> None:
             need(content.conditions, cond.def_id, "condition")
     for loc_id, state in game.locations.items():
         need(content.locations, loc_id, "location")
+        if state.other_world is not None and state.other_world not in content.other_worlds:
+            missing.append(f"Other World '{state.other_world}'")
         for monster in state.monsters:
             need(content.monsters, monster.def_id, "monster")
+        for fallen in state.fallen:
+            need(content.investigators, fallen.def_id, "investigator")
+            for card in fallen.assets:
+                need(content.assets, card.def_id, "asset")
+    for world in game.other_world_deck.cards + game.other_world_deck.discards:
+        if world not in content.other_worlds:
+            missing.append(f"Other World '{world}'")
     for name in game.encounter_decks:
         need(content.decks, name, "encounter deck")
         for enc in game.encounter_decks[name].cards + game.encounter_decks[name].discards:
             need(content.encounters, enc, "encounter")
+    for mid in game.mythos_deck + game.mythos_discards + [m.def_id for m in game.active_mythos]:
+        need(content.mythos, mid, "mythos")
     if missing:
         raise SaveError("the save refers to content that no longer exists: " + ", ".join(missing[:5]))
 
@@ -228,3 +265,4 @@ def list_saves() -> list[tuple[Path, dict[str, Any]]]:
         found.append((path, summary))
     found.sort(key=lambda item: item[0].stat().st_mtime, reverse=True)
     return found
+

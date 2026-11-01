@@ -1,0 +1,243 @@
+[
+  {
+    "id": "other_world_lost_carcosa_1",
+    "title": "Turning the corner, you suddenly find yourself on stage.",
+    "text": "Turning the corner, you suddenly find yourself on stage. Other actors speak their dialogue and look at you expectantly. Someone offstage passes you a script, but the text is difficult to interpret (Lore-1).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The audience applauds your performance and curtain falls. Close this Gate. You consider sticking around for the second show in hopes of picking up details you missed the first time. You may become Delayed to gain 2 Clues."
+          },
+          {
+            "type": "clues",
+            "amount": 2
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The other actors glare at you, waiting for you to speak. You hope that by simple acting with confidence they'll believe it's someone else's line (Influence). If you fail, the show comes to a stop, and everyone silently leaves the theater; advance Doom by 1."
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the show comes to a stop, and everyone silently leaves the theater; advance Doom by 1."
+              },
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_2",
+    "title": "You grow frustrated walking through the empty streets,...",
+    "text": "You grow frustrated walking through the empty streets, able to hear people talking and laughing nearby, but unable to catch up to them. You try to focus and distinguish specific words from the mingling conversations (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The words you hear sound familiar to something you've read. You try to recall their significance (Lore). If you pass, you use the words to close this Gate. If you fail, the words insinuate themselves into every conversation you hear; gain a Paranoia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you use the words to close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the words insinuate themselves into every conversation you hear; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The words remain unintelligible, and you realize that you've become lost in the city while chasing after these voices. You walk, lost, through Carcosa's darkest alleyways and consider timestakingly retracing your steps. Lose 2 Sanity unless you become Delayed."
+          },
+          {
+            "type": "sanity",
+            "amount": -2
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_3",
+    "title": "Staring out at the cloudy water of Lake Hali, you are...",
+    "text": "Staring out at the cloudy water of Lake Hali, you are horrified to see the entire lake rippling, as if something at the bottom is about to surface. You are seized by a terrible panic that paralyzes you (Will).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Through sheer will, you force yourself to run toward the door you entered through. You find the doorway has been replaced by a blank wall. You try to recall an incantation from your studies that will open the lost portal (Lore). If you pass, close this Gate. If you fail, you frantically scratch at the wallpaper; lose 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you frantically scratch at the wallpaper; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Suddenly, a flurry of tentacles bursts out of the water. One of the flailing limbs grabs you and tries to pull you into the water. You attempt to bind the creature with powerful magic (Lore-1). If you pass, you run for your life; close this Gate. If you fail, you are dragged into the water; lose 2 Health."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you run for your life; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are dragged into the water; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_lost_carcosa_4",
+    "title": "At an elaborate masquerade, you talk to decadent...",
+    "text": "At an elaborate masquerade, you talk to decadent party-goers who are all maneuvering to be declared as the proper heir to the crown (Influence).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Believing that you can help him, a guest attempts to bribe you. Gain 1 Artifact. Seeing this, the Queen demands that you unmask. She questions you relentlessly in an attempt to discover what you've learned. Become Delayed unless you spend 2 Clues. If you spend the Clues, you gain her favor; close this Gate."
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You suddenly realize you are speaking to the Phantom of Truth. Lose 1 Sanity. Fear threatens to overwhelm you when you realize he is not wearing a mask (Will). If you fail, gain a Paranoia Condition."
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

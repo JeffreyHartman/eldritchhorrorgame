@@ -1,211 +1,825 @@
 [
   {
-    "id": "revolver", "name": ".38 Revolver", "kind": "item", "traits": ["weapon"], "cost": 2, "count": 2,
-    "text": "+2 Brawn in combat.",
-    "flavor": "Six shots. Count them.",
-    "modifiers": [{"amount": 2, "skill": "brawn", "context": "combat"}]
+    "id": "bank_loan",
+    "name": "Bank Loan",
+    "kind": "service",
+    "traits": [
+      "service"
+    ],
+    "cost": 0,
+    "count": 1,
+    "text": "When performing an Acquire Assets action, you may gain a Debt Condition to immediately add 2 successes to your test result.",
+    "flavor": "Sign on the dotted line."
   },
   {
-    "id": "baling_hook", "name": "Baling Hook", "kind": "item", "traits": ["weapon"], "cost": 1, "count": 2,
-    "text": "+1 Brawn in combat.",
-    "flavor": "Made for cotton bales. Works on worse.",
-    "modifiers": [{"amount": 1, "skill": "brawn", "context": "combat"}]
-  },
-  {
-    "id": "pump_shotgun", "name": "Pump Shotgun", "kind": "item", "traits": ["weapon"], "cost": 4, "count": 1,
-    "text": "+3 Brawn in combat.",
-    "flavor": "Loud enough to wake the dead. That is sometimes a problem.",
-    "modifiers": [{"amount": 3, "skill": "brawn", "context": "combat"}]
-  },
-  {
-    "id": "thompson_gun", "name": "Thompson Gun", "kind": "item", "traits": ["weapon"], "cost": 5, "count": 1,
-    "text": "+4 Brawn in combat. -1 Wits when you evade. It is heavy.",
-    "flavor": "Borrowed from a Chicago gentleman who will want it back.",
+    "id": "revolver_38",
+    "name": ".38 Revolver",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "Gain +2 Strength during Combat Encounters.",
+    "flavor": "Standard issue and dependable.",
     "modifiers": [
-      {"amount": 4, "skill": "brawn", "context": "combat"},
-      {"amount": -1, "skill": "wits", "context": "evade"}
+      {
+        "amount": 2,
+        "skill": "strength",
+        "context": "combat"
+      }
     ]
   },
   {
-    "id": "trench_knife", "name": "Trench Knife", "kind": "item", "traits": ["weapon"], "cost": 1, "count": 2,
-    "text": "+1 Brawn in combat. You may discard it to add 2 dice to a fight.",
-    "flavor": "A brass-knuckle grip and a bad reputation.",
-    "modifiers": [{"amount": 1, "skill": "brawn", "context": "combat"}],
-    "boosts": [{"text": "Discard it for +2 dice in this fight.", "amount": 2, "context": "combat", "exhaust": false, "discard": true}]
-  },
-  {
-    "id": "dynamite", "name": "Bundle of Dynamite", "kind": "item", "traits": ["weapon"], "cost": 2, "count": 2,
-    "text": "Discard to add 4 dice to a fight.",
-    "flavor": "Stolen from a mining camp. The fuses are short.",
-    "boosts": [{"text": "Light the fuse: +4 dice in this fight, then discard it.", "amount": 4, "context": "combat", "exhaust": false, "discard": true}]
-  },
-  {
-    "id": "field_journal", "name": "Field Journal", "kind": "item", "traits": ["tome"], "cost": 2, "count": 1,
-    "text": "+1 Lore. Action: test Lore (-1). If you pass, gain 1 Clue.",
-    "flavor": "Twenty years of notes, and the last pages are in someone else's hand.",
-    "modifiers": [{"amount": 1, "skill": "lore"}],
-    "action": {
-      "text": "Study your notes: test Lore (-1). If you pass, gain 1 Clue.",
-      "effects": [{"type": "test", "skill": "lore", "mod": -1, "pass": [{"type": "clues", "amount": 1}]}]
-    }
-  },
-  {
-    "id": "crumbling_grimoire", "name": "Crumbling Grimoire", "kind": "item", "traits": ["tome", "magical"], "cost": 3, "count": 1,
-    "text": "Action: test Lore (-1). If you pass, gain 1 Spell. If you fail, lose 1 Sanity.",
-    "flavor": "The binding is human skin. The ink is not ink.",
-    "action": {
-      "text": "Read the grimoire: test Lore (-1). Pass: gain 1 Spell. Fail: lose 1 Sanity.",
-      "effects": [{"type": "test", "skill": "lore", "mod": -1, "context": "cast",
-                   "pass": [{"type": "gain_asset", "kind": "spell"}],
-                   "fail": [{"type": "sanity", "amount": -1}]}]
-    }
-  },
-  {
-    "id": "storm_lantern", "name": "Storm Lantern", "kind": "item", "traits": ["tool"], "cost": 1, "count": 2,
-    "text": "+1 Wits when you investigate.",
-    "flavor": "Light pushes the dark back. Only a little.",
-    "modifiers": [{"amount": 1, "skill": "wits", "context": "investigate"}]
-  },
-  {
-    "id": "field_glasses", "name": "Field Glasses", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
-    "text": "+1 Wits when you investigate or evade.",
-    "flavor": "See it before it sees you.",
+    "id": "automatic_45",
+    "name": ".45 Automatic",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Gain +3 Strength during Combat Encounters.",
     "modifiers": [
-      {"amount": 1, "skill": "wits", "context": "investigate"},
-      {"amount": 1, "skill": "wits", "context": "evade"}
+      {
+        "amount": 3,
+        "skill": "strength",
+        "context": "combat"
+      }
     ]
   },
   {
-    "id": "doctors_bag", "name": "Doctor's Bag", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
-    "text": "Action: an investigator here recovers 2 Health.",
-    "flavor": "Catgut, carbolic, and a bottle of laudanum.",
-    "action": {
-      "text": "Treat wounds: an investigator here recovers 2 Health.",
-      "target": "investigator_here",
-      "effects": [{"type": "health", "amount": 2}]
-    }
+    "id": "derringer_18",
+    "name": ".18 Derringer",
+    "kind": "trinket",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "You may add 1 to the result of 1 die when resolving a Strength test during a Combat Encounter.",
+    "flavor": "Small enough to hide in a sleeve.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Reroll 1 die during Combat.",
+        "context": "combat",
+        "once_per_round": true
+      }
+    ]
   },
   {
-    "id": "whiskey_flask", "name": "Flask of Whiskey", "kind": "item", "traits": ["tool"], "cost": 1, "count": 2,
-    "text": "Action: discard it to recover 2 Sanity.",
-    "flavor": "Prohibition is for people who have not seen what you have seen.",
+    "id": "double_barreled_shotgun",
+    "name": "Double-barreled Shotgun",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 4,
+    "count": 1,
+    "text": "Gain +4 Strength during Combat Encounters. Each 6 you roll when resolving a Strength test during a Combat Encounter counts as 2 successes.",
+    "flavor": "Two barrels of stopping power.",
+    "modifiers": [
+      {
+        "amount": 4,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "carbine_rifle",
+    "name": "Carbine Rifle",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 3,
+    "count": 1,
+    "text": "Once per round, you may gain +5 Strength during a Combat Encounter.",
+    "flavor": "Steady your aim and squeeze.",
+    "modifiers": [
+      {
+        "amount": 5,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "spirit_dagger",
+    "name": "Spirit Dagger",
+    "kind": "item",
+    "traits": [
+      "weapon",
+      "magical"
+    ],
+    "cost": 2,
+    "count": 1,
+    "text": "Gain +1 Will and +2 Strength during Combat Encounters.",
+    "flavor": "Etched with signs that ward the mind and strike the unseen.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "will",
+        "context": "combat"
+      },
+      {
+        "amount": 2,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "bull_whip",
+    "name": "Bull Whip",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "Gain +1 Strength during Combat Encounters. You may reroll 1 die when resolving a Strength test during a Combat Encounter.",
+    "flavor": "Keeps beasts at a respectful distance.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on a Strength test in Combat.",
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "fishing_net",
+    "name": "Fishing Net",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 2,
+    "count": 1,
+    "text": "You may reroll 1 die when resolving a Strength test during a Combat Encounter. Reduce the damage of Monsters you encounter by 1 to a minimum of 1.",
+    "flavor": "Weighted with lead sinkers and knotted by an old sailor.",
+    "damage_reduction": 1,
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on a Strength test in Combat.",
+        "skill": "strength",
+        "context": "combat"
+      }
+    ]
+  },
+  {
+    "id": "dynamite",
+    "name": "Dynamite",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 3,
+    "count": 1,
+    "text": "Action: You may discard this card to cause each Monster on your space to lose 3 Health.",
+    "flavor": "Light the fuse and get clear.",
     "action": {
-      "text": "Take a long drink: recover 2 Sanity, then discard it.",
+      "text": "Discard Dynamite: each Monster on your space loses 3 Health.",
       "discard": true,
-      "effects": [{"type": "sanity", "amount": 2}]
+      "effects": [
+        {
+          "type": "damage_monsters",
+          "amount": 3,
+          "where": "here"
+        }
+      ]
     }
   },
   {
-    "id": "rabbits_foot", "name": "Rabbit's Foot", "kind": "item", "traits": ["trinket"], "cost": 1, "count": 1,
-    "text": "Once per round, add 1 die to any test.",
-    "flavor": "It was not lucky for the rabbit.",
-    "boosts": [{"text": "Rub it for luck: +1 die.", "amount": 1, "context": "any"}]
+    "id": "kerosene",
+    "name": "Kerosene",
+    "kind": "item",
+    "traits": [
+      "weapon"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "You may discard this card to gain +5 Strength during a Combat Encounter.",
+    "flavor": "Soak the floor and strike a match.",
+    "action": {
+      "text": "Discard Kerosene: each Monster on your space loses 2 Health.",
+      "discard": true,
+      "effects": [
+        {
+          "type": "damage_monsters",
+          "amount": 2,
+          "where": "here"
+        }
+      ]
+    }
   },
   {
-    "id": "blessed_rosary", "name": "Blessed Rosary", "kind": "item", "traits": ["trinket", "magical"], "cost": 2, "count": 1,
-    "text": "+1 Nerve against horror.",
-    "flavor": "Worn smooth by a hundred years of prayer.",
-    "modifiers": [{"amount": 1, "skill": "nerve", "context": "horror"}]
-  },
-  {
-    "id": "folding_camera", "name": "Folding Camera", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
-    "text": "+1 Wits when you investigate. +1 Charm when you raise funds. Newspapers pay for pictures.",
-    "flavor": "Some of the photographs show things that were not there when you took them.",
+    "id": "holy_water",
+    "name": "Holy Water",
+    "kind": "item",
+    "traits": [
+      "magical",
+      "weapon"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "You may discard this card to gain +5 Will and +5 Strength during a Combat Encounter. Action: You may discard this card to choose an investigator on your space. That investigator gains a Blessed Condition.",
+    "flavor": "Consecrated in an old cathedral.",
     "modifiers": [
-      {"amount": 1, "skill": "wits", "context": "investigate"},
-      {"amount": 1, "skill": "charm", "context": "funds"}
+      {
+        "amount": 2,
+        "skill": "will",
+        "context": "combat"
+      },
+      {
+        "amount": 2,
+        "skill": "strength",
+        "context": "combat"
+      }
+    ],
+    "action": {
+      "text": "Discard Holy Water: an investigator on your space gains a Blessed Condition.",
+      "discard": true,
+      "target": "investigator_here",
+      "effects": [
+        {
+          "type": "gain_condition",
+          "id": "blessed"
+        }
+      ]
+    }
+  },
+  {
+    "id": "holy_cross",
+    "name": "Holy Cross",
+    "kind": "item",
+    "traits": [
+      "magical"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Gain +2 Will during Combat Encounters.",
+    "flavor": "Worn silver that steadies the heart.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "will",
+        "context": "combat"
+      }
     ]
   },
   {
-    "id": "diving_rig", "name": "Diving Rig", "kind": "item", "traits": ["tool"], "cost": 3, "count": 1,
-    "text": "+1 to every test while you are at sea.",
-    "flavor": "A brass helmet, a canvas suit, and forty feet of hose.",
-    "modifiers": [{"amount": 1, "where": {"terrain": "sea"}}]
+    "id": "protective_amulet",
+    "name": "Protective Amulet",
+    "kind": "item",
+    "traits": [
+      "magical"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "Gain +1 Will during Combat Encounters.",
+    "flavor": "Carved soapstone on a leather cord.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "will",
+        "context": "combat"
+      }
+    ]
   },
   {
-    "id": "climbing_kit", "name": "Mountaineering Kit", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
-    "text": "+1 to every test while you are in the wilderness.",
-    "flavor": "Ropes, pitons, and a tin of pemmican.",
-    "modifiers": [{"amount": 1, "where": {"terrain": "wilderness"}}]
+    "id": "king_james_bible",
+    "name": "King James Bible",
+    "kind": "item",
+    "traits": [
+      "tome"
+    ],
+    "cost": 2,
+    "count": 1,
+    "text": "You may reroll 1 die when resolving a Will test during a Combat Encounter. When you perform a Rest action, recover 1 additional Sanity.",
+    "flavor": "Well-thumbed pages of verse.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "will",
+        "context": "combat"
+      }
+    ],
+    "perks": {
+      "rest_bonus": 1
+    }
   },
   {
-    "id": "rail_pass", "name": "First-Class Rail Pass", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
-    "text": "Your first rail or sea step each Travel is free.",
-    "flavor": "Valid on every line from Calais to Constantinople, and some that are not on the map.",
-    "perks": {"free_travel_steps": 1}
-  },
-  {
-    "id": "forged_papers", "name": "Forged Papers", "kind": "item", "traits": ["tool"], "cost": 2, "count": 1,
-    "text": "Action: discard them to discard every Legal condition.",
-    "flavor": "Your name is now Mr. or Mrs. Smith.",
+    "id": "arcane_tome",
+    "name": "Arcane Tome",
+    "kind": "item",
+    "traits": [
+      "tome",
+      "magical"
+    ],
+    "cost": 3,
+    "count": 2,
+    "text": "Gain +2 Lore when resolving Spell effects. When you perform a Rest action, you may test Lore. If you pass, gain 1 Spell.",
+    "flavor": "The margins are filled with cramped notes.",
+    "modifiers": [
+      {
+        "amount": 2,
+        "skill": "lore",
+        "context": "cast"
+      }
+    ],
     "action": {
-      "text": "Show the papers: discard every Legal condition, then discard them.",
+      "text": "Study the tome: test Lore (-1). If you pass, gain 1 Spell.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "mod": -1,
+          "pass": [
+            {
+              "type": "gain_asset",
+              "kind": "spell"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "arcane_manuscripts",
+    "name": "Arcane Manuscripts",
+    "kind": "item",
+    "traits": [
+      "tome"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "Gain +1 Lore when resolving Spell effects.",
+    "flavor": "Loose leaves copied from an older codex.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "lore",
+        "context": "cast"
+      }
+    ],
+    "action": {
+      "text": "Read the manuscripts: discard this card to gain 1 Spell.",
       "discard": true,
-      "effects": [{"type": "remove_condition", "trait": "legal"}]
+      "effects": [
+        {
+          "type": "gain_asset",
+          "kind": "spell"
+        }
+      ]
     }
   },
   {
-    "id": "professor_hale", "name": "Professor Edmund Hale", "kind": "ally", "traits": ["scholar"], "cost": 3, "count": 1,
-    "text": "+1 Lore. Action: test Lore. If you pass, gain 1 Clue.",
-    "flavor": "Retired from the chair of comparative mythology. He did not retire from the subject.",
-    "modifiers": [{"amount": 1, "skill": "lore"}],
+    "id": "puzzle_box",
+    "name": "Puzzle Box",
+    "kind": "trinket",
+    "traits": [
+      "magical"
+    ],
+    "cost": 3,
+    "count": 1,
+    "text": "When you perform a Rest action, you may attempt to open the puzzle box (Observation-2). If you pass, you may discard this card to gain 1 Artifact.",
+    "flavor": "Brass plates slide in interlocking grooves.",
     "action": {
-      "text": "Ask the professor: test Lore. If you pass, gain 1 Clue.",
-      "effects": [{"type": "test", "skill": "lore", "pass": [{"type": "clues", "amount": 1}]}]
+      "text": "Solve the box: test Observation (-1). If you pass, discard this card and gain 1 Artifact.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "observation",
+          "mod": -1,
+          "pass": [
+            {
+              "type": "gain_asset",
+              "kind": "artifact"
+            },
+            {
+              "type": "remove_self"
+            }
+          ]
+        }
+      ]
     }
   },
   {
-    "id": "mickey_sullivan", "name": "Mickey Sullivan, Bodyguard", "kind": "ally", "traits": ["fighter"], "cost": 3, "count": 1,
-    "text": "+2 Brawn in combat.",
-    "flavor": "Ex-Navy, ex-boxer, ex-convict. Loyal to whoever paid him last.",
-    "modifiers": [{"amount": 2, "skill": "brawn", "context": "combat"}]
+    "id": "lucky_rabbits_foot",
+    "name": "Lucky Rabbit's Foot",
+    "kind": "trinket",
+    "traits": [
+      "trinket"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "Once per round, you may reroll 1 die when resolving a test.",
+    "flavor": "A small charm for dark times.",
+    "rerolls": [
+      {
+        "text": "Once per round, reroll 1 die.",
+        "context": "any",
+        "once_per_round": true
+      }
+    ]
   },
   {
-    "id": "ruth_okafor", "name": "Nurse Ruth Okafor", "kind": "ally", "traits": ["healer"], "cost": 3, "count": 1,
-    "text": "Action: an investigator here recovers 1 Health and 1 Sanity.",
-    "flavor": "She has seen field hospitals in three wars. Nothing surprises her now.",
+    "id": "lucky_cigarette_case",
+    "name": "Lucky Cigarette Case",
+    "kind": "trinket",
+    "traits": [
+      "trinket"
+    ],
+    "cost": 2,
+    "count": 1,
+    "text": "Once per round, you may add 1 to the result of 1 die when resolving a test.",
+    "flavor": "Dented by a stray bullet in 1918.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "context": "any",
+        "additional": true
+      }
+    ],
     "action": {
-      "text": "Ruth's care: an investigator here recovers 1 Health and 1 Sanity.",
+      "text": "Discard Lucky Cigarette Case to gain 1 Clue.",
+      "discard": true,
+      "effects": [
+        {
+          "type": "clues",
+          "amount": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "pocket_watch",
+    "name": "Pocket Watch",
+    "kind": "trinket",
+    "traits": [
+      "trinket"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "You cannot become Delayed unless you choose to.",
+    "flavor": "Ticks steadily even when the air stands still.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "observation"
+      }
+    ]
+  },
+  {
+    "id": "whiskey",
+    "name": "Whiskey",
+    "kind": "item",
+    "traits": [
+      "item"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "You may discard this card to prevent an investigator on your space from losing up to 2 Sanity.",
+    "flavor": "Liquid courage.",
+    "action": {
+      "text": "Discard Whiskey: an investigator on your space recovers 2 Sanity.",
+      "discard": true,
+      "local": true,
       "target": "investigator_here",
-      "effects": [{"type": "health", "amount": 1}, {"type": "sanity", "amount": 1}]
+      "effects": [
+        {
+          "type": "sanity",
+          "amount": 2
+        }
+      ]
     }
   },
   {
-    "id": "ace_morrow", "name": "Jack \"Ace\" Morrow, Pilot", "kind": "ally", "traits": ["pilot"], "cost": 3, "count": 1,
-    "text": "Your first rail or sea step each Travel is free. +1 Nerve against horror.",
-    "flavor": "He flew in France. He does not talk about what he saw above the clouds.",
-    "perks": {"free_travel_steps": 1},
-    "modifiers": [{"amount": 1, "skill": "nerve", "context": "horror"}]
+    "id": "bandages",
+    "name": "Bandages",
+    "kind": "item",
+    "traits": [
+      "item"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "You may discard this card to prevent an investigator on your space from losing up to 2 Health.",
+    "flavor": "Clean linen and antiseptic.",
+    "action": {
+      "text": "Discard Bandages: an investigator on your space recovers 2 Health.",
+      "discard": true,
+      "local": true,
+      "target": "investigator_here",
+      "effects": [
+        {
+          "type": "health",
+          "amount": 2
+        }
+      ]
+    }
   },
   {
-    "id": "madame_zora", "name": "Madame Zora, Medium", "kind": "ally", "traits": ["mystic"], "cost": 3, "count": 1,
-    "text": "+1 Lore when you cast. Once per round, add 2 dice to a horror check.",
-    "flavor": "Half of her act is fake. She will not say which half.",
-    "modifiers": [{"amount": 1, "skill": "lore", "context": "cast"}],
-    "boosts": [{"text": "Zora steadies you: +2 dice against horror.", "amount": 2, "context": "horror"}]
+    "id": "fine_clothes",
+    "name": "Fine Clothes",
+    "kind": "item",
+    "traits": [
+      "item"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Each 6 you roll when performing an Acquire Assets action counts as 2 successes.",
+    "flavor": "Tailored in Savile Row.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "influence",
+        "context": "acquire",
+        "additional": true
+      }
+    ],
+    "perks": {
+      "acquire_bonus": 1
+    }
   },
   {
-    "id": "grand_hotel", "name": "A Night at the Grand Hotel", "kind": "service", "traits": ["service"], "cost": 2, "count": 2,
-    "text": "Recover 2 Health and 2 Sanity.",
-    "flavor": "Clean sheets, hot water, and a door that locks.",
-    "on_gain": [{"type": "health", "amount": 2}, {"type": "sanity", "amount": 2}]
+    "id": "arcane_scholar",
+    "name": "Arcane Scholar",
+    "kind": "ally",
+    "traits": [
+      "ally"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Gain +1 Lore. You may reroll 1 die when resolving a Lore test.",
+    "flavor": "He reads dead languages faster than English.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "lore"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on a Lore test.",
+        "skill": "lore"
+      }
+    ]
   },
   {
-    "id": "paid_informant", "name": "Paid Informant", "kind": "service", "traits": ["service"], "cost": 3, "count": 2,
-    "text": "Gain 1 Clue.",
-    "flavor": "He knows a man who knows a man.",
-    "on_gain": [{"type": "clues", "amount": 1}]
+    "id": "hired_muscle",
+    "name": "Hired Muscle",
+    "kind": "ally",
+    "traits": [
+      "ally"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Gain +1 Strength. You may reroll 1 die when resolving a Strength test.",
+    "flavor": "Paid by the week and asks no questions.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "strength"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on a Strength test.",
+        "skill": "strength"
+      }
+    ]
   },
   {
-    "id": "retain_lawyer", "name": "Retain a Lawyer", "kind": "service", "traits": ["service"], "cost": 2, "count": 1,
-    "text": "Discard every Legal condition.",
-    "flavor": "Expensive, discreet, and very good at paperwork.",
-    "on_gain": [{"type": "remove_condition", "trait": "legal"}]
+    "id": "personal_assistant",
+    "name": "Personal Assistant",
+    "kind": "ally",
+    "traits": [
+      "ally"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Gain +1 Influence. You may reroll 1 die when resolving a Influence test.",
+    "flavor": "Keeps your appointments and your secrets.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "influence"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on an Influence test.",
+        "skill": "influence"
+      }
+    ]
   },
   {
-    "id": "private_sanitarium", "name": "Private Sanitarium", "kind": "service", "traits": ["service"], "cost": 3, "count": 1,
-    "text": "Discard every Madness condition and recover 1 Sanity.",
-    "flavor": "Quiet gardens, high walls, and doctors who do not ask questions.",
-    "on_gain": [{"type": "remove_condition", "trait": "madness"}, {"type": "sanity", "amount": 1}]
+    "id": "private_investigator",
+    "name": "Private Investigator",
+    "kind": "ally",
+    "traits": [
+      "ally"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "Gain +1 Observation. You may reroll 1 die when resolving a Observation test.",
+    "flavor": "Knows every back alley and hotel clerk.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "observation"
+      }
+    ],
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on an Observation test.",
+        "skill": "observation"
+      }
+    ]
+  },
+  {
+    "id": "lodge_researcher",
+    "name": "Silver Twilight Researcher",
+    "kind": "ally",
+    "traits": [
+      "ally"
+    ],
+    "cost": 3,
+    "count": 1,
+    "text": "If you defeat a Monster during a Combat Encounter, recover 1 Sanity and gain 1 Clue.",
+    "flavor": "Privileged access to the Lodge vaults.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "will"
+      }
+    ],
+    "action": {
+      "text": "Consult the researcher: test Lore. If you pass, gain 1 Clue.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "lore",
+          "pass": [
+            {
+              "type": "clues",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "cat_burglar",
+    "name": "Cat Burglar",
+    "kind": "ally",
+    "traits": [
+      "ally"
+    ],
+    "cost": 1,
+    "count": 1,
+    "text": "Action: Roll 1 die. On a 5 or 6, gain 1 Item or Trinket Asset from the reserve. On a 1, discard this card.",
+    "flavor": "Locks are only suggestions.",
+    "action": {
+      "text": "Send the Cat Burglar: test Observation. If you pass, take 1 Asset from the reserve.",
+      "effects": [
+        {
+          "type": "test",
+          "skill": "observation",
+          "pass": [
+            {
+              "type": "gain_asset",
+              "source": "reserve"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "agency_quarantine",
+    "name": "Agency Quarantine",
+    "kind": "service",
+    "traits": [
+      "service"
+    ],
+    "cost": 4,
+    "count": 1,
+    "text": "When you gain this card, immediately choose a space. Each Monster on the chosen space loses 4 Health. Then discard this card.",
+    "flavor": "Cordons, searchlights, and heavy ordnance.",
+    "on_gain": [
+      {
+        "type": "damage_monsters",
+        "amount": 4,
+        "where": "choose_space"
+      }
+    ]
+  },
+  {
+    "id": "charter_flight",
+    "name": "Charter Flight",
+    "kind": "service",
+    "traits": [
+      "service"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "When you gain this card, immediately move up to 2 spaces. Then discard this card.",
+    "flavor": "A twin-engine biplane waiting on the tarmac.",
+    "on_gain": [
+      {
+        "type": "move",
+        "to": "choose_within",
+        "range": 2
+      }
+    ]
+  },
+  {
+    "id": "private_care",
+    "name": "Private Care",
+    "kind": "service",
+    "traits": [
+      "service"
+    ],
+    "cost": 2,
+    "count": 2,
+    "text": "When you gain this card, immediately recover all Health and Sanity. Then discard this card.",
+    "flavor": "Discreet physicians and quiet rooms.",
+    "on_gain": [
+      {
+        "type": "health",
+        "amount": 2
+      },
+      {
+        "type": "sanity",
+        "amount": 2
+      },
+      {
+        "type": "remove_condition",
+        "trait": "injury"
+      }
+    ]
+  },
+  {
+    "id": "delivery_service",
+    "name": "Delivery Service",
+    "kind": "service",
+    "traits": [
+      "service"
+    ],
+    "cost": 1,
+    "count": 2,
+    "text": "When you gain this card, immediately give any number of Item possessions to another investigator on any space. Then discard this card.",
+    "flavor": "Express parcel from Arkham.",
+    "on_gain": [
+      {
+        "type": "gain_ticket",
+        "kind": "choose"
+      },
+      {
+        "type": "gain_asset",
+        "kind": "item"
+      }
+    ]
+  },
+  {
+    "id": "sanctuary",
+    "name": "Sanctuary",
+    "kind": "service",
+    "traits": [
+      "service"
+    ],
+    "cost": 2,
+    "count": 1,
+    "text": "When you gain this card, you may immediately discard 1 Condition. Then discard this card.",
+    "flavor": "Candlelight behind stained glass.",
+    "on_gain": [
+      {
+        "type": "gain_condition",
+        "id": "blessed"
+      },
+      {
+        "type": "sanity",
+        "amount": 1
+      }
+    ]
   }
 ]

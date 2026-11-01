@@ -18,21 +18,21 @@ from pursuit.content.reader import ContentError, Reader
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine import rules
 from pursuit.engine.setup import GameConfig, new_game
+from pursuit.engine.state import ActiveMythos
 
 
 def test_shipped_content_has_the_planned_size(content: Content) -> None:
-    assert len(content.investigators) >= 8
+    assert len(content.investigators) >= 12
     assert len(content.old_ones) >= 4
-    assert len(content.locations) >= 30
-    assert len(content.encounters) >= 60
-    assert len(content.portents) >= 20
+    assert len(content.locations) == 36
+    assert len(content.encounters) >= 45
+    assert len(content.mythos) >= 20
     assert sum(1 for a in content.assets.values() if a.kind == "spell") >= 8
-    assert sum(1 for a in content.assets.values() if a.kind == "relic") >= 6
+    assert sum(1 for a in content.assets.values() if a.kind == "artifact") >= 6
 
 
-def test_every_location_has_a_deck_and_a_route(content: Content) -> None:
+def test_every_location_has_a_route(content: Content) -> None:
     for loc in content.locations.values():
-        assert content.deck_for_location(loc.id) in content.decks
         assert content.adjacency[loc.id]
 
 
@@ -57,33 +57,35 @@ def test_every_investigator_has_all_skills(content: Content) -> None:
 
 @pytest.mark.parametrize("seed", range(3))
 def test_every_encounter_resolves_without_error(content: Content, seed: int) -> None:
-    game = new_game(content, GameConfig("cthulhu", ("hollis_grange", "kenji_mori"), seed=seed), RandomBot(seed))
+    game = new_game(content, GameConfig("cthulhu", ("mark_harrigan", "akachi_onyele"), seed=seed), RandomBot(seed))
     for enc in content.encounters.values():
-        clear_board(game)
-        inv = game.investigators[0]
-        inv.health, inv.sanity, inv.defeated = inv.max_health, inv.max_sanity, False
-        inv.funds, inv.clues = 5, 2
-        loc = (
-            enc.deck
-            if enc.deck in content.locations
-            else next(loc.id for loc in content.locations.values() if loc.terrain == enc.deck or enc.deck == "rift")
-        )
-        inv.location = loc
-        game.locations[loc].rift = enc.deck == "rift"
-        run_effects(enc.effects, Ctx(game, inv, f"encounter:{enc.id}"))
-        game.outcome = None
+        runs = [(enc.text, enc.effects, enc.location)]
+        runs += [(s.text, s.effects, s.location) for s in enc.sections]
+        for _text, effects, section_location in runs:
+            clear_board(game)
+            inv = game.investigators[0]
+            inv.health, inv.sanity, inv.defeated = inv.max_health, inv.max_sanity, False
+            inv.clues = 3
+            loc = section_location or enc.location or "arkham"
+            inv.location = loc
+            game.locations[loc].gate = enc.deck.startswith("other_world")
+            game.locations[loc].clue = enc.deck.startswith("research_")
+            run_effects(effects, Ctx(game, inv, f"encounter:{enc.id}"))
+            game.outcome = None
 
 
-@pytest.mark.parametrize("dread", [1, 2, 3])
-def test_every_portent_tier_resolves_without_error(content: Content, dread: int) -> None:
-    game = new_game(
-        content, GameConfig("king_in_yellow", ("tug_mulroney", "ada_penhallow"), seed=dread), RandomBot(dread)
-    )
-    game.dread = dread
-    for portent in content.portents.values():
-        if portent.min_dread > dread:
-            continue
-        run_effects(portent.tier(dread).effects, Ctx(game, None, f"portent:{portent.id}"))
+def test_every_mythos_card_resolves_without_error(content: Content) -> None:
+    game = new_game(content, GameConfig("yog_sothoth", ("mark_harrigan", "akachi_onyele"), seed=1), RandomBot(1))
+    for mdef in content.mythos.values():
+        active = ActiveMythos(mdef.id, eldritch=mdef.eldritch, rumor_space=mdef.rumor_space)
+        game.active_mythos.append(active)
+        run_effects(mdef.effects, Ctx(game, None, f"mythos:{mdef.id}", mythos=active))
+        run_effects(mdef.reckoning, Ctx(game, None, f"mythos:{mdef.id}", mythos=active))
+        if mdef.encounter_effects:
+            inv = game.investigators[0]
+            inv.health, inv.sanity, inv.defeated = inv.max_health, inv.max_sanity, False
+            inv.clues = 4
+            run_effects(mdef.encounter_effects, Ctx(game, inv, f"mythos:{mdef.id}", mythos=active))
         rules.process_defeats(game)
         game.outcome = None
         game.doom = max(game.doom, 5)
@@ -91,28 +93,33 @@ def test_every_portent_tier_resolves_without_error(content: Content, dread: int)
 
 def test_every_old_one_hook_resolves_without_error(content: Content) -> None:
     for old in content.old_ones.values():
-        game = new_game(content, GameConfig(old.id, ("tug_mulroney", "ada_penhallow"), seed=1), RandomBot(1))
-        run_effects(old.night, Ctx(game, None, "night"))
+        game = new_game(content, GameConfig(old.id, ("mark_harrigan", "akachi_onyele"), seed=1), RandomBot(1))
+        run_effects(old.reckoning, Ctx(game, None, "reckoning"))
         rules.awaken(game)
-        assert game.awakened and game.final_rite is not None
-        run_effects(old.awakening.night, Ctx(game, None, "awake"))
+        assert game.awakened
+        if not old.awakening.lose_immediately:
+            assert game.final_mystery is not None
+            run_effects(old.awakening.reckoning, Ctx(game, None, "awake_reckoning"))
 
 
-def test_every_ability_resolves_without_error(content: Content) -> None:
-    game = new_game(content, GameConfig("cthulhu", ("tug_mulroney", "ada_penhallow"), seed=3), RandomBot(3))
+def test_every_ability_and_back_resolves_without_error(content: Content) -> None:
+    game = new_game(content, GameConfig("cthulhu", ("mark_harrigan", "akachi_onyele"), seed=3), RandomBot(3))
     inv = game.investigators[0]
     for adef in content.assets.values():
         if adef.action is not None:
-            inv.health, inv.sanity, inv.funds, inv.trophies = inv.max_health, inv.max_sanity, 9, 2
+            inv.health, inv.sanity, inv.clues = inv.max_health, inv.max_sanity, 3
             run_effects(adef.action.effects, Ctx(game, inv, adef.id))
+        for back in adef.backs:
+            inv.health, inv.sanity, inv.defeated = inv.max_health, inv.max_sanity, False
+            run_effects(back.effects, Ctx(game, inv, adef.id))
     for idef in content.investigators.values():
         if idef.action is not None:
-            inv.health, inv.sanity, inv.funds, inv.trophies = inv.max_health, inv.max_sanity, 9, 2
+            inv.health, inv.sanity, inv.clues = inv.max_health, inv.max_sanity, 3
             run_effects(idef.action.effects, Ctx(game, inv, idef.id))
     for cdef in content.conditions.values():
-        for outcome in cdef.outcomes:
+        for back in cdef.backs:
             inv.health, inv.sanity, inv.defeated = inv.max_health, inv.max_sanity, False
-            run_effects(outcome.effects, Ctx(game, inv, cdef.id))
+            run_effects(back.effects, Ctx(game, inv, cdef.id))
     game.outcome = None
 
 
@@ -137,8 +144,13 @@ def load_from(path: Path) -> Content:
 
 
 def test_unknown_effect_type_names_the_path(data_copy: Path) -> None:
-    edit_json(data_copy / "encounters" / "city.json", lambda d: d[0]["effects"].append({"type": "summon_cake"}))
-    with pytest.raises(ContentError, match=r"city\.json\[0\]\.effects\[1\]: unknown effect type 'summon_cake'"):
+    edit_json(
+        data_copy / "encounters" / "general.json",
+        lambda d: d[0]["sections"][0]["effects"].append({"type": "summon_cake"}),
+    )
+    with pytest.raises(
+        ContentError, match=r"general\.json\[0\]\.sections\[0\]\.effects\[1\]: unknown effect type 'summon_cake'"
+    ):
         load_from(data_copy)
 
 
@@ -149,37 +161,37 @@ def test_typo_in_a_field_name_is_rejected(data_copy: Path) -> None:
 
 
 def test_route_to_a_missing_location_is_rejected(data_copy: Path) -> None:
-    edit_json(data_copy / "map.json", lambda d: d["routes"].append(["paris", "atlantis", "sea"]))
+    edit_json(data_copy / "map.json", lambda d: d["routes"].append(["london", "atlantis", "ship"]))
     with pytest.raises(ContentError, match="unknown location 'atlantis'"):
         load_from(data_copy)
 
 
 def test_reference_to_a_missing_condition_is_rejected(data_copy: Path) -> None:
     def change(d: list) -> None:
-        d[0]["effects"] = [{"type": "gain_condition", "id": "lycanthropy"}]
+        d[0]["sections"][0]["effects"] = [{"type": "gain_condition", "id": "lycanthropy"}]
 
-    edit_json(data_copy / "encounters" / "sea.json", change)
+    edit_json(data_copy / "encounters" / "general.json", change)
     with pytest.raises(ContentError, match="unknown condition 'lycanthropy'"):
         load_from(data_copy)
 
 
 def test_world_effect_that_needs_an_investigator_is_rejected(data_copy: Path) -> None:
     edit_json(
-        data_copy / "portents.json", lambda d: d[0]["tiers"][0]["effects"].append({"type": "health", "amount": -1})
+        data_copy / "mythos.json", lambda d: d[0]["effects"].append({"type": "health", "amount": -1})
     )
     with pytest.raises(ContentError, match="needs an investigator"):
         load_from(data_copy)
 
 
-def test_missing_hub_deck_is_rejected(data_copy: Path) -> None:
-    (data_copy / "encounters" / "paris.json").unlink()
+def test_missing_encounter_deck_is_rejected(data_copy: Path) -> None:
+    (data_copy / "encounters" / "europe.json").unlink()
     with pytest.raises(ContentError, match="missing deck file"):
         load_from(data_copy)
 
 
-def test_portent_tier_count_must_match_min_dread(data_copy: Path) -> None:
-    edit_json(data_copy / "portents.json", lambda d: d[0].update({"min_dread": 2}))
-    with pytest.raises(ContentError, match="needs 2 tier"):
+def test_mythos_stage_count_must_be_three(data_copy: Path) -> None:
+    edit_json(data_copy / "old_ones.json", lambda d: d[0]["stages"].pop())
+    with pytest.raises(ContentError, match="expected 3 stages"):
         load_from(data_copy)
 
 
@@ -197,3 +209,4 @@ def test_reader_rejects_a_boolean_where_an_integer_belongs() -> None:
 
 def test_script_fixture_is_usable(script: Script) -> None:
     assert script.events == []
+

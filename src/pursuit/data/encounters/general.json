@@ -1,0 +1,1031 @@
+[
+  {
+    "id": "general_1",
+    "title": "You make sure no one is watching before sneaking out...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "You make sure no one is watching before sneaking out of the shop with your stolen goods (Observation). If you pass, gain 1 Item Asset from the reserve or 1 random Item Asset from the deck. If you fail, you are caught by the store owner and arrested; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Item Asset from the reserve or 1 random Item Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "item",
+                "source": "reserve"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are caught by the store owner and arrested; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "The remains of a long-dead explorer lie before you. Some of his gear still seems salvageable, and he won't miss it. You dig through the dead man's pockets; gain 1 random Item Asset from the deck and lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "item"
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "You find the floating detritus of some sunken ship and search for any survivors or salvageable objects (Observation). If you pass, you discover a floating trunk; gain 1 Artifact. If you fail, you waste hours without result; become Delayed.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you discover a floating trunk; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you waste hours without result; become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_2",
+    "title": "Corrupt members of the police force pressure you for a...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "Corrupt members of the police force pressure you for a bribe. You speak to some people you know to take care of the problem (Influence). If you pass, the police are apologetic and share their leads with you; spawn 1 Clue. If you fail, gain a Debt Condition to pay the bribe.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the police are apologetic and share their leads with you; spawn 1 Clue."
+              },
+              {
+                "type": "spawn_clue",
+                "count": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Debt Condition to pay the bribe."
+              },
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "Far from any road or village, you find a shallow grave marked only with an arcane symbol. As you dig, a growing dread weakens your resolve (Will). If you pass, you find a charred corpse clutching a journal; gain 1 Clue or improve Lore. If you fail, you run from the area; gain a Cursed Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find a charred corpse clutching a journal; gain 1 Clue or improve Lore."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              },
+              {
+                "type": "improve_skill",
+                "skill": "lore"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you run from the area; gain a Cursed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "Your ship becomes lost in a dense fog bank, terrifying the superstitious crew. When the mist finally clears, you've somehow traveled hundreds of miles. Move 1 space and lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_3",
+    "title": "The shop is robbed while you are browsing!",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "The shop is robbed while you are browsing! You attempt to fend off the thieves (Strength). If you pass, the store owner is very gracious; gain 1 Item Asset from the reserve or 1 random Item Asset from the deck. If you fail, lose 1 Health and discard 1 Item possession.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the store owner is very gracious; gain 1 Item Asset from the reserve or 1 random Item Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "item",
+                "source": "reserve"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health and discard 1 Item possession."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "lose_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "You scrape away year of moss and lichen from the stone altar, uncovering a series of prehistoric symbols. You think you can interpret the carvings (Lore). If you pass, gain 1 Clue or 1 Spell.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Clue or 1 Spell."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "One of the sailors is singing an old sea shanty about a woman searching for her dead husband. The story seems familiar to you (Lore-1). If you pass, you recognize it as the story of Isis, and sailor teaches you the song; gain a Blessed Condition and recover 1 Health and 1 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you recognize it as the story of Isis, and sailor teaches you the song; gain a Blessed Condition and recover 1 Health and 1 Sanity."
+              },
+              {
+                "type": "health",
+                "amount": 1
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_4",
+    "title": "A group of intimidating Syndicate member demand you...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "A group of intimidating Syndicate member demand you pay them for protection. You offer the well-dressed men what you can afford (Influence). If you fail, they make sure you meet with an accident; gain a Leg Injury Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "they make sure you meet with an accident; gain a Leg Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "leg_injury"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "The terrain ahead of you looks impassable, but going around would take too long. You'll need to find some way to move forward (Observation). If you pass, you discover a path; move 1 space. If you fail, you trip over the uneven ground; lose 1 Health and gain a Leg Injury Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you discover a path; move 1 space."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you trip over the uneven ground; lose 1 Health and gain a Leg Injury Condition."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "gain_condition",
+                "id": "leg_injury"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "You discover a signal fire on a small island, but don't find any people. You search the beach for signs of life (Observation). If you pass, you spot a person hiding behind large stones; gain 1 Clue and 1 random Ally Asset from the deck. If you fail, the mystery remains unsolved; gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you spot a person hiding behind large stones; gain 1 Clue and 1 random Ally Asset from the deck."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the mystery remains unsolved; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_5",
+    "title": "A shady figure offers to sell you a weapon, no...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "A shady figure offers to sell you a weapon, no questions asked. You speak with him to determine his motives (Influence). If you pass, gain 1 random Weapon Asset from the deck. If you fail, the undercover policeman arrests you; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 random Weapon Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the undercover policeman arrests you; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "The ground slopes upward so uniformly that you suspect a structure exists underneath. You search for a buried entrance to claim the treasures found inside. You may spend 1 Clue to gain 1 Artifact.",
+        "effects": [
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "The captain tells you that you are passing over the site of a famous shipwreck. You can use this ship's deep-sea diving equipment to explore the wreckage. You may become Delayed to gain 1 Artifact.",
+        "effects": [
+          {
+            "type": "delay"
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_6",
+    "title": "You wander through the aisles of an antique book store.",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "You wander through the aisles of an antique book store. Although many extremely rare books can be found here, the organizational system is almost impossible to decipher (Lore-1). If you pass, you're able to track down a hidden gem; gain 1 Tome Artifact.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you're able to track down a hidden gem; gain 1 Tome Artifact."
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "You help a young woman search the countryside for her uncle (Observation). If you pass, you find the eccentric, old man, and he gives you a gift for helping his niece; gain 1 Tome Artifact from the deck.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find the eccentric, old man, and he gives you a gift for helping his niece; gain 1 Tome Artifact from the deck."
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "The ship ahead of you seemed abandoned, but now you see that it is crewed entirely by ghostly figures. You try to discern what ship this had once been and what happened to it (Lore). If you pass, the spectral captain grants you aid; gain 1 Clue or improve Will. If you fail, gain a Cursed Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the spectral captain grants you aid; gain 1 Clue or improve Will."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              },
+              {
+                "type": "improve_skill",
+                "skill": "will"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Cursed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_7",
+    "title": "A friendly game of cards ends with a very high-stakes...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "A friendly game of cards ends with a very high-stakes hand (Influence). If you pass, you amaze everyone watching and find a new friend; gain 1 random Ally Asset from the deck. If you fail, gain a Debt Condition to cover the loss.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you amaze everyone watching and find a new friend; gain 1 random Ally Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "ally"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Debt Condition to cover the loss."
+              },
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "Your map is gone, and you must navigate based on your own observations (Observation). If you pass, you confidently progress on your journey; move 1 space. If you fail, you travel in circles; you become Delayed and gain a Madness Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you confidently progress on your journey; move 1 space."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you travel in circles; you become Delayed and gain a Madness Condition."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "A sudden storm descends upon you and strong winds whip around your vessel. Huge waves toss your ship around like a toy, and you are thrown to the deck repeatedly. Lose 1 Sanity and gain a Back Injury Condition.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "back_injury"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_8",
+    "title": "A night of drinking and good cheer helps raise your...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "A night of drinking and good cheer helps raise your spirits. Recover 2 Sanity. While you are celebrating, you hardly notice that you are being robbed (Observation). If you fail, discard 1 Item possession.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": 2
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "discard 1 Item possession."
+              },
+              {
+                "type": "lose_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "Past where your campfire allows you to see, you hear voices chanting. You try to draw a protective sigil in the ground (Lore). If you pass, the next morning you find evidence of cult activity that you can use to identify the cult members; gain 1 Clue or improve Influence. If you fail, gain a Cursed Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the next morning you find evidence of cult activity that you can use to identify the cult members; gain 1 Clue or improve Influence."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              },
+              {
+                "type": "improve_skill",
+                "skill": "influence"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Cursed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "You find a terrified stowaway aboard the ship. You attempt to comfort him and coax him into telling you his story (Influence). If you pass, he tells you about horrifying beasts and unbelievable worlds; gain 1 Clue.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he tells you about horrifying beasts and unbelievable worlds; gain 1 Clue."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_9",
+    "title": "The police report that people are being abducted by a...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "The police report that people are being abducted by a monster dwelling in the sewer system. Wandering through the underground tunnels you are suddenly attacked by a deep one (Strength)! If you pass, you defeat the creature and rescue its hostage; gain 1 random Ally Asset from the deck. If you fail, lose 1 Health from the struggle.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you defeat the creature and rescue its hostage; gain 1 random Ally Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "ally"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health from the struggle."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "In the middle of the night, a feral beast rips apart your camp and attacks you (Strength)! If you pass, you feel invincible; improve Will. If you fail, lose 1 Health and gain a Leg Injury Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you feel invincible; improve Will."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "will"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health and gain a Leg Injury Condition."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "gain_condition",
+                "id": "leg_injury"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "The captain of the ship invites you to dine with him. You have the feeling that he's had some experience with unearthly creatures and try to convince him to share his story (Influence). If you pass, his tale includes highly-significant details; spawn 1 Clue.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "his tale includes highly-significant details; spawn 1 Clue."
+              },
+              {
+                "type": "spawn_clue",
+                "count": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_10",
+    "title": "The police ask for your help investigating a series of...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "The police ask for your help investigating a series of ritual killings. The grisly crime scenes threaten to overwhelm you with chills and nausea (Will). If you pass, you manage to examine the scene and find significant information; spawn 1 Clue. If you fail, you can't endure the horror; lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you manage to examine the scene and find significant information; spawn 1 Clue."
+              },
+              {
+                "type": "spawn_clue",
+                "count": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you can't endure the horror; lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "Extreme conditions have left you fevered and delirious. You force yourself to keep moving, putting a terrible strain on your body (Strength). If you fail, the fever grows worse and you begin seeing things; gain a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the fever grows worse and you begin seeing things; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "You're awakened in the night by gunfire. Deep ones have climbed aboard the ship and are trying to sabotage the engine. You do your best to help the crew fight them (Strength). If you fail, the engine is destroyed before you finish off the sea creatures, and you must wait to be rescued; become Delayed.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the engine is destroyed before you finish off the sea creatures, and you must wait to be rescued; become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_11",
+    "title": "Legends say that this cemetery is haunted.",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "Legends say that this cemetery is haunted. Exploring the headstones, you encounter an angry specter, eager to share his story. The experience is nerve-wracking, but you try to listen (Will). If you pass, the spirit gratefully fades from view; recover 2 Sanity. If you fail, his desperate voice echoes in your mind; gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the spirit gratefully fades from view; recover 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "his desperate voice echoes in your mind; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "According to your map, you can make a detour to visit a lake purported to have restorative powers. You may become Delayed to recover 3 Sanity or discard a Madness Condition.",
+        "effects": [
+          {
+            "type": "sanity",
+            "amount": 3
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "One of the sailors speaks in a strange, ancient dialect. You try to communicate with the man based on obscure languages you have studied (Lore). If you pass, the peculiar man teaches you a chant; gain 1 Spell. If you fail, he growls an unintelligible phrase; gain a Cursed Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the peculiar man teaches you a chant; gain 1 Spell."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "spell"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "he growls an unintelligible phrase; gain a Cursed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "general_12",
+    "title": "The Syndicate is engaged in a gang war with local...",
+    "sections": [
+      {
+        "terrain": "city",
+        "text": "The Syndicate is engaged in a gang war with local thugs and is under intense legal scrutiny. You try to trade your political clout for assistance (Influence). If you pass, gain 1 Service Asset from the reserve or 1 random Service Asset from the deck.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Service Asset from the reserve or 1 random Service Asset from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "service",
+                "source": "reserve"
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "terrain": "wilderness",
+        "text": "You find a primitive painting on the wall of a cave and decide to explore the subterranean depths that lie beyond. The dark, constricting passages create a terrible sense of claustrophobia (Will-1). If you pass, gain 1 Artifact left by an ancient civilization. If you fail, lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Artifact left by an ancient civilization."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "terrain": "sea",
+        "text": "A large wave washes across the deck, and a prized possession slips from your fingers. You dive into the water, holding your breath as long as you can to recover the object before it sinks out of reach (Will). If you fail, discard 1 Item possession.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "discard 1 Item possession."
+              },
+              {
+                "type": "lose_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

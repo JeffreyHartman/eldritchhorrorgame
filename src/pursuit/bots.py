@@ -1,7 +1,7 @@
 """Computer controllers for soak tests and balance runs.
 
 `RandomBot` picks any legal option, which finds crashes in odd corners of the rules.
-`HeuristicBot` plays with simple goals, which gives a rough win rate per Old One.
+`HeuristicBot` plays with simple goals, which gives a rough win rate per Ancient One.
 """
 
 from __future__ import annotations
@@ -14,8 +14,6 @@ from pursuit.engine import rules
 from pursuit.engine.dice import dice_pool
 from pursuit.engine.state import Game, Investigator
 
-# A turn that loops through free actions this many times ends by force. It keeps a
-# random bot from trading the same item back and forth forever.
 MAX_MENU_VISITS = 40
 
 
@@ -32,11 +30,11 @@ class RandomBot:
         if kind == "action":
             self.visits += 1
             end = next(i for i, o in enumerate(options) if o.value == ("end",))
-            spent = all(o.value[0] in ("buy", "trade", "collect", "end") for o in options if o.enabled)
+            spent = all(o.value[0] in ("end",) for o in options if o.enabled)
             if spent or self.visits > MAX_MENU_VISITS:
                 self.visits = 0
                 return end
-        elif kind in ("trade", "buy", "collect") and self.rng.random() < 0.5:
+        elif kind in ("trade", "acquire") and self.rng.random() < 0.5:
             return enabled[-1]
         return self.rng.choice(enabled)
 
@@ -53,7 +51,6 @@ class RandomBot:
 class HeuristicBot:
     def __init__(self, seed: int = 0) -> None:
         self.rng = random.Random(seed)
-        self.shopped: tuple[int, int] | None = None
         self.visits = 0
 
     # --- protocol ---------------------------------------------------------------------
@@ -69,8 +66,8 @@ class HeuristicBot:
         return pick
 
     def confirm(self, game: Game, prompt: str, *, kind: str, inv: Investigator | None = None) -> bool:
-        if kind == "boost" and inv is not None:
-            return inv.sanity > 3 and inv.health > 2
+        if kind == "bank_loan" and inv is not None:
+            return not rules.has_condition(inv, "debt") and self.rng.random() < 0.3
         return True
 
     def notify(self, game: Game, event: Event) -> None:
@@ -92,25 +89,23 @@ class HeuristicBot:
     def _target(self, game: Game, inv: Investigator) -> str | None:
         dist = rules.distances(game, inv.location)
         goals: list[tuple[int, int, str]] = []
-        for rite in game.active_rites():
-            rdef = game.rite_def(rite)
-            if rite.done or rdef.where is None:
+        for mys in game.active_mysteries():
+            mdef = game.mystery_def(mys)
+            if mys.done:
                 continue
-            has = {"clues": inv.clues, "funds": inv.funds, "trophies": inv.trophies}.get(rdef.resource or "", 1)
-            if rdef.resource == "relic":
-                has = sum(game.asset_def(c).kind == "relic" for c in inv.assets)
-            if rdef.kind == "test" or has >= 2:
+            if mdef.where is not None and (mdef.clue_cost == 0 or inv.clues >= mdef.clue_cost):
                 for loc in game.content.locations:
-                    if rdef.where.matches(game, loc):
+                    if mdef.where.matches(game, loc):
                         goals.append((0, dist[loc], loc))
-        lore = dice_pool(game, inv, "lore", 0, ("seal",))
+        for active in game.active_mythos:
+            if active.rumor_space and active.rumor_space in dist:
+                goals.append((0, dist[active.rumor_space], active.rumor_space))
         for loc, monster in game.all_monsters():
-            mdef = game.content.monsters[monster.def_id]
-            if mdef.epic:
+            mon_def = game.content.monsters[monster.def_id]
+            if mon_def.epic:
                 goals.append((1, dist[loc], loc))
-        for loc in game.open_rifts():
-            if lore >= 3:
-                goals.append((1, dist[loc], loc))
+        for loc in game.open_gates():
+            goals.append((1, dist[loc], loc))
         for loc, state in game.locations.items():
             if state.clue:
                 goals.append((2, dist[loc], loc))
@@ -127,9 +122,10 @@ class HeuristicBot:
         best = None
         best_d = 999
         for i in enabled:
-            dest = options[i].value
-            if dest is None:
+            val = options[i].value
+            if val is None:
                 continue
+            dest = val[0] if isinstance(val, tuple) else val
             d = back.get(dest, 999)
             if d < best_d:
                 best, best_d = i, d
@@ -148,25 +144,25 @@ class HeuristicBot:
         order: list[str] = []
         if low:
             order.append("rest")
-        order += ["rite", "seal", "investigate", "cure"]
-        here_key = (game.round, inv.seat)
-        if self.shopped != here_key and inv.funds >= 2:
-            order.append("buy")
-        if inv.funds < 3:
-            order.append("earn")
+        order.append("condition")
         target = self._target(game, inv)
         if target is not None and target != inv.location:
+            if len(inv.tickets) < game.content.rules.max_tickets:
+                order.append("prepare")
             order.append("travel")
+        if dice_pool(game, inv, "influence", 0, ("acquire",)) >= 3 and len(inv.assets) < 3:
+            order.append("acquire")
         order += ["ability", "asset"]
         if inv.health < inv.max_health or inv.sanity < inv.max_sanity:
             order.append("rest")
+        if len(inv.tickets) < game.content.rules.max_tickets:
+            order.append("prepare")
+        order.append("acquire")
         if not state.monsters and target is None:
             order.append("travel")
         for key in order:
             pick = self._find(options, enabled, key)
             if pick is not None:
-                if key == "buy":
-                    self.shopped = here_key
                 return pick
         return end
 
@@ -183,47 +179,44 @@ class HeuristicBot:
             return enabled[-1]
         here = rules.distances(game, target).get(inv.location, 999)
         pick = self._closer(game, options, enabled, target)
-        if pick is not None and rules.distances(game, target).get(options[pick].value, 999) < here:
-            return pick
+        if pick is not None:
+            val = options[pick].value
+            dest = val[0] if isinstance(val, tuple) else val
+            if rules.distances(game, target).get(dest, 999) < here:
+                return pick
         return enabled[-1]
 
-    def _combat(self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None) -> int | None:
-        assert inv is not None
-        here = game.locations[inv.location].monsters
-        if not here:
-            return 0
-        monster = here[0]
-        mdef = game.content.monsters[monster.def_id]
-        rate = (7 - game.content.rules.success_on) / 6
-        fight = dice_pool(game, inv, "brawn", mdef.fight_mod, ("combat",)) * rate
-        evade = dice_pool(game, inv, "wits", mdef.evade_mod, ("evade",))
-        remaining = rules.toughness(game, monster.def_id) - monster.wounds
-        if mdef.epic and inv.health > mdef.damage:
-            return 0  # Wounds stay on a monster, so chip away at an epic one.
-        return 0 if fight >= remaining * 0.8 or evade < 2 else 1
-
     def _encounter(self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None) -> int | None:
-        assert inv is not None
-        if len(enabled) > 1 and dice_pool(game, inv, "lore", 0, ("encounter",)) >= 4 and inv.sanity > 3:
-            return enabled[1]
+        for pref in ("mystery", "rumor", "other_world", "research", "fallen", "expedition"):
+            for i in enabled:
+                val = options[i].value
+                if isinstance(val, tuple) and val and val[0] == pref:
+                    return i
         return enabled[0]
 
-    def _buy(self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None) -> int | None:
+    def _acquire(self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None) -> int | None:
         assert inv is not None
         owned = {c.def_id for c in inv.assets}
         best = None
         for i in enabled:
             uid = options[i].value
-            card = next((c for c in game.market if c.uid == uid), None)
+            if uid is None:
+                continue
+            card = next((c for c in game.reserve if c.uid == uid), None)
             if card is None or card.def_id in owned:
                 continue
             adef = game.asset_def(card)
-            score = len(adef.modifiers) + len(adef.boosts) + (1 if "weapon" in adef.traits else 0)
+            score = adef.cost + len(adef.modifiers) + (1 if "weapon" in adef.traits else 0)
             if best is None or score > best[0]:
                 best = (score, i)
-        if best is not None and best[0] > 0:
+        if best is not None:
             return best[1]
         return enabled[-1]
+
+    def _acquire_discard(
+        self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None
+    ) -> int | None:
+        return enabled[0]
 
     def _trade(self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None) -> int | None:
         return enabled[-1]
@@ -241,19 +234,21 @@ class HeuristicBot:
 
     def _improve(self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None) -> int | None:
         assert inv is not None
-        skills = ["lore", "charm", "wits", "brawn", "nerve"]
-        return min(enabled, key=lambda i: inv.skill(skills[i]))
+        from pursuit.content.defs import SKILLS
+
+        return min(enabled, key=lambda i: inv.skill(SKILLS[i]))
 
     def _ability_target(
         self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None
     ) -> int | None:
         people = game.investigators_at(inv.location) if inv else []
-        if not people:
-            return None
-        hurt = min(range(len(people)), key=lambda i: people[i].health + people[i].sanity)
+        if not people or len(people) != len(options):
+            return enabled[0]
+        hurt = min(enabled, key=lambda i: people[i].health + people[i].sanity)
         return hurt
 
     def _effect_choice(
         self, game: Game, options: list[Option], enabled: list[int], inv: Investigator | None
     ) -> int | None:
         return self.rng.choice(enabled)
+

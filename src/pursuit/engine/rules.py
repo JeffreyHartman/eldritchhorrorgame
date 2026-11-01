@@ -5,17 +5,19 @@ from __future__ import annotations
 from collections import deque
 from typing import Any
 
-from pursuit.content.defs import MARKET_KINDS, Cost
+from pursuit.content.defs import OMEN_TRACK, RESERVE_KINDS, CardBack, Cost
 from pursuit.controller import Event, Option
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine.state import (
+    ActiveMythos,
     AssetCard,
     ConditionInst,
     Deck,
+    FallenInvestigator,
     Game,
     Investigator,
     MonsterInst,
-    RiteState,
+    MysteryState,
 )
 
 # --- events and decisions -------------------------------------------------------------
@@ -75,6 +77,20 @@ def loc_name(game: Game, loc_id: str) -> str:
     return game.content.locations[loc_id].name
 
 
+def nearest_city(game: Game, loc_id: str) -> str:
+    dist = distances(game, loc_id)
+    cities = [loc for loc in dist if game.content.locations[loc].terrain == "city"]
+    return min(cities, key=lambda loc: (dist[loc], loc)) if cities else loc_id
+
+
+def random_space(game: Game) -> str:
+    loc_id = game.clue_deck.draw(game.rng)
+    if loc_id is not None:
+        game.clue_deck.discard(loc_id)
+        return loc_id
+    return game.rng.choice(sorted(game.locations))
+
+
 # --- outcome --------------------------------------------------------------------------
 
 
@@ -92,7 +108,7 @@ def lose(game: Game, reason: str) -> None:
         emit(game, "outcome", reason, result="loss")
 
 
-# --- health, sanity, and defeat -------------------------------------------------------
+# --- health, sanity, clues, tickets, and defeat ---------------------------------------
 
 
 def change_health(game: Game, inv: Investigator, amount: int) -> None:
@@ -125,16 +141,6 @@ def change_sanity(game: Game, inv: Investigator, amount: int) -> None:
         mark_defeated(game, inv, "madness")
 
 
-def change_funds(game: Game, inv: Investigator, amount: int) -> None:
-    before = inv.funds
-    inv.funds = max(0, inv.funds + amount)
-    delta = inv.funds - before
-    if delta > 0:
-        emit(game, "gain", f"{inv.name} gains {delta} Funds.", stat="funds")
-    elif delta < 0:
-        emit(game, "loss", f"{inv.name} loses {-delta} Funds.", stat="funds")
-
-
 def change_clues(game: Game, inv: Investigator, amount: int) -> None:
     before = inv.clues
     inv.clues = max(0, inv.clues + amount)
@@ -143,81 +149,159 @@ def change_clues(game: Game, inv: Investigator, amount: int) -> None:
         emit(game, "gain", f"{inv.name} gains {delta} Clue{'s' if delta > 1 else ''}.", stat="clues")
         game.bump("clues_gained", delta)
     elif delta < 0:
-        emit(game, "loss", f"{inv.name} loses {-delta} Clue{'s' if delta < -1 else ''}.", stat="clues")
+        emit(game, "loss", f"{inv.name} discards {-delta} Clue{'s' if delta < -1 else ''}.", stat="clues")
+
+
+def gain_ticket(game: Game, inv: Investigator, kind: str) -> None:
+    inv.tickets.append(kind)
+    emit(game, "gain", f"{inv.name} gains a {kind.title()} Ticket.", stat="tickets")
+    enforce_ticket_limit(game, inv)
+
+
+def enforce_ticket_limit(game: Game, inv: Investigator) -> None:
+    limit = game.content.rules.max_tickets
+    while len(inv.tickets) > limit:
+        options = [Option(f"Discard {t.title()} Ticket", i) for i, t in enumerate(inv.tickets)]
+        pick = choose(
+            game,
+            f"You may hold at most {limit} travel tickets. Discard which one?",
+            options,
+            kind="discard_ticket",
+            inv=inv,
+            auto_single=len(set(inv.tickets)) == 1,
+        )
+        dropped = inv.tickets.pop(pick)
+        emit(game, "loss", f"{inv.name} discards a {dropped.title()} Ticket.")
 
 
 def mark_defeated(game: Game, inv: Investigator, cause: str) -> None:
     if inv.defeated:
         return
     inv.defeated = True
-    emit(game, "defeat", f"{inv.name} is overcome by {cause}!", investigator=inv.name, cause=cause)
+    emit(game, "defeat", f"{inv.name} is defeated ({cause})!", investigator=inv.name, cause=cause)
+
+
+def devour_investigator(game: Game, inv: Investigator) -> None:
+    if inv.defeated:
+        return
+    inv.defeated = True
+    inv.devoured = True
+    emit(game, "defeat", f"{inv.name} is devoured!", investigator=inv.name, cause="devoured")
 
 
 def process_defeats(game: Game) -> None:
-    """Replace or eliminate every defeated investigator. Safe to call at any time."""
+    """Resolve steps 1-4 of Defeated Investigators immediately.
+
+    In Eldritch Horror, replacement investigators are chosen at the end of the Mythos
+    Phase (before the awakening), or immediately if all active investigators have fallen.
+    """
+    for inv in game.investigators:
+        if not inv.defeated or inv.eliminated or game.outcome:
+            continue
+        if inv.actions_taken == ["defeated_resolved"]:
+            continue
+        inv.actions_taken = ["defeated_resolved"]
+        game.bump("investigators_lost")
+
+        # Step 1: Advance Doom by 1
+        advance_doom(game, game.content.rules.defeat_doom, f"the defeat of {inv.name}")
+        if game.outcome:
+            return
+
+        if inv.devoured:
+            for card in list(inv.assets):
+                discard_asset(game, inv, card)
+            inv.assets = []
+            inv.conditions = []
+            inv.clues = 0
+            inv.tickets = []
+        else:
+            # Step 2 & 3: Move token to nearest City space and leave possessions on sheet
+            city = nearest_city(game, inv.location)
+            cause = "health" if inv.health == 0 else "sanity"
+            for card in inv.assets:
+                card.exhausted = False
+            fallen = FallenInvestigator(
+                def_id=inv.def_id,
+                name=inv.name,
+                cause=cause,
+                clues=inv.clues,
+                tickets=list(inv.tickets),
+                assets=list(inv.assets),
+            )
+            game.locations[city].fallen.append(fallen)
+            inv.assets = []
+            inv.conditions = []
+            inv.clues = 0
+            inv.tickets = []
+            emit(
+                game,
+                "defeat",
+                f"{inv.name} is relocated to {loc_name(game, city)} ({'Crippled' if cause == 'health' else 'Insane'}).",
+                location=city,
+            )
+
+        # Step 4: Pass Lead Investigator if needed
+        if game.lead_seat == inv.seat:
+            others = [o for o in game.investigators if not o.defeated and not o.eliminated]
+            if others:
+                options = [Option(o.name, o.seat, loc_name(game, o.location)) for o in others]
+                pick = choose(
+                    game,
+                    "Choose the new Lead Investigator.",
+                    options,
+                    kind="lead_investigator",
+                    auto_single=True,
+                )
+                game.lead_seat = others[pick].seat
+
+        if game.awakened or not game.unused_investigators:
+            inv.eliminated = True
+            emit(game, "defeat", f"{inv.name} is eliminated from the game.")
+            if not game.active_investigators():
+                lose(game, "Every investigator has been eliminated. Humanity is doomed.")
+                return
+
+
+def replace_defeated_investigators(game: Game) -> None:
+    """At the end of the Mythos Phase, replace any defeated investigators."""
+    from pursuit.engine.setup import create_investigator
+
     for idx, inv in enumerate(game.investigators):
         if not inv.defeated or inv.eliminated or game.outcome:
             continue
-        here = game.locations[inv.location]
-        here.belongings.extend(inv.assets)
-        for card in inv.assets:
-            card.exhausted = False
-        inv.assets = []
-        inv.conditions = []
-        game.bump("investigators_lost")
-        emit(
-            game,
-            "defeat",
-            f"{inv.name}'s belongings are left behind at {loc_name(game, inv.location)}.",
-        )
         if game.awakened or not game.unused_investigators:
             inv.eliminated = True
-            emit(game, "defeat", f"No one takes {inv.name}'s place.")
-        else:
-            advance_doom(game, game.content.rules.defeat_doom, f"the loss of {inv.name}")
-            if game.outcome:
+            if not game.active_investigators():
+                lose(game, "Every investigator has been eliminated. Humanity is doomed.")
                 return
-            replacement = _choose_replacement(game, inv)
-            game.investigators[idx] = replacement
-        if not game.active_investigators():
-            lose(game, "Every investigator has fallen. No one is left to stand against the dark.")
+            continue
+        defs = [game.content.investigators[i] for i in game.unused_investigators]
+        options = [Option(d.name, d.id, f"{d.occupation}, starts in {loc_name(game, d.start)}") for d in defs]
+        pick = choose(game, f"Choose a new investigator to replace {inv.name}.", options, kind="replacement")
+        def_id = defs[pick].id
+        game.unused_investigators.remove(def_id)
+        new = create_investigator(game, def_id, inv.seat)
+        game.investigators[idx] = new
+        emit(game, "turn", f"{new.name} joins the investigation at {loc_name(game, new.location)}.")
+
+
+# --- omen, doom, awakening ------------------------------------------------------------
+
+
+def advance_omen(game: Game, amount: int = 1, *, advance_doom_from_gates: bool = True) -> None:
+    for _ in range(amount):
+        if game.outcome:
             return
-
-
-def _choose_replacement(game: Game, old: Investigator) -> Investigator:
-    from pursuit.engine.setup import create_investigator
-
-    defs = [game.content.investigators[i] for i in game.unused_investigators]
-    options = [Option(d.name, d.id, f"{d.occupation}, starts in {loc_name(game, d.start)}") for d in defs]
-    pick = choose(game, f"Choose an investigator to replace {old.name}.", options, kind="replacement")
-    def_id = defs[pick].id
-    game.unused_investigators.remove(def_id)
-    new = create_investigator(game, def_id, old.seat)
-    # The new investigator arrives now but acts from the next round.
-    new.actions_taken = ["arrived"] * game.content.rules.actions_per_turn
-    emit(game, "turn", f"{new.name} joins the investigation at {loc_name(game, new.location)}.")
-    return new
-
-
-# --- doom, dread, awakening -----------------------------------------------------------
-
-
-def dread_for_doom(game: Game) -> int:
-    second, third = game.old_one.dread_at
-    if game.doom <= third:
-        return 3
-    if game.doom <= second:
-        return 2
-    return 1
-
-
-def update_dread(game: Game) -> None:
-    target = 3 if game.awakened else max(game.dread, dread_for_doom(game))
-    while game.dread < target:
-        game.dread += 1
-        new_cards = [p.id for p in game.content.portents.values() if p.min_dread == game.dread]
-        game.portent_deck.shuffle_in(game.rng, new_cards)
-        emit(game, "dread", f"Dread rises to level {game.dread}. Worse portents gather.", level=game.dread)
+        game.omen_index = (game.omen_index + 1) % len(OMEN_TRACK)
+        color = game.omen_color
+        emit(game, "omen", f"The Omen advances to {color} ({game.omen_space}).", omen=game.omen_space, color=color)
+        if advance_doom_from_gates:
+            matching = len(game.matching_gates())
+            if matching:
+                advance_doom(game, matching, f"{matching} {color} Gate(s) match the Omen")
+        if game.old_one.omen_green_eldritch_doom and game.omen_space == "green" and game.green_eldritch > 0:
+            advance_doom(game, game.green_eldritch, f"{game.green_eldritch} Eldritch token(s) on the green Omen")
 
 
 def advance_doom(game: Game, amount: int, reason: str = "") -> None:
@@ -225,28 +309,24 @@ def advance_doom(game: Game, amount: int, reason: str = "") -> None:
         return
     why = f" ({reason})" if reason else ""
     if game.awakened:
-        game.endgame = max(0, game.endgame - amount)
-        emit(game, "doom", f"The end draws closer{why}. Nights left: {game.endgame}.", value=game.endgame)
-        if game.endgame == 0:
-            lose(game, f"{game.old_one.name} remakes the world in its image. The investigators have failed.")
+        old = game.old_one
+        for _ in range(amount):
+            if game.outcome:
+                return
+            emit(game, "doom", f"Doom would advance{why}.", value=0)
+            if old.awakening.doom_advance_effects:
+                run_effects(old.awakening.doom_advance_effects, Ctx(game, None, f"awakened_doom:{old.id}"))
         return
     game.doom = max(0, game.doom - amount)
     emit(game, "doom", f"Doom advances by {amount}{why}. Doom: {game.doom}.", value=game.doom)
     if game.doom == 0:
         awaken(game)
-    else:
-        update_dread(game)
 
 
 def retreat_doom(game: Game, amount: int) -> None:
-    if amount <= 0 or game.outcome:
+    if amount <= 0 or game.outcome or game.awakened:
         return
-    if game.awakened:
-        cap = game.old_one.awakening.nights
-        game.endgame = min(cap, game.endgame + amount)
-        emit(game, "doom", f"The end is held back. Nights left: {game.endgame}.", value=game.endgame)
-        return
-    game.doom = min(game.start_doom, game.doom + amount)
+    game.doom = min(20, game.doom + amount)
     emit(game, "doom", f"Doom retreats by {amount}. Doom: {game.doom}.", value=game.doom)
 
 
@@ -255,94 +335,178 @@ def awaken(game: Game) -> None:
         return
     old = game.old_one
     game.awakened = True
-    game.endgame = old.awakening.nights
-    final = old.awakening.final_rite
-    game.final_rite = RiteState(final.id, final.required(len(game.active_investigators())), final=True)
-    update_dread(game)
     emit(game, "awaken", old.awakening.text, old_one=old.id)
-    if final.kind == "defeat" and final.monster:
-        _spawn_rite_monster(game, final.monster, final.spawn_at)
+    for inv in game.investigators:
+        if inv.defeated and not inv.eliminated:
+            inv.eliminated = True
+    if not game.active_investigators():
+        lose(game, "Every investigator has been eliminated.")
+        return
+    if old.awakening.lose_immediately:
+        lose(game, old.awakening.text)
+        return
+    final = old.awakening.final_mystery
+    if final is not None:
+        n = len(game.investigators)
+        game.final_mystery = MysteryState(final.id, final.required(n), final=True)
+        if final.kind == "defeat" and final.monster:
+            _spawn_mystery_monster(game, final.monster, final.spawn_at)
+        run_effects(final.on_enter, Ctx(game, None, f"mystery:{final.id}"))
     run_effects(old.awakening.effects, Ctx(game, None, f"awakening:{old.id}"))
+    check_mysteries(game)
 
 
-# --- rites ----------------------------------------------------------------------------
+# --- mysteries ------------------------------------------------------------------------
 
 
-def _spawn_rite_monster(game: Game, monster_id: str, spawn_at: str | None) -> None:
-    if spawn_at and spawn_at in game.locations:
+def _spawn_mystery_monster(game: Game, monster_id: str, spawn_at: str | None) -> None:
+    if spawn_at == "random" or spawn_at is None:
+        loc = random_space(game)
+    elif spawn_at in game.locations:
         loc = spawn_at
     else:
-        sites = [loc.id for loc in game.content.locations.values() if loc.rift_site]
-        loc = game.rng.choice(sites)
+        loc = random_space(game)
     spawn_monster(game, loc, monster_id)
 
 
-def setup_rite_monsters(game: Game) -> None:
-    for rite in game.rites:
-        rdef = game.rite_def(rite)
-        if rdef.kind == "defeat" and rdef.monster:
-            _spawn_rite_monster(game, rdef.monster, rdef.spawn_at)
-
-
-def add_rite_progress(game: Game, rite: RiteState, amount: int) -> None:
-    if amount <= 0 or rite.done or game.outcome:
+def draw_mystery(game: Game) -> None:
+    if game.active_mystery is not None and not game.active_mystery.done:
         return
-    rite.progress = min(rite.required, rite.progress + amount)
-    rdef = game.rite_def(rite)
-    if rite.done:
-        game.bump("rites_completed")
-        emit(game, "rite", f"The rite '{rdef.name}' is complete!", rite=rdef.id, done=True)
+    if not game.mystery_deck:
+        return
+    mys_id = game.mystery_deck.pop(0)
+    mdef = next(m for m in game.old_one.mysteries if m.id == mys_id)
+    n = len(game.investigators)
+    game.active_mystery = MysteryState(mdef.id, mdef.required(n))
+    emit(game, "mystery", f"New Mystery: {mdef.name}. {mdef.text}", mystery=mdef.id)
+    if mdef.kind == "defeat" and mdef.monster:
+        _spawn_mystery_monster(game, mdef.monster, mdef.spawn_at)
+    run_effects(mdef.on_enter, Ctx(game, None, f"mystery:{mdef.id}"))
+
+
+def add_mystery_progress(game: Game, mys: MysteryState, amount: int) -> None:
+    if amount <= 0 or mys.done or game.outcome:
+        return
+    mys.progress = min(mys.required, mys.progress + amount)
+    mdef = game.mystery_def(mys)
+    if mys.done:
+        if not mys.final:
+            game.solved_mysteries.append(mys.def_id)
+            game.bump("mysteries_solved")
+        emit(game, "mystery", f"The Mystery '{mdef.name}' is solved!", mystery=mdef.id, done=True)
+        check_mysteries(game)
+        if not game.outcome and not mys.final and len(game.solved_mysteries) < game.old_one.mysteries_needed:
+            draw_mystery(game)
     else:
-        emit(game, "rite", f"'{rdef.name}': {rite.progress}/{rite.required}.", rite=rdef.id, done=False)
-    check_rites(game)
+        emit(game, "mystery", f"'{mdef.name}': {mys.progress}/{mys.required}.", mystery=mdef.id, done=False)
 
 
-def check_rites(game: Game) -> None:
+def check_mysteries(game: Game) -> None:
     if game.outcome:
         return
+    enough = len(game.solved_mysteries) >= game.old_one.mysteries_needed
     if game.awakened:
-        if game.final_rite and game.final_rite.done:
-            win(game, f"The final rite holds. {game.old_one.name} is cast back into the void between stars.")
-    elif game.rites and all(r.done for r in game.rites):
-        win(game, f"The rites are complete. {game.old_one.name} sinks back into its long sleep.")
+        if enough and game.final_mystery and game.final_mystery.done:
+            win(game, f"The Final Mystery is solved! {game.old_one.name} is banished from this world.")
+    elif enough:
+        win(game, f"{game.old_one.mysteries_needed} Mysteries are solved! {game.old_one.name} is banished.")
 
 
-# --- rifts, monsters, clues -----------------------------------------------------------
+# --- gates, monsters, clues, expeditions ----------------------------------------------
 
 
-def open_rift(game: Game) -> None:
-    loc_id = game.rift_deck.draw(game.rng)
+def spawn_gate(game: Game, loc_id: str | None = None) -> str | None:
     if loc_id is None:
-        return
-    game.rift_deck.discard(loc_id)
+        for _ in range(len(game.gate_deck)):
+            drawn = game.gate_deck.draw(game.rng)
+            if drawn is None:
+                return None
+            if not game.locations[drawn].gate:
+                loc_id = drawn
+                break
+            game.gate_deck.discard(drawn)
+        if loc_id is None:
+            return None
     state = game.locations[loc_id]
-    if state.rift:
-        emit(game, "rift", f"The rift at {loc_name(game, loc_id)} tears wider!", location=loc_id)
-        spawn_monster(game, loc_id)
-        advance_doom(game, 1, "a rift widens")
-    else:
-        state.rift = True
-        game.bump("rifts_opened")
-        emit(game, "rift", f"A rift tears open at {loc_name(game, loc_id)}!", location=loc_id)
-        spawn_monster(game, loc_id)
-    limit = game.old_one.rift_limit
-    if limit and len(game.open_rifts()) >= limit:
-        lose(game, f"{limit} rifts stand open at once. The way is open, and {game.old_one.name} steps through.")
+    if state.gate:
+        return loc_id
+    state.gate = True
+    state.other_world = game.other_world_deck.draw(game.rng)
+    if state.other_world is None and game.content.other_worlds:
+        state.other_world = game.rng.choice(list(game.content.other_worlds))
+    game.bump("gates_spawned")
+    color = game.content.locations[loc_id].gate_color or "red"
+    emit(game, "gate", f"A {color} Gate opens at {loc_name(game, loc_id)}!", location=loc_id, color=color)
+    spawn_monster(game, loc_id)
+    return loc_id
 
 
-def close_rift(game: Game, inv: Investigator, loc_id: str) -> None:
+def discard_gate(game: Game, loc_id: str) -> bool:
     state = game.locations[loc_id]
-    if not state.rift:
+    if not state.gate:
+        return False
+    state.gate = False
+    if state.other_world is not None:
+        game.other_world_deck.discard(state.other_world)
+        state.other_world = None
+    game.gate_deck.discard(loc_id)
+    return True
+
+
+def close_gate(game: Game, inv: Investigator, loc_id: str) -> None:
+    state = game.locations[loc_id]
+    if not state.gate:
         return
-    state.rift = False
-    trophies = 1 + perk(game, inv, "seal_bonus")
-    inv.trophies += trophies
-    game.bump("rifts_sealed")
-    emit(game, "rift", f"{inv.name} seals the rift at {loc_name(game, loc_id)}.", location=loc_id, sealed=True)
-    for rite in game.active_rites():
-        rdef = game.rite_def(rite)
-        if rdef.kind == "seal" and not rite.done and (rdef.where is None or rdef.where.matches(game, loc_id)):
-            add_rite_progress(game, rite, 1)
+    discard_gate(game, loc_id)
+    game.bump("gates_closed")
+    emit(game, "gate", f"{inv.name} closes the Gate at {loc_name(game, loc_id)}!", location=loc_id, closed=True)
+
+    for mys in game.active_mysteries():
+        mdef = game.mystery_def(mys)
+        if mdef.kind == "gate" and not mys.done and (mdef.where is None or mdef.where.matches(game, loc_id)):
+            if mdef.clue_cost > 0:
+                if inv.clues >= mdef.clue_cost and confirm(
+                    game,
+                    f"Spend {mdef.clue_cost} Clue(s) to advance '{mdef.name}'?",
+                    kind="mystery_spend",
+                    inv=inv,
+                ):
+                    change_clues(game, inv, -mdef.clue_cost)
+                    add_mystery_progress(game, mys, 1)
+            else:
+                add_mystery_progress(game, mys, 1)
+
+    if inv.def_id == "akachi_onyele":
+        targets = [
+            loc
+            for loc, st in game.locations.items()
+            if loc != inv.location and (st.gate or st.clue)
+        ]
+        if targets:
+            options = [Option(loc_name(game, t), t) for t in targets] + [Option("Stay here", None)]
+            pick = choose(
+                game,
+                "Akachi's gift: move to a space with a Gate or Clue?",
+                options,
+                kind="move",
+                inv=inv,
+            )
+            dest = options[pick].value
+            if dest:
+                move_investigator(game, inv, dest)
+
+
+def monster_surge(game: Game) -> None:
+    matching = game.matching_gates()
+    if not matching:
+        emit(game, "monster", "No Gate matches the current Omen; a new Gate spawns instead.")
+        spawn_gate(game)
+        return
+    count = game.reference.monster_surge
+    emit(game, "monster", f"Monster Surge! {count} Monster(s) spawn at each {game.omen_color} Gate.")
+    for loc_id in matching:
+        for _ in range(count):
+            spawn_monster(game, loc_id)
 
 
 def spawn_monster(game: Game, loc_id: str, def_id: str | None = None) -> MonsterInst | None:
@@ -358,17 +522,21 @@ def spawn_monster(game: Game, loc_id: str, def_id: str | None = None) -> Monster
     monster = MonsterInst(game.uid(), def_id)
     game.locations[loc_id].monsters.append(monster)
     mdef = content.monsters[def_id]
-    emit(game, "monster", f"{mdef.name} appears at {loc_name(game, loc_id)}.", monster=def_id, location=loc_id)
+    emit(game, "monster", f"{mdef.name} spawns at {loc_name(game, loc_id)}.", monster=def_id, location=loc_id)
+    if mdef.on_spawn:
+        run_effects(mdef.on_spawn, Ctx(game, None, f"monster_spawn:{mdef.id}"))
     return monster
 
 
 def toughness(game: Game, def_id: str) -> int:
-    """A monster's full Health. Epic monsters grow with the number of investigators."""
+    """A monster's full Health. Epic monsters can scale with investigator count."""
+    if def_id == "cultist":
+        return game.old_one.cultist_toughness
     mdef = game.content.monsters[def_id]
     return mdef.toughness + mdef.toughness_per_investigator * len(game.investigators)
 
 
-def defeat_monster(game: Game, inv: Investigator, loc_id: str, monster: MonsterInst) -> None:
+def defeat_monster(game: Game, inv: Investigator | None, loc_id: str, monster: MonsterInst) -> None:
     mdef = game.content.monsters[monster.def_id]
     state = game.locations[loc_id]
     if monster in state.monsters:
@@ -376,22 +544,49 @@ def defeat_monster(game: Game, inv: Investigator, loc_id: str, monster: MonsterI
     if not mdef.epic:
         game.monster_cup.append(monster.def_id)
     game.bump("monsters_defeated")
-    emit(game, "combat", f"{inv.name} defeats the {mdef.name}!", monster=mdef.id, defeated=True)
-    run_effects(mdef.on_defeat, Ctx(game, inv, f"monster:{mdef.id}"))
-    for rite in game.active_rites():
-        rdef = game.rite_def(rite)
-        if rdef.kind == "defeat" and rdef.monster == mdef.id and not rite.done:
-            add_rite_progress(game, rite, rite.required - rite.progress)
+    who = f"{inv.name} defeats" if inv else "Defeated"
+    emit(game, "combat", f"{who} the {mdef.name}!", monster=mdef.id, defeated=True)
+    if inv is not None:
+        effects = game.old_one.cultist_on_defeat if mdef.id == "cultist" else mdef.on_defeat
+        if effects and not (mdef.id == "cultist" and game.old_one.id == "azathoth"):
+            run_effects(effects, Ctx(game, inv, f"monster:{mdef.id}"))
+    for mys in game.active_mysteries():
+        mys_def = game.mystery_def(mys)
+        if mys_def.kind == "defeat" and mys_def.monster == mdef.id and not mys.done:
+            add_mystery_progress(game, mys, mys.required - mys.progress)
+        elif mys_def.kind == "combat" and not mys.done:
+            add_mystery_progress(game, mys, 1)
 
 
-def move_monsters(game: Game) -> None:
-    """Each roaming monster steps one space toward the nearest investigator."""
-    targets = {i.location for i in game.active_investigators() if not i.defeated}
+def discard_monster(game: Game, loc_id: str, monster: MonsterInst) -> None:
+    """Remove a Monster without resolving defeat effects or Mystery progress."""
+    state = game.locations[loc_id]
+    if monster in state.monsters:
+        state.monsters.remove(monster)
+    mdef = game.content.monsters[monster.def_id]
+    if not mdef.epic:
+        game.monster_cup.append(monster.def_id)
+    game.bump("monsters_discarded")
+    emit(game, "monster", f"The {mdef.name} is discarded.", monster=mdef.id, location=loc_id)
+
+
+def move_monsters(game: Game, monster_id: str | None = None, toward: str = "investigator") -> None:
+    """Move roaming (or specified) monsters 1 space toward their target."""
+    if toward == "investigator":
+        targets = {i.location for i in game.active_investigators() if not i.defeated}
+    else:
+        targets = {loc for loc, m in game.all_monsters() if m.def_id == toward}
     if not targets:
         return
     moves: list[tuple[str, str, MonsterInst]] = []
     for loc, monster in list(game.all_monsters()):
-        if not game.content.monsters[monster.def_id].roams or loc in targets:
+        mdef = game.content.monsters[monster.def_id]
+        if monster_id is not None:
+            if monster.def_id != monster_id:
+                continue
+        elif not mdef.roams:
+            continue
+        if loc in targets:
             continue
         dist = distances(game, loc)
         reachable = [t for t in targets if t in dist]
@@ -402,10 +597,11 @@ def move_monsters(game: Game) -> None:
         if step:
             moves.append((loc, step, monster))
     for src, dst, monster in moves:
-        game.locations[src].monsters.remove(monster)
-        game.locations[dst].monsters.append(monster)
-        name = game.content.monsters[monster.def_id].name
-        emit(game, "monster", f"The {name} moves from {loc_name(game, src)} to {loc_name(game, dst)}.")
+        if monster in game.locations[src].monsters:
+            game.locations[src].monsters.remove(monster)
+            game.locations[dst].monsters.append(monster)
+            name = game.content.monsters[monster.def_id].name
+            emit(game, "monster", f"The {name} moves from {loc_name(game, src)} to {loc_name(game, dst)}.")
 
 
 def _next_step(game: Game, src: str, goal: str) -> str | None:
@@ -414,37 +610,54 @@ def _next_step(game: Game, src: str, goal: str) -> str | None:
     return min(options) if options else None
 
 
-def heal_monsters(game: Game) -> None:
+def heal_monsters(game: Game, amount: int = 99) -> None:
     healed = 0
     for _loc, monster in game.all_monsters():
         if monster.wounds:
-            monster.wounds = 0
+            monster.wounds = max(0, monster.wounds - amount)
             healed += 1
     if healed:
-        emit(game, "monster", "Every wounded monster recovers.")
+        emit(game, "monster", "Monsters recover Health.")
 
 
-def spawn_clue(game: Game) -> None:
+def spawn_clue(game: Game) -> str | None:
     for _ in range(len(game.clue_deck)):
         loc_id = game.clue_deck.draw(game.rng)
         if loc_id is None:
-            return
+            return None
         game.clue_deck.discard(loc_id)
         state = game.locations[loc_id]
         if not state.clue:
             state.clue = True
-            emit(game, "clue", f"A clue surfaces at {loc_name(game, loc_id)}.", location=loc_id)
-            return
+            emit(game, "clue", f"A Clue spawns at {loc_name(game, loc_id)}.", location=loc_id)
+            return loc_id
+    return None
 
 
-# --- assets ---------------------------------------------------------------------------
+def update_expedition(game: Game) -> None:
+    deck = game.encounter_decks.get("expedition")
+    if not deck:
+        game.active_expedition = None
+        return
+    if not deck.cards and deck.discards:
+        deck.cards = deck.discards
+        deck.discards = []
+        game.rng.shuffle(deck.cards)
+    if deck.cards:
+        top = game.content.encounters[deck.cards[0]]
+        game.active_expedition = top.location
+    else:
+        game.active_expedition = None
+
+
+# --- assets, spells, artifacts --------------------------------------------------------
 
 
 def deck_for(game: Game, kind: str) -> Deck[AssetCard]:
     if kind == "spell":
         return game.spell_deck
-    if kind == "relic":
-        return game.relic_deck
+    if kind == "artifact":
+        return game.artifact_deck
     return game.asset_deck
 
 
@@ -452,11 +665,22 @@ def new_card(game: Game, def_id: str) -> AssetCard:
     return AssetCard(game.uid(), def_id)
 
 
+def take_starting_card(game: Game, def_id: str) -> AssetCard:
+    adef = game.content.assets[def_id]
+    deck = deck_for(game, adef.kind)
+    found = deck.draw_where(game.rng, lambda c: c.def_id == def_id)
+    return found if found is not None else new_card(game, def_id)
+
+
 def gain_card(game: Game, inv: Investigator, card: AssetCard) -> None:
     adef = game.asset_def(card)
-    if adef.kind == "service":
+    if adef.kind == "service" and adef.on_gain and adef.action is None:
         emit(game, "gain", f"{inv.name} uses the service: {adef.name}.", asset=adef.id)
         run_effects(adef.on_gain, Ctx(game, inv, f"asset:{adef.id}"))
+        deck_for(game, adef.kind).discard(card)
+        return
+    if adef.kind == "spell" and any(c.def_id == adef.id for c in inv.assets):
+        emit(game, "info", f"{inv.name} already has {adef.name}.")
         deck_for(game, adef.kind).discard(card)
         return
     inv.assets.append(card)
@@ -485,7 +709,6 @@ def draw_matching(
     else:
         decks = [game.asset_deck]
     for deck in decks:
-        # Shuffle first so a filtered draw is random, not always the same card.
         game.rng.shuffle(deck.cards)
         card = deck.draw_where(game.rng, match)
         if card is not None:
@@ -493,19 +716,13 @@ def draw_matching(
     return None
 
 
-def refill_market(game: Game) -> None:
-    size = game.content.rules.market_size
-    while len(game.market) < size:
+def refill_reserve(game: Game) -> None:
+    size = game.content.rules.reserve_size
+    while len(game.reserve) < size:
         card = game.asset_deck.draw(game.rng)
         if card is None:
             return
-        game.market.append(card)
-
-
-def rotate_market(game: Game) -> None:
-    if game.market:
-        game.asset_deck.discard(game.market.pop(0))
-    refill_market(game)
+        game.reserve.append(card)
 
 
 def discard_asset(game: Game, inv: Investigator, card: AssetCard) -> None:
@@ -517,12 +734,28 @@ def discard_asset(game: Game, inv: Investigator, card: AssetCard) -> None:
     emit(game, "loss", f"{inv.name} discards {adef.name}.", asset=adef.id)
 
 
-def market_price(game: Game, inv: Investigator, card: AssetCard) -> int:
-    return max(0, game.asset_def(card).cost - perk(game, inv, "market_discount"))
+def is_reserve_kind(kind: str) -> bool:
+    return kind in RESERVE_KINDS
 
 
-def is_market_kind(kind: str) -> bool:
-    return kind in MARKET_KINDS
+def _pick_back(game: Game, backs: tuple[CardBack, ...], successes: int | None = None) -> CardBack:
+    matching = [
+        b
+        for b in backs
+        if (b.min_successes is None or (successes is not None and successes >= b.min_successes))
+        and (b.max_successes is None or (successes is not None and successes <= b.max_successes))
+    ]
+    pool = matching or list(backs)
+    return game.rng.choices(pool, weights=[b.weight for b in pool])[0]
+
+
+def flip_asset(game: Game, inv: Investigator, card: AssetCard, successes: int | None = None) -> None:
+    adef = game.asset_def(card)
+    if not adef.backs:
+        return
+    back = _pick_back(game, adef.backs, successes)
+    emit(game, "info", f"{inv.name} flips {adef.name}: {back.text}")
+    run_effects(back.effects, Ctx(game, inv, f"asset_back:{adef.id}", asset=card))
 
 
 # --- conditions -----------------------------------------------------------------------
@@ -533,12 +766,22 @@ def has_condition(inv: Investigator, cond_id: str) -> bool:
 
 
 def gain_condition(game: Game, inv: Investigator, cond_id: str) -> bool:
+    if cond_id == "blessed" and has_condition(inv, "cursed"):
+        for inst in list(inv.conditions):
+            if inst.def_id == "cursed":
+                remove_condition(game, inv, inst)
+        return False
+    if cond_id == "cursed" and has_condition(inv, "blessed"):
+        for inst in list(inv.conditions):
+            if inst.def_id == "blessed":
+                remove_condition(game, inv, inst)
+        return False
     cdef = game.content.conditions[cond_id]
     if has_condition(inv, cond_id):
-        emit(game, "condition", f"{inv.name} already suffers from {cdef.name}.")
+        emit(game, "condition", f"{inv.name} already has {cdef.name}.")
         return False
     inv.conditions.append(ConditionInst(game.uid(), cond_id))
-    emit(game, "condition", f"{inv.name} gains the condition {cdef.name}: {cdef.text}", condition=cond_id)
+    emit(game, "condition", f"{inv.name} gains {cdef.name} ({', '.join(cdef.traits)}): {cdef.text}", condition=cond_id)
     return True
 
 
@@ -546,28 +789,18 @@ def remove_condition(game: Game, inv: Investigator, inst: ConditionInst) -> None
     if inst in inv.conditions:
         inv.conditions.remove(inst)
         cdef = game.content.conditions[inst.def_id]
-        emit(game, "condition", f"{inv.name} is free of {cdef.name}.", condition=cdef.id, removed=True)
+        emit(game, "condition", f"{inv.name} discards {cdef.name}.", condition=cdef.id, removed=True)
 
 
-def resolve_condition(game: Game, inv: Investigator, inst: ConditionInst) -> None:
+def flip_condition(game: Game, inv: Investigator, inst: ConditionInst, successes: int | None = None) -> None:
     cdef = game.content.conditions[inst.def_id]
-    if not cdef.outcomes or inst not in inv.conditions:
+    if not cdef.backs or inst not in inv.conditions:
         return
-    outcome = game.rng.choices(cdef.outcomes, weights=[o.weight for o in cdef.outcomes])[0]
-    emit(game, "condition", f"{cdef.name} comes due for {inv.name}. {outcome.text}", condition=cdef.id)
-    run_effects(outcome.effects, Ctx(game, inv, f"condition:{cdef.id}", condition=inst))
-
-
-def trigger_conditions(game: Game, inv: Investigator, when: str) -> None:
-    for inst in list(inv.conditions):
-        if inv.defeated or game.outcome:
-            return
-        cdef = game.content.conditions[inst.def_id]
-        if cdef.trigger != when:
-            continue
-        if when == "night" and game.roll_die() > cdef.chance:
-            continue
-        resolve_condition(game, inv, inst)
+    back = _pick_back(game, cdef.backs, successes)
+    emit(game, "condition", f"{inv.name} flips {cdef.name}: {back.text}", condition=cdef.id)
+    run_effects(back.effects, Ctx(game, inv, f"condition:{cdef.id}", condition=inst))
+    if inst in inv.conditions:
+        remove_condition(game, inv, inst)
 
 
 def blocked(game: Game, inv: Investigator, action: str) -> str | None:
@@ -578,7 +811,77 @@ def blocked(game: Game, inv: Investigator, action: str) -> str | None:
     return None
 
 
-# --- perks ----------------------------------------------------------------------------
+# --- reckoning ------------------------------------------------------------------------
+
+
+def resolve_reckoning(game: Game) -> None:
+    """Resolve Reckoning effects in rulebook order:
+    1. Monsters
+    2. Ancient One sheet
+    3. Ongoing Mythos cards
+    4. Investigator possessions and Conditions
+    """
+    emit(game, "reckoning", "Reckoning effects resolve!")
+
+    # 1. Monsters
+    for _loc, monster in list(game.all_monsters()):
+        if game.outcome:
+            return
+        if monster.def_id == "cultist":
+            effects = game.old_one.cultist_reckoning
+        else:
+            effects = game.content.monsters[monster.def_id].reckoning
+        if effects:
+            run_effects(effects, Ctx(game, None, f"reckoning_monster:{monster.def_id}"))
+            process_defeats(game)
+
+    # 2. Ancient One sheet
+    if not game.outcome:
+        ao_effects = game.old_one.awakening.reckoning if game.awakened else game.old_one.reckoning
+        if ao_effects:
+            run_effects(ao_effects, Ctx(game, None, f"reckoning_ao:{game.old_one_id}"))
+            process_defeats(game)
+
+    # 3. Ongoing Mythos cards
+    for active in list(game.active_mythos):
+        if game.outcome:
+            return
+        mdef = game.content.mythos[active.def_id]
+        if mdef.reckoning:
+            run_effects(mdef.reckoning, Ctx(game, None, f"reckoning_mythos:{mdef.id}", mythos=active))
+            process_defeats(game)
+
+    # 4. Investigator possessions and Conditions (in turn order starting from Lead)
+    for inv in game.turn_order():
+        if game.outcome:
+            return
+        if inv.defeated or inv.eliminated:
+            continue
+        for card in list(inv.assets):
+            if inv.defeated or game.outcome:
+                break
+            adef = game.asset_def(card)
+            if adef.reckoning:
+                run_effects(adef.reckoning, Ctx(game, inv, f"reckoning_asset:{adef.id}", asset=card))
+        for inst in list(inv.conditions):
+            if inv.defeated or game.outcome:
+                break
+            cdef = game.content.conditions[inst.def_id]
+            if cdef.reckoning:
+                run_effects(cdef.reckoning, Ctx(game, inv, f"reckoning_condition:{cdef.id}", condition=inst))
+        process_defeats(game)
+
+
+def solve_rumor(game: Game, active: ActiveMythos, *, solved: bool = True) -> None:
+    if active in game.active_mythos:
+        game.active_mythos.remove(active)
+        game.mythos_discards.append(active.def_id)
+        mdef = game.content.mythos[active.def_id]
+        word = "solved" if solved else "discarded"
+        emit(game, "mythos", f"Rumor '{mdef.name}' is {word}!")
+
+
+# --- perks, movement, costs -----------------------------------------------------------
 
 
 def perk(game: Game, inv: Investigator, name: str) -> int:
@@ -594,18 +897,18 @@ def move_investigator(game: Game, inv: Investigator, loc_id: str, how: str = "")
         return
     inv.location = loc_id
     suffix = f" by {how}" if how else ""
-    emit(game, "travel", f"{inv.name} travels{suffix} to {loc_name(game, loc_id)}.", location=loc_id)
+    emit(game, "travel", f"{inv.name} moves{suffix} to {loc_name(game, loc_id)}.", location=loc_id)
 
 
 def pay_cost(game: Game, inv: Investigator, cost: Cost) -> None:
-    if cost.funds:
-        change_funds(game, inv, -cost.funds)
     if cost.clues:
         change_clues(game, inv, -cost.clues)
-    if cost.trophies:
-        inv.trophies -= cost.trophies
-        emit(game, "loss", f"{inv.name} spends {cost.trophies} Trophy.", stat="trophies")
+    if cost.tickets:
+        for _ in range(min(cost.tickets, len(inv.tickets))):
+            inv.tickets.pop(0)
+        emit(game, "loss", f"{inv.name} spends {cost.tickets} Ticket(s).", stat="tickets")
     if cost.sanity:
         change_sanity(game, inv, -cost.sanity)
     if cost.health:
         change_health(game, inv, -cost.health)
+

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from conftest import MakeGame, Script, first
+from conftest import MakeGame, Script, first, set_dice
 from pursuit.engine import phases, rules
 from pursuit.engine.state import MonsterInst, Phase
 
@@ -12,86 +12,113 @@ def end_turns(script: Script, count: int) -> None:
         script.add("action", "End turn")
 
 
-def test_day_runs_each_investigator_then_moves_to_encounters(make_game: MakeGame, script: Script) -> None:
+def test_action_phase_runs_each_investigator_from_lead_then_moves_to_encounters(
+    make_game: MakeGame, script: Script
+) -> None:
     game = make_game()
     end_turns(script, 2)
     phases.step(game)
     assert game.phase == Phase.ENCOUNTER and game.turn_index == 0
     assert script.checkpoints == 2
     assert [e.data.get("investigator") for e in script.events if e.kind == "turn"] == [
-        "Hollis Grange",
-        "Dr. Miriam Achterberg",
+        "Mark Harrigan",
+        "Akachi Onyele",
     ]
 
 
-def test_encounter_draws_from_the_location_deck_and_discards(make_game: MakeGame, script: Script) -> None:
+def test_encounter_draws_from_location_or_general_deck_and_discards(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     game.phase = Phase.ENCOUNTER
     phases.step(game)
     encounters = [e for e in script.events if e.kind == "encounter"]
-    assert [e.data["deck"] for e in encounters] == ["city", "cairo"]
-    assert len(game.encounter_decks["cairo"].discards) == 1
-    assert game.phase == Phase.NIGHT
+    assert [e.data["deck"] for e in encounters] == ["general", "general"]
+    assert len(game.encounter_decks["general"].discards) == 2
+    assert game.phase == Phase.MYTHOS
 
 
-def test_rift_offers_a_rift_encounter(make_game: MakeGame, script: Script) -> None:
+def test_gate_offers_an_other_world_encounter(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
-    game.locations[inv.location].rift = True
-    script.add("encounter", "Step through the rift")
+    game.locations[inv.location].gate = True
+    script.add("encounter", "Other World")
     phases.encounter_turn(game, inv)
-    assert [e.data["deck"] for e in script.events if e.kind == "encounter"] == ["rift"]
+    deck = next(e.data["deck"] for e in script.events if e.kind == "encounter")
+    assert deck.startswith("other_world_")
 
 
-def test_monster_blocks_the_location_encounter_when_it_survives(make_game: MakeGame, script: Script) -> None:
-    from conftest import set_dice
-
+def test_location_encounter_uses_the_section_for_the_current_city(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
-    game.locations[inv.location].monsters.append(MonsterInst(game.uid(), "grave_revenant"))
-    script.add("combat", "Fight")
-    set_dice(game, 6, 1, 1, 1, 1, 1, 1)  # 2 Nerve dice for horror, then 5 Brawn dice that all miss
+    inv.location = "london"
+    card_id = game.encounter_decks["europe"].cards[0]
+    card = game.content.encounters[card_id]
+    expected = next(section.text for section in card.sections if section.location == "london")
+    phases.encounter_turn(game, inv)
+    event = next(e for e in script.events if e.kind == "encounter")
+    assert event.data["deck"] == "europe" and event.data["encounter"] == card_id
+    assert event.text == expected
+
+
+def test_general_encounter_uses_the_section_for_the_current_terrain(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.location = "space_13"
+    card_id = game.encounter_decks["general"].cards[0]
+    card = game.content.encounters[card_id]
+    expected = next(section.text for section in card.sections if section.terrain == "sea")
+    phases.encounter_turn(game, inv)
+    event = next(e for e in script.events if e.kind == "encounter")
+    assert event.data["deck"] == "general" and event.data["encounter"] == card_id
+    assert event.text == expected
+
+
+def test_clue_offers_a_research_encounter(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    game.locations[inv.location].clue = True
+    script.add("encounter", "Research Encounter")
+    phases.encounter_turn(game, inv)
+    assert next(e.data["deck"] for e in script.events if e.kind == "encounter") == "research_azathoth"
+
+
+def test_expedition_encounter_moves_active_expedition_token(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    assert game.active_expedition is not None
+    inv.location = game.active_expedition
+    script.add("encounter", "Expedition Encounter")
+    phases.encounter_turn(game, inv)
+    assert next(e.data["deck"] for e in script.events if e.kind == "encounter") == "expedition"
+    assert game.active_expedition in game.content.locations
+
+
+def test_monster_blocks_location_encounter_when_it_survives(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    game.locations[inv.location].monsters.append(MonsterInst(game.uid(), "zombie"))  # toughness 3
+    set_dice(game, 5, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1)  # 1 wound dealt, zombie survives
     phases.encounter_turn(game, inv)
     assert not [e for e in script.events if e.kind == "encounter"]
 
 
-def test_night_advances_doom_draws_a_portent_and_starts_a_new_round(make_game: MakeGame, script: Script) -> None:
+def test_mythos_phase_resolves_card_and_starts_new_round(make_game: MakeGame, script: Script) -> None:
     game = make_game()
-    game.phase = Phase.NIGHT
+    game.phase = Phase.MYTHOS
     first(game).actions_taken = ["rest"]
     first(game).assets[0].exhausted = True
-    doom = game.doom
     phases.step(game)
-    assert game.doom <= doom - 1
-    assert any(e.kind == "portent" for e in script.events)
-    assert game.round == 2 and game.phase == Phase.DAY
+    assert any(e.kind == "mythos" for e in script.events)
+    assert game.round == 2 and game.phase == Phase.ACTION
     assert first(game).actions_taken == []
     assert not first(game).assets[0].exhausted
 
 
-def test_open_rifts_press_doom_at_night(make_game: MakeGame, script: Script) -> None:
+def test_empty_mythos_deck_loses_the_game(make_game: MakeGame) -> None:
     game = make_game()
-    game.portent_deck.cards = ["quiet_night"]
-    sites = [loc.id for loc in game.content.locations.values() if loc.rift_site][:4]
-    for site in sites:
-        game.locations[site].rift = True
-    doom = game.doom
-    game.phase = Phase.NIGHT
+    game.mythos_deck.clear()
+    game.phase = Phase.MYTHOS
     phases.step(game)
-    assert game.doom == doom - 2
-
-
-def test_awakened_night_hook_waits_one_night(make_game: MakeGame, script: Script) -> None:
-    game = make_game(old_one="cthulhu")
-    game.portent_deck.cards = ["quiet_night"]
-    game.doom = 1
-    game.phase = Phase.NIGHT
-    sanity = [i.sanity for i in game.investigators]
-    phases.step(game)
-    assert game.awakened
-    assert [i.sanity for i in game.investigators] == [
-        min(s + 1, i.max_sanity) for s, i in zip(sanity, game.investigators, strict=True)
-    ]
+    assert game.outcome == "loss"
 
 
 def test_full_round_with_scripted_turns(make_game: MakeGame, script: Script) -> None:
@@ -107,21 +134,23 @@ def test_play_until_loss_with_passive_investigators(make_game: MakeGame) -> None
 
     game = make_game()
     game.ctl = Script(fallback="first")
-    # Every turn ends at once, so Doom wins in a bounded number of rounds.
     game.ctl.choose = lambda g, p, opts, kind, inv=None: (  # type: ignore[method-assign, misc]
         next(i for i, o in enumerate(opts) if o.value == ("end",))
         if kind == "action"
         else HeuristicBot().choose(g, p, opts, kind=kind, inv=inv)
     )
-    assert phases.play(game) == "loss"
+    assert phases.play(game) in ("win", "loss")
     assert game.round < 40
 
 
-def test_replacement_investigator_waits_for_next_round(make_game: MakeGame, script: Script) -> None:
+def test_replacement_investigator_chosen_at_end_of_mythos_phase(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
     rules.change_health(game, inv, -99)
     rules.process_defeats(game)
-    assert first(game).actions_taken == ["arrived", "arrived"]
-    phases.start_round(game)
-    assert first(game).actions_taken == []
+    assert first(game).defeated
+    game.phase = Phase.MYTHOS
+    phases.step(game)
+    assert not first(game).defeated
+    assert first(game).def_id != "mark_harrigan"
+

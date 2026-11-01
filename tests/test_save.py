@@ -39,7 +39,7 @@ def play_to_checkpoint(game: Game, count: int) -> None:
 
 def test_round_trip_is_exact(content: Content) -> None:
     game = new_game(
-        content, GameConfig("cthulhu", ("hollis_grange", "kenji_mori", "ada_penhallow"), seed=11), HeuristicBot(1)
+        content, GameConfig("cthulhu", ("mark_harrigan", "akachi_onyele", "lily_chen"), seed=11), HeuristicBot(1)
     )
     play_to_checkpoint(game, 7)
     data = save.to_dict(game)
@@ -52,7 +52,7 @@ def test_round_trip_is_exact(content: Content) -> None:
 
 @pytest.mark.parametrize("stop", [1, 5, 13])
 def test_loaded_game_plays_on_identically(content: Content, stop: int) -> None:
-    config = GameConfig("nyarlathotep", ("tug_mulroney", "elijah_brandt"), seed=21)
+    config = GameConfig("shub_niggurath", ("silas_marsh", "charlie_kane"), seed=21)
     original = new_game(content, config, HeuristicBot(3))
     play_to_checkpoint(original, stop)
     snapshot = json.loads(json.dumps(save.to_dict(original)))
@@ -67,12 +67,12 @@ def test_loaded_game_plays_on_identically(content: Content, stop: int) -> None:
 
 def test_save_and_load_files(content: Content, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PURSUIT_SAVES", str(tmp_path))
-    game = new_game(content, GameConfig("king_in_yellow", ("hollis_grange",), seed=5))
+    game = new_game(content, GameConfig("azathoth", ("mark_harrigan",), seed=5))
     path = save.saves_dir() / "slot.json"
     save.save_game(game, path)
     listed = save.list_saves()
     assert listed and listed[0][0] == path
-    assert listed[0][1]["investigators"] == ["Hollis Grange"]
+    assert listed[0][1]["investigators"] == ["Mark Harrigan"]
     assert save.load_game(content, path).seed == 5
 
 
@@ -81,7 +81,7 @@ def test_damaged_save_is_rejected(content: Content, tmp_path: Path) -> None:
     path.write_text("{not json")
     with pytest.raises(save.SaveError, match="not valid JSON"):
         save.load_game(content, path)
-    path.write_text(json.dumps({"version": 1}))
+    path.write_text(json.dumps({"version": save.SAVE_VERSION}))
     with pytest.raises(save.SaveError, match="damaged"):
         save.load_game(content, path)
     path.write_text(json.dumps({"version": 99}))
@@ -90,7 +90,7 @@ def test_damaged_save_is_rejected(content: Content, tmp_path: Path) -> None:
 
 
 def test_save_with_unknown_content_is_rejected(content: Content) -> None:
-    game = new_game(content, GameConfig("king_in_yellow", ("hollis_grange",), seed=5))
+    game = new_game(content, GameConfig("azathoth", ("mark_harrigan",), seed=5))
     data = save.to_dict(game)
     data["investigators"][0]["def_id"] = "somebody_deleted"
     with pytest.raises(save.SaveError, match="no longer exists"):

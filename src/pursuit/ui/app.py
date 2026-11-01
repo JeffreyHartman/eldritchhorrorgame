@@ -23,10 +23,9 @@ from pursuit.ui import render
 from pursuit.ui.terminal import HELP_TEXT, InputFn, QuitToMenu, TerminalController
 
 INTRO = """\
-It is 1926. Rifts are opening across the world, and the things that come through them
-serve something vast that is waking up. A handful of investigators know the truth.
-Travel the world, gather clues, seal the rifts, and complete the rites before the
-Old One wakes. If it wakes, you will have a few nights to stop it, and no more.
+Across the globe, ancient gates are tearing open and an Ancient One stirs in its slumber.
+Travel the world, acquire assets and spells, gather clues through research, close gates in
+other worlds, and solve three Mysteries before humanity's time runs out.
 """
 
 

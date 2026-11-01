@@ -9,22 +9,24 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pursuit.content.reader import ContentError, Reader
 
 if TYPE_CHECKING:
-    from pursuit.engine.state import ConditionInst, Game, Investigator
+    from pursuit.engine.state import ActiveMythos, AssetCard, ConditionInst, Game, Investigator
 
 
 @dataclass(frozen=True)
 class Ctx:
     """Who and what an effect applies to.
 
-    `inv` is None for world effects, such as a portent with no target investigator.
-    `condition` is set while a condition resolves its hidden outcome, so `remove_self`
-    knows which card to discard.
+    `inv` is None for world effects, such as a Mythos card with no target investigator.
+    `condition`, `asset`, and `mythos` are set while resolving effects on those cards.
     """
 
     game: Game
     inv: Investigator | None
     source: str
     condition: ConditionInst | None = None
+    asset: AssetCard | None = None
+    mythos: ActiveMythos | None = None
+    test_successes: int | None = None
 
     def stopped(self) -> bool:
         if self.game.outcome is not None:

@@ -58,7 +58,7 @@ class Script:
             # Free-action menus repeat until the player leaves, so the default leaves.
             if kind == "action":
                 return next(i for i, o in enumerate(options) if o.value == ("end",))
-            if kind in ("buy", "collect", "trade"):
+            if kind in ("acquire", "acquire_discard", "trade"):
                 return enabled[-1]
             return enabled[0]
         if callable(answer) and not isinstance(answer, bool):
@@ -111,8 +111,8 @@ def script() -> Script:
 @pytest.fixture
 def make_game(content: Content, script: Script) -> MakeGame:
     def make(
-        old_one: str = "king_in_yellow",
-        investigators: tuple[str, ...] = ("hollis_grange", "miriam_achterberg"),
+        old_one: str = "azathoth",
+        investigators: tuple[str, ...] = ("mark_harrigan", "akachi_onyele"),
         difficulty: str = "normal",
         seed: int = 7,
         clean: bool = True,
@@ -127,9 +127,10 @@ def make_game(content: Content, script: Script) -> MakeGame:
 
 
 def clear_board(game: Game) -> None:
-    """Remove random setup rifts, clues, and monsters, so a test can place its own."""
+    """Remove random setup gates, clues, and monsters, so a test can place its own."""
     for state in game.locations.values():
-        state.rift = False
+        state.gate = False
+        state.other_world = None
         state.clue = False
         for monster in state.monsters:
             mdef = game.content.monsters[monster.def_id]
@@ -144,13 +145,14 @@ def first(game: Game) -> Investigator:
 
 def card_uids(game: Game) -> list[int]:
     """Every asset card uid in every zone of the game."""
-    uids = [c.uid for c in game.market]
-    for deck in (game.asset_deck, game.spell_deck, game.relic_deck):
+    uids = [c.uid for c in game.reserve]
+    for deck in (game.asset_deck, game.spell_deck, game.artifact_deck):
         uids += [c.uid for c in deck.cards + deck.discards]
     for inv in game.investigators:
         uids += [c.uid for c in inv.assets]
     for state in game.locations.values():
-        uids += [c.uid for c in state.belongings]
+        for fallen in state.fallen:
+            uids += [c.uid for c in fallen.assets]
     return uids
 
 
@@ -160,16 +162,16 @@ def check_invariants(game: Game) -> None:
             continue
         assert 0 <= inv.health <= inv.max_health, inv
         assert 0 <= inv.sanity <= inv.max_sanity, inv
-        assert inv.funds >= 0 and inv.clues >= 0 and inv.trophies >= 0, inv
+        assert inv.clues >= 0 and len(inv.tickets) <= game.content.rules.max_tickets, inv
         assert inv.location in game.content.locations
         if not inv.defeated:
             assert inv.health > 0 and inv.sanity > 0, inv
     uids = card_uids(game)
     assert len(uids) == len(set(uids)), "an asset card is in two places at once"
-    for rite in game.rites:
-        assert 0 <= rite.progress <= rite.required
+    if game.active_mystery:
+        assert 0 <= game.active_mystery.progress <= game.active_mystery.required
     assert game.doom >= 0
-    assert 1 <= game.dread <= 3
+    assert 0 <= game.omen_index < 4
 
 
 def kinds(options: list[Any]) -> list[str]:

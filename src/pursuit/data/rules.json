@@ -1,37 +1,44 @@
 {
-  "_comment": "Core numbers for the rules. The engine reads every value here.",
+  "_comment": "Core numbers for the Eldritch Horror rules.",
   "actions_per_turn": 2,
   "success_on": 5,
-  "market_size": 4,
-  "max_paid_steps": 2,
-  "step_cost": 1,
-  "start_rifts": 2,
-  "start_clues": 4,
-  "night_doom": 1,
+  "reserve_size": 4,
+  "max_tickets": 2,
+  "start_gates": 1,
+  "start_clues": 1,
   "max_improvement": 2,
-  "max_investigators": 4,
+  "max_investigators": 8,
   "defeat_doom": 1,
+  "reference": [
+    {"players": 1, "spawn_gates": 1, "spawn_clues": 1, "monster_surge": 1},
+    {"players": 2, "spawn_gates": 1, "spawn_clues": 1, "monster_surge": 1},
+    {"players": 3, "spawn_gates": 1, "spawn_clues": 2, "monster_surge": 2},
+    {"players": 4, "spawn_gates": 1, "spawn_clues": 2, "monster_surge": 2},
+    {"players": 5, "spawn_gates": 2, "spawn_clues": 3, "monster_surge": 2},
+    {"players": 6, "spawn_gates": 2, "spawn_clues": 3, "monster_surge": 2},
+    {"players": 7, "spawn_gates": 2, "spawn_clues": 4, "monster_surge": 3},
+    {"players": 8, "spawn_gates": 2, "spawn_clues": 4, "monster_surge": 3}
+  ],
   "difficulties": [
     {
       "id": "easy",
       "label": "Easy",
-      "text": "Three more nights before the end, more money, and one fewer rift at the start.",
-      "doom_mod": 3,
-      "funds_mod": 1,
-      "start_rifts_mod": -1
+      "text": "Doom starts 2 higher.",
+      "doom_mod": 2,
+      "start_gates_mod": 0
     },
     {
       "id": "normal",
       "label": "Normal",
-      "text": "The intended challenge."
+      "text": "Standard Eldritch Horror rules."
     },
     {
       "id": "hard",
       "label": "Hard",
-      "text": "Two fewer nights, less money, and an extra rift at the start.",
+      "text": "Doom starts 2 lower, and an extra Gate opens at setup.",
       "doom_mod": -2,
-      "funds_mod": -1,
-      "start_rifts_mod": 1
+      "start_gates_mod": 1
     }
   ]
 }
+

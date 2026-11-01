@@ -24,19 +24,20 @@ EVENT_STYLE = {
     "gain": "green",
     "loss": "red",
     "condition": "magenta",
-    "rift": "bold red",
+    "gate": "bold red",
     "clue": "cyan",
     "doom": "bold red",
-    "dread": "bold magenta",
+    "omen": "bold magenta",
+    "reckoning": "bold red",
+    "mythos": "bold magenta",
     "monster": "red",
     "combat": "bold white",
     "travel": "white",
-    "rite": "bold yellow",
+    "mystery": "bold yellow",
     "defeat": "bold red",
     "info": "white",
     "outcome": "bold",
 }
-DREAD_NAMES = {1: "I", 2: "II", 3: "III"}
 
 
 @cache
@@ -59,26 +60,31 @@ def meter(value: int, maximum: int, style: str, empty: str = "grey30") -> Text:
 def doom_meter(game: Game) -> Text:
     if game.awakened:
         text = Text("AWAKENED ", style="bold red blink")
-        text.append(f"nights left {game.endgame} ", style="bold red")
-        text.append_text(meter(game.endgame, game.old_one.awakening.nights, "red"))
+        if game.sheet_tokens:
+            text.append(f"tokens {game.sheet_tokens}", style="bold red")
         return text
-    style = {1: "yellow", 2: "dark_orange", 3: "red"}[game.dread]
+    style = "red" if game.doom <= 4 else "dark_orange" if game.doom <= 8 else "yellow"
     text = Text("Doom ", style="bold")
-    text.append_text(meter(game.doom, game.start_doom, style))
+    text.append_text(meter(game.doom, max(game.start_doom, game.doom), style))
     text.append(f" {game.doom}", style=f"bold {style}")
     return text
 
 
 def header(game: Game) -> RenderableType:
-    phase = {Phase.DAY: "Day", Phase.ENCOUNTER: "Encounters", Phase.NIGHT: "Night"}[game.phase]
+    phase = {Phase.ACTION: "Action Phase", Phase.ENCOUNTER: "Encounter Phase", Phase.MYTHOS: "Mythos Phase"}[game.phase]
     grid = Table.grid(expand=True, padding=(0, 2))
     grid.add_column(justify="left")
     grid.add_column(justify="center")
     grid.add_column(justify="right")
-    rites = game.active_rites()
-    done = sum(r.done for r in rites)
+    solved = len(game.solved_mysteries)
+    needed = game.old_one.mysteries_needed
     left = Text(f"Round {game.round} · {phase}", style="bold")
-    right = Text(f"Dread {DREAD_NAMES[game.dread]}   Rites {done}/{len(rites)}", style="bold magenta")
+    omen_style = {"green": "green", "blue": "blue", "red": "red"}[game.omen_color]
+    right = Text()
+    right.append("Omen ", style="dim")
+    right.append(game.omen_color.upper(), style=f"bold {omen_style}")
+    right.append(f"   Mysteries {solved}/{needed}", style="bold yellow")
+    right.append(f"   Mythos {len(game.mythos_deck)}", style="dim")
     grid.add_row(left, doom_meter(game), right)
     old = game.old_one
     return Panel(grid, title=f"[bold]{old.name}[/], {old.title}", border_style="magenta", box=box.HEAVY)
@@ -101,7 +107,7 @@ def skills_text(game: Game | None, inv: Investigator | None, idef: InvestigatorD
 
 
 def asset_line(adef: AssetDef, exhausted: bool = False) -> Text:
-    style = {"spell": "magenta", "relic": "bold yellow", "ally": "cyan"}.get(adef.kind, "white")
+    style = {"spell": "magenta", "artifact": "bold yellow", "ally": "cyan"}.get(adef.kind, "white")
     text = Text(adef.name, style=style + (" dim" if exhausted else ""))
     text.append(f" ({adef.kind})", style="dim")
     text.append(f" {adef.text}", style="grey70")
@@ -129,25 +135,25 @@ def investigator_panel(game: Game, inv: Investigator, *, current: bool = False) 
     body.add_row(vitals)
     body.add_row(skills_text(game, inv, idef))
     res = Text()
-    res.append("Funds ", style="dim")
-    res.append(f"${inv.funds}", style="bold green")
-    res.append("   Clues ", style="dim")
+    res.append("Clues ", style="dim")
     res.append(str(inv.clues), style="bold cyan")
-    res.append("   Trophies ", style="dim")
-    res.append(str(inv.trophies), style="bold yellow")
-    if game.phase == Phase.DAY:
+    res.append("   Tickets ", style="dim")
+    res.append(", ".join(t.title() for t in inv.tickets) or "none", style="bold green")
+    if game.lead_seat == inv.seat:
+        res.append("   [Lead Investigator]", style="bold yellow")
+    if game.phase == Phase.ACTION:
         res.append("   Actions left ", style="dim")
         res.append(str(actions.actions_left(game, inv)), style="bold")
     body.add_row(res)
     if idef.passive_text:
-        body.add_row(Text(f"Gift: {idef.passive_text}", style="italic grey70"))
+        body.add_row(Text(f"Passive: {idef.passive_text}", style="italic grey70"))
     for card in inv.assets:
         body.add_row(asset_line(content.assets[card.def_id], card.exhausted))
     for inst in inv.conditions:
         body.add_row(condition_line(content.conditions[inst.def_id]))
     if inv.delayed:
-        body.add_row(Text("Delayed: loses the next Day turn.", style="bold red"))
-    status = " [red](defeated)[/]" if inv.defeated else " [red](out)[/]" if inv.eliminated else ""
+        body.add_row(Text("Delayed: loses next Action Phase actions.", style="bold red"))
+    status = " [red](defeated)[/]" if inv.defeated else " [red](eliminated)[/]" if inv.eliminated else ""
     loc = content.locations[inv.location].name
     return Panel(
         body,
@@ -163,18 +169,24 @@ def location_panel(game: Game, loc_id: str) -> Panel:
     state = game.locations[loc_id]
     style = TERRAIN_STYLE[ldef.terrain]
     parts: list[RenderableType] = [
-        art_text("rift" if state.rift else ldef.terrain, "bold red" if state.rift else style)
+        art_text("rift" if state.gate else ldef.terrain, "bold red" if state.gate else style)
     ]
     parts.append(Text(ldef.text, style="italic"))
     flags = Text()
-    if state.rift:
-        flags.append(" RIFT ", style="bold white on red")
+    if state.gate:
+        g_color = (ldef.gate_color or "red").upper()
+        flags.append(f" {g_color} GATE ", style="bold white on red")
         flags.append(" ")
     if state.clue:
         flags.append(" CLUE ", style="bold black on cyan")
         flags.append(" ")
-    if ldef.hub:
-        flags.append(" OWN ENCOUNTERS ", style="bold black on yellow")
+    if game.active_expedition == loc_id:
+        flags.append(" ACTIVE EXPEDITION ", style="bold black on yellow")
+        flags.append(" ")
+    for active in game.active_mythos:
+        if active.rumor_space == loc_id:
+            flags.append(" RUMOR ", style="bold white on magenta")
+            flags.append(" ")
     if flags:
         parts.append(flags)
     for monster in state.monsters:
@@ -186,11 +198,11 @@ def location_panel(game: Game, loc_id: str) -> Panel:
     people = [i.name for i in game.investigators_at(loc_id)]
     if people:
         parts.append(Text("Here: " + ", ".join(people), style="cyan"))
-    if state.belongings:
+    if state.fallen:
         parts.append(
-            Text("Belongings left here: " + ", ".join(game.asset_def(c).name for c in state.belongings), style="yellow")
+            Text("Fallen here: " + ", ".join(f.name for f in state.fallen), style="yellow")
         )
-    routes = Text("Routes: ", style="dim")
+    routes = Text("Paths: ", style="dim")
     for i, (dest, kind) in enumerate(content.adjacency[loc_id]):
         if i:
             routes.append(", ", style="dim")
@@ -207,24 +219,36 @@ def location_line(game: Game, inv: Investigator) -> Text:
     text = Text(f"{inv.name} is in ", style="dim")
     text.append(ldef.name, style="bold " + TERRAIN_STYLE[ldef.terrain])
     text.append(f"   Health {inv.health}/{inv.max_health}  Sanity {inv.sanity}/{inv.max_sanity}", style="dim")
-    if state.rift:
-        text.append("   RIFT", style="bold red")
+    if state.gate:
+        text.append("   GATE", style="bold red")
     for monster in state.monsters:
         text.append(f"   {game.content.monsters[monster.def_id].name}", style="red")
     return text
 
 
-def rites_panel(game: Game) -> Panel:
+def mysteries_panel(game: Game) -> Panel:
     table = Table(box=box.SIMPLE_HEAD, expand=True, show_edge=False)
-    table.add_column("Rite", style="bold yellow", ratio=2)
+    table.add_column("Mystery", style="bold yellow", ratio=2)
     table.add_column("Progress", justify="center")
     table.add_column("How", ratio=4)
-    for rite in game.active_rites():
-        rdef = game.rite_def(rite)
-        progress = Text(f"{rite.progress}/{rite.required}", style="bold green" if rite.done else "bold")
-        table.add_row(rdef.name, progress, Text(rdef.text, style="grey70"))
-    title = "The Final Rite" if game.awakened else "Rites to complete"
+    for mys in game.active_mysteries():
+        mdef = game.mystery_def(mys)
+        progress = Text(f"{mys.progress}/{mys.required}", style="bold green" if mys.done else "bold")
+        table.add_row(mdef.name, progress, Text(mdef.text, style="grey70"))
+    for active in game.active_mythos:
+        mdef_myth = game.content.mythos[active.def_id]
+        tokens = f"{active.eldritch} Eldritch" if active.eldritch else "Ongoing"
+        table.add_row(
+            f"[magenta]{mdef_myth.name}[/]", Text(tokens, style="magenta"), Text(mdef_myth.text, style="grey70")
+        )
+    solved = len(game.solved_mysteries)
+    needed = game.old_one.mysteries_needed
+    title = f"Active Mystery ({solved}/{needed} solved)"
     return Panel(table, title=title, border_style="yellow")
+
+
+# Alias for backward compatibility
+rites_panel = mysteries_panel
 
 
 def log_panel(game: Game, lines: int = 8) -> Panel:
@@ -237,18 +261,18 @@ def log_panel(game: Game, lines: int = 8) -> Panel:
     return Panel(text or Text("Nothing yet.", style="dim"), title="Recent events", border_style="grey50")
 
 
-def market_table(game: Game, inv: Investigator | None = None) -> Table:
-    from pursuit.engine.rules import market_price
-
-    table = Table(title="The Market", box=box.SIMPLE_HEAD, expand=True)
+def reserve_table(game: Game, inv: Investigator | None = None) -> Table:
+    table = Table(title="The Reserve", box=box.SIMPLE_HEAD, expand=True)
     table.add_column("Asset", style="bold")
-    table.add_column("Cost", justify="right")
+    table.add_column("Value", justify="right")
     table.add_column("Effect")
-    for card in game.market:
+    for card in game.reserve:
         adef = game.asset_def(card)
-        price = market_price(game, inv, card) if inv else adef.cost
-        table.add_row(adef.name, f"${price}", Text(adef.text, style="grey70"))
+        table.add_row(adef.name, str(adef.cost), Text(adef.text, style="grey70"))
     return table
+
+
+market_table = reserve_table
 
 
 def map_view(game: Game) -> RenderableType:
@@ -262,7 +286,7 @@ def map_view(game: Game) -> RenderableType:
         state = game.locations[loc.id]
         if loc.id in seats:
             style = "bold white on dark_magenta"
-        elif state.rift:
+        elif state.gate:
             style = "bold white on red"
         elif state.monsters:
             style = "bold red"
@@ -289,12 +313,14 @@ def map_view(game: Game) -> RenderableType:
         cell = Text(f"{loc.code} ", style="bold " + TERRAIN_STYLE[loc.terrain])
         cell.append(loc.name, style="white")
         marks = []
-        if state.rift:
-            marks.append(("R", "bold red"))
+        if state.gate:
+            marks.append(("G", "bold red"))
         if state.clue:
             marks.append(("C", "bold cyan"))
         if state.monsters:
             marks.append((f"M{len(state.monsters)}", "red"))
+        if game.active_expedition == loc.id:
+            marks.append(("E", "bold yellow"))
         if loc.id in seats:
             marks.append(("*", "bold magenta"))
         for mark, style in marks:
@@ -305,9 +331,9 @@ def map_view(game: Game) -> RenderableType:
     key = Text.assemble(
         ("Key: ", "dim"),
         ("XX", "bold white on dark_magenta"),
-        (" investigators  ", "dim"),
+        (" investigators (*)  ", "dim"),
         ("XX", "bold white on red"),
-        (" rift (R)  ", "dim"),
+        (" gate (G)  ", "dim"),
         ("XX", "bold red"),
         (" monsters (M)  ", "dim"),
         ("XX", "bold black on cyan"),
@@ -316,7 +342,7 @@ def map_view(game: Game) -> RenderableType:
         ("wilderness ", "green"),
         ("sea", "blue"),
     )
-    return Group(Panel(map_text, title="The World, 1926", border_style="green", box=box.DOUBLE), key, legend)
+    return Group(Panel(map_text, title="The World Map", border_style="green", box=box.DOUBLE), key, legend)
 
 
 def dice_text(rolls: list[int], success_on: int) -> Text:
@@ -332,13 +358,9 @@ def monster_panel(mdef: MonsterDef, wounds: int, full: int) -> Panel:
     stats = Table.grid(padding=(0, 2))
     stats.add_column(style="dim")
     stats.add_column(style="bold")
-    stats.add_row("Health", f"{full - wounds}/{full}" if full < 99 else "beyond counting")
-    stats.add_row("Horror", f"{mdef.horror} Sanity (Nerve {mdef.horror_mod:+})" if mdef.horror else "none")
-    stats.add_row("Strike", f"{mdef.damage} Health")
-    stats.add_row("Fight", f"Brawn {mdef.fight_mod:+}")
-    stats.add_row("Evade", f"Wits {mdef.evade_mod:+}")
-    if mdef.roams:
-        stats.add_row("Roams", "moves toward investigators")
+    stats.add_row("Toughness", f"{full - wounds}/{full}" if full < 99 else "beyond counting")
+    stats.add_row("Horror", f"{mdef.horror} Sanity (Will {mdef.horror_mod:+})" if mdef.horror_test else "none")
+    stats.add_row("Damage", f"{mdef.damage} Health (Strength {mdef.fight_mod:+})" if mdef.damage_test else "none")
     grid = Table.grid(padding=(0, 3))
     grid.add_row(art_text(mdef.art or mdef.form, "red"), stats)
     return Panel(Group(grid, Text(mdef.text, style="italic")), title=f"[bold red]{mdef.name}[/]", border_style="red")
@@ -350,7 +372,8 @@ def old_one_panel(odef: OldOneDef, *, full: bool = True) -> Panel:
     if full:
         info = Text()
         info.append(
-            f"Difficulty: {odef.difficulty}   Doom: {odef.doom}   Rites needed: {odef.rites_needed}\n", style="bold"
+            f"Difficulty: {odef.difficulty}   Starting Doom: {odef.doom}   Mysteries needed: {odef.mysteries_needed}\n",
+            style="bold",
         )
         for rule in odef.rules_text:
             info.append(f"• {rule}\n", style="grey85")
@@ -361,11 +384,11 @@ def old_one_panel(odef: OldOneDef, *, full: bool = True) -> Panel:
 def investigator_card(idef: InvestigatorDef, content: Content) -> Panel:
     body = Table.grid(padding=(0, 1))
     body.add_column()
-    body.add_row(Text(f"Health {idef.health}   Sanity {idef.sanity}   Funds ${idef.funds}", style="bold"))
+    body.add_row(Text(f"Health {idef.health}   Sanity {idef.sanity}   Clues {idef.clues}", style="bold"))
     body.add_row(skills_text(None, None, idef))
     body.add_row(Text(f"Starts in {content.locations[idef.start].name}", style="dim"))
     if idef.passive_text:
-        body.add_row(Text(f"Gift: {idef.passive_text}", style="cyan"))
+        body.add_row(Text(f"Passive: {idef.passive_text}", style="cyan"))
     if idef.action:
         body.add_row(Text(f"Action: {idef.action.text}", style="cyan"))
     for asset_id in idef.assets:
@@ -383,12 +406,13 @@ def stats_table(game: Game) -> Table:
         ("Rounds played", game.round),
         ("Encounters", game.stats.get("encounters", 0)),
         ("Monsters defeated", game.stats.get("monsters_defeated", 0)),
-        ("Rifts sealed", game.stats.get("rifts_sealed", 0)),
-        ("Rifts opened", game.stats.get("rifts_opened", 0)),
+        ("Gates closed", game.stats.get("gates_closed", 0)),
+        ("Gates spawned", game.stats.get("gates_spawned", 0)),
         ("Clues gathered", game.stats.get("clues_gained", 0)),
-        ("Rites completed", game.stats.get("rites_completed", 0)),
+        ("Mysteries solved", len(game.solved_mysteries)),
         ("Investigators lost", game.stats.get("investigators_lost", 0)),
     ]
     for label, value in labels:
         table.add_row(label, str(value))
     return table
+

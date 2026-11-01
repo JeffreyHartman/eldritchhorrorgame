@@ -1,0 +1,119 @@
+[
+  {
+    "id": "other_world_the_dreamlands_1",
+    "title": "In the cavern of flame, the bearded priests Nasht and...",
+    "text": "In the cavern of flame, the bearded priests Nasht and Kaman-Thah warn you that it is too dangerous to continue. You insist that you possess the knowledge you need and are resolved to enter the Dreamlands (Will-1). Roll 1 additional die for each Clue you have.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "After gaining access to the Dreamlands, you find yourself fighting moonbeasts on a black galley sailing to the moon (Strength). If you pass, you steal their treasure and area able to barter with it; close this Gate. If you fail, you become lost in a forest on the moon; lose 2 Health and become Delayed."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you steal their treasure and area able to barter with it; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you become lost in a forest on the moon; lose 2 Health and become Delayed."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The gods of dreams exile you back to the waking world and punish you for your overreaching ambition. Your dream and the waking world become indistinguishable. Become Delayed and gain a Hallucinations Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "hallucinations"
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "other_world_the_dreamlands_2",
+    "title": "You are strictly admonished that in the city of...",
+    "text": "You are strictly admonished that in the city of Ulthar, no man may kill a cat. As a result, you see the city is filled with cats. If you know the language, you can communicate with these highly intelligent creatures (Lore).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The cats are pleased to chat and share useful secrets. Gain 1 Clue. When the topic of food is brought up, dozens of cats take an interest. A crowd of hungry felines surround you. Become Delayed unless you spend 1 Health. If you spend the Health, you feed the cats your rations and go hungry yourself; close this Gate."
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "close_gate"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The cats flee from you, making the people of Ulthar suspicious and they force you into the Enchanted Wood. Lose 1 Health. While you're out there, you must keep a careful watch to prevent the zoogs from stealing your belongings (Observation). If you fail, discard 1 Item possession."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "discard 1 Item possession."
+              },
+              {
+                "type": "lose_asset",
+                "count": 1,
+                "kind": "item"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

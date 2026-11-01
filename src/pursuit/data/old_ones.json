@@ -1,173 +1,521 @@
 [
   {
-    "id": "king_in_yellow",
-    "name": "The King in Yellow",
-    "title": "Lord of Lost Carcosa",
+    "id": "azathoth",
+    "name": "Azathoth",
+    "title": "The Daemon Sultan",
     "difficulty": "low",
     "art": "king_in_yellow",
-    "description": "A play is going around. It has two acts. Everyone who reads the first act wants to read the second, and everyone who reads the second act is changed. They see a city by a cloudy lake under twin suns, and they hear a King calling them home.",
+    "description": "The Idiot God sits at the center of all things spreading madness and death. Its seeds descend from the stars, threatening to crack the world in half.",
     "doom": 15,
-    "dread_at": [
-      10,
-      5
+    "stages": [
+      {
+        "green": 1,
+        "yellow": 2,
+        "blue": 1
+      },
+      {
+        "green": 2,
+        "yellow": 3,
+        "blue": 1
+      },
+      {
+        "green": 2,
+        "yellow": 4,
+        "blue": 0
+      }
     ],
-    "rift_pressure": 4,
+    "omen_green_eldritch_doom": true,
     "rules_text": [
-      "Each Night, the investigator with the lowest Sanity tests Nerve (-1) or gains Night Terrors.",
-      "An extra Pallid Mask drifts through the world."
+      "When the Omen advances to the green space of the Omen track, advance Doom by 1 for each Eldritch token on that space.",
+      "When 3 Mysteries have been solved, investigators win the game.",
+      "When Azathoth awakens, flip this sheet and resolve the \"The World is Devoured!\" effect on the back."
     ],
-    "night": [
+    "setup": [
+      {
+        "type": "green_omen_eldritch",
+        "amount": 1
+      }
+    ],
+    "reckoning": [],
+    "cultist": {
+      "horror": 1,
+      "horror_mod": 0,
+      "damage": 0,
+      "fight_mod": 0,
+      "toughness": 1,
+      "text": "After resolving the Will test, lose 1 Health and defeat this Monster.",
+      "on_defeat": [
+        {
+          "type": "health",
+          "amount": -1
+        }
+      ],
+      "horror_test": true,
+      "damage_test": false
+    },
+    "monsters": [
+      "mi_go"
+    ],
+    "mysteries_needed": 3,
+    "mysteries": [
+      {
+        "id": "az_occult_research",
+        "name": "Occult Research",
+        "flavor": "The shan are controlling innocent victims everywhere, using them to call forth Azathoth.",
+        "text": "After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
+        "kind": "encounter",
+        "amount": 1,
+        "where": {
+          "clue": true
+        },
+        "skill": "lore",
+        "per_investigator": true
+      },
+      {
+        "id": "az_omen_of_devastation",
+        "name": "Omen of Devastation",
+        "flavor": "The Nemesis Moon appears in the night sky, visible to all and heralding an imminent doom.",
+        "text": "When an investigator closes a Gate that corresponds to the current Omen, he may spend 1 Clue to place 1 Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to half investigators, solve this Mystery.",
+        "kind": "gate",
+        "amount": 1,
+        "half_players": true,
+        "clue_cost": 1
+      },
+      {
+        "id": "az_seed_of_the_daemon_sultan",
+        "name": "Seed of the Daemon Sultan",
+        "flavor": "A strange green comet has fallen from the sky. Even after the impact, the meteorite continues to slowly burrow itself deeper into the earth.",
+        "text": "When this card enters play, place the mystery token on Tunguska. As an encounter, an investigator on Tunguska may attempt to search for signs of the impact in the dead forest (Observation). If he passes, he discovers the strange green meteorite; he may spend 2 Clues to place 1 Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch Tokens on this card equal to half investigators, solve this Mystery.",
+        "kind": "encounter",
+        "amount": 1,
+        "where": {
+          "id": "tunguska"
+        },
+        "skill": "observation",
+        "clue_cost": 2,
+        "half_players": true
+      },
+      {
+        "id": "az_the_true_name",
+        "name": "The True Name",
+        "flavor": "Fragments of Azathoth's true name exist in long forgotten tomes. It is said that if a person speaks his name aloud three times, the blasphemous sound will grant the speaker great power.",
+        "text": "When this card enters play, place a number of eldritch tokens equal to half investigators each on a random space. As an encounter, an investigator on a space containing an Eldritch token may attempt to find information about Azathoth's true name; he may spend 2 Clues to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to half investigators, solve this Mystery.",
+        "kind": "spend",
+        "amount": 1,
+        "clue_cost": 2,
+        "half_players": true
+      }
+    ],
+    "awakening": {
+      "text": "The World is Devoured! Earthquakes and volcanic eruptions tear the Earth's crust apart at a rate faster than the devastation can be recorded or comprehended. As the planet's atmosphere grows increasingly toxic, the insects of Shaggai return to their ships and teleport away, anxious to doom a different world. Eventually, when every living thing on the planet has been reduced to a cinder, a new Outer God emerges from the ruins and joins Azathoth's court at the center of all things.",
+      "lose_immediately": true,
+      "effects": [],
+      "reckoning": [],
+      "doom_advance_effects": []
+    }
+  },
+  {
+    "id": "yog_sothoth",
+    "name": "Yog-Sothoth",
+    "title": "The Lurker at the Threshold",
+    "difficulty": "low",
+    "art": "yog_sothoth",
+    "description": "For eons, sorcerers have called upon the power of Yog-Sothoth to bend reality to their will. This incomprehensible Ancient One exists parallel to all places and times, but is bound to the space between dimensions. Gates between worlds continue to open with more frequency and soon, Yog-Sothoth will be free.",
+    "doom": 14,
+    "stages": [
+      {
+        "green": 0,
+        "yellow": 2,
+        "blue": 1
+      },
+      {
+        "green": 2,
+        "yellow": 3,
+        "blue": 1
+      },
+      {
+        "green": 3,
+        "yellow": 4,
+        "blue": 0
+      }
+    ],
+    "rules_text": [
+      "Reckoning: Each investigator on a space containing a Gate advances Doom by 1 unless he discards 1 Spell.",
+      "When 3 Mysteries have been solved, investigators win the game.",
+      "When Yog-Sothoth awakens, flip this sheet."
+    ],
+    "setup": [
       {
         "type": "one_investigator",
-        "pick": "lowest_sanity",
+        "pick": "lead",
         "effects": [
           {
-            "type": "text",
-            "text": "Someone hums a tune from the play."
-          },
-          {
-            "type": "test",
-            "skill": "nerve",
-            "fail": [
-              {
-                "type": "gain_condition",
-                "id": "night_terrors"
-              }
-            ],
-            "mod": -1
+            "type": "gain_asset",
+            "kind": "spell"
           }
         ]
       }
     ],
-    "monsters": [
-      "pallid_mask"
+    "reckoning": [
+      {
+        "type": "each_investigator",
+        "where": {
+          "at": {
+            "gate": true
+          }
+        },
+        "effects": [
+          {
+            "type": "if",
+            "has": {
+              "asset_kind": "spell"
+            },
+            "then": [
+              {
+                "type": "choice",
+                "prompt": "Yog-Sothoth Reckoning: discard 1 Spell or advance Doom by 1?",
+                "options": [
+                  {
+                    "label": "Discard 1 Spell",
+                    "effects": [
+                      {
+                        "type": "lose_asset",
+                        "kind": "spell"
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Advance Doom by 1",
+                    "effects": [
+                      {
+                        "type": "advance_doom",
+                        "amount": 1
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "else": [
+              {
+                "type": "advance_doom",
+                "amount": 1
+              }
+            ]
+          }
+        ]
+      }
     ],
-    "rites_needed": 3,
-    "rites": [
+    "cultist": {
+      "horror": 0,
+      "horror_mod": 0,
+      "damage": 1,
+      "fight_mod": -1,
+      "toughness": 1,
+      "text": "When defeated, gain 1 Spell.",
+      "on_defeat": [
+        {
+          "type": "gain_asset",
+          "kind": "spell"
+        }
+      ],
+      "horror_test": false,
+      "damage_test": true
+    },
+    "monsters": [
+      "hound_of_tindalos"
+    ],
+    "mysteries_needed": 3,
+    "mysteries": [
       {
-        "id": "ky_burn",
-        "name": "Burn Every Copy",
-        "text": "Spend Funds in any city to buy up the play and burn it. 3 per investigator.",
+        "id": "ys_arcane_understanding",
+        "name": "Arcane Understanding",
+        "flavor": "Humanity must not tamper with arcane energies. Yog-Sothoth is the very essence of magic, and a person under the influence of sorcery will inescapably become the Ancient One's puppet.",
+        "text": "When an investigator passes a Lore test while resolving a Spell effect, he may spend 1 Clue and discard that Spell after he has finished resolving its effects. If he does, place 1 Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to investigators, solve this Mystery.",
         "kind": "spend",
-        "resource": "funds",
-        "amount": 3,
-        "per_investigator": true,
-        "where": {
-          "terrain": "city"
-        }
-      },
-      {
-        "id": "ky_second_act",
-        "name": "Survive the Second Act",
-        "text": "Test Nerve in Paris, where the play is staged. 2 successes per investigator.",
-        "kind": "test",
-        "skill": "nerve",
-        "amount": 2,
-        "per_investigator": true,
-        "where": {
-          "id": "paris"
-        }
-      },
-      {
-        "id": "ky_seal",
-        "name": "Close the Road to Carcosa",
-        "text": "Seal rifts anywhere. 1 per investigator.",
-        "kind": "seal",
         "amount": 1,
+        "clue_cost": 1,
         "per_investigator": true
       },
       {
-        "id": "ky_phantom",
-        "name": "Lay the Phantom to Rest",
-        "text": "Defeat the Phantom of Truth, which waits in Prague.",
+        "id": "ys_spawn_of_yog_sothoth",
+        "name": "Spawn of Yog-Sothoth",
+        "flavor": "Lavinia Whateley has given birth to something horrible, and now the creature calls for its father...",
+        "text": "When this card enters play, spawn the Dunwich Horror Epic Monster on Arkham. At the end of the Mythos Phase, if the Dunwich Horror Epic Monster has been defeated, solve this Mystery.",
         "kind": "defeat",
-        "monster": "phantom_of_truth",
-        "spawn_at": "prague"
+        "amount": 1,
+        "monster": "dunwich_horror",
+        "spawn_at": "arkham"
       },
       {
-        "id": "ky_lake",
-        "name": "Read the Reflections",
-        "text": "Spend Clues on the Tibetan Plateau, where the high lakes show Carcosa's sky. 2 per investigator.",
-        "kind": "spend",
-        "resource": "clues",
-        "amount": 2,
-        "per_investigator": true,
+        "id": "ys_the_beyond_one",
+        "name": "The Beyond One",
+        "flavor": "Yog-Sothoth exists in all places at all times. To any soul foolish enough to seek it, the Ancient One can unlock limitless knowledge and power, but it always comes at a price.",
+        "text": "After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
+        "kind": "encounter",
+        "amount": 1,
         "where": {
-          "id": "tibet"
-        }
+          "clue": true
+        },
+        "skill": "lore",
+        "per_investigator": true
+      },
+      {
+        "id": "ys_where_the_old_ones_broke_through",
+        "name": "Where the Old Ones Broke Through",
+        "flavor": "Yog-Sothoth struggles to free itself from the space between dimensions, tearing holes in our reality in the process.",
+        "text": "When an investigator closes a Gate, he may discard 2 Spells to seal the rift and place that Gate on this card. At the end of the Mythos Phase, if there are Gates on this card equal to half investigators, return all Gate tokens on this card to the game box and solve this Mystery.",
+        "kind": "gate",
+        "amount": 1,
+        "half_players": true
       }
     ],
     "awakening": {
-      "text": "Twin suns rise over a lake of cloud, and the King removes his mask. There is no mask. Everyone who has read the play rises from their beds and walks toward the nearest water. You have three nights to write a different ending.",
-      "effects": [],
-      "nights": 3,
-      "night": [
+      "text": "The Key and the Gate! The ancient horror tears apart the walls between worlds, pouring itself through the cracks in reality.",
+      "lose_immediately": false,
+      "effects": [
+        {
+          "type": "spawn_gate",
+          "count": 1
+        }
+      ],
+      "reckoning": [
         {
           "type": "each_investigator",
+          "where": {
+            "at": {
+              "gate": true
+            }
+          },
           "effects": [
             {
-              "type": "test",
-              "skill": "nerve",
-              "mod": -1,
-              "fail": [
-                {
-                  "type": "sanity",
-                  "amount": -2
-                }
-              ]
+              "type": "sanity",
+              "amount": -1
             }
           ]
         }
       ],
-      "final_rite": {
-        "id": "ky_final",
-        "name": "Write the Third Act",
-        "text": "Test Lore in any city to write an ending the King cannot bear. 3 successes per investigator.",
-        "kind": "test",
-        "skill": "lore",
-        "amount": 3,
-        "per_investigator": true,
-        "where": {
-          "terrain": "city"
+      "doom_advance_effects": [
+        {
+          "type": "sheet_token",
+          "amount": 1,
+          "lose_at": 3
         }
+      ],
+      "final_mystery": {
+        "id": "ys_final",
+        "name": "The Key and the Gate",
+        "flavor": "The ancient horror tears apart the walls between worlds, pouring itself through the cracks in reality.",
+        "text": "As an encounter, an investigator on a space containing a Gate may confront Yog-Sothoth (Lore). If he passes and spends 1 Clue, place 1 Eldritch token on the Final Mystery. When there are Eldritch tokens equal to half investigators, the Final Mystery is solved.",
+        "kind": "encounter",
+        "amount": 1,
+        "where": {
+          "gate": true
+        },
+        "skill": "lore",
+        "clue_cost": 1,
+        "half_players": true
+      }
+    }
+  },
+  {
+    "id": "shub_niggurath",
+    "name": "Shub-Niggurath",
+    "title": "The Black Goat of the Woods",
+    "difficulty": "medium",
+    "art": "nyarlathotep",
+    "description": "During pagan rites, Shub-Niggurath absorbs worthy cultists into her amorphous body and transforms them into gof'nn hupadgh Shub-Niggurath, the goat spawn. From the wildest corners of the earth, her primal brood, the dark young, emerge to overwhelm humanity.",
+    "doom": 13,
+    "stages": [
+      {
+        "green": 1,
+        "yellow": 2,
+        "blue": 1
+      },
+      {
+        "green": 3,
+        "yellow": 2,
+        "blue": 1
+      },
+      {
+        "green": 2,
+        "yellow": 4,
+        "blue": 0
+      }
+    ],
+    "rules_text": [
+      "Reckoning: Spawn 1 Monster on a random space. Then, if there are 10 or more Monsters on the game board, advance Doom by 2.",
+      "When 3 Mysteries have been solved, investigators win the game.",
+      "When Shub-Niggurath awakens, flip this sheet and resolve the \"Shub-Niggurath Awakens!\" effect on the back."
+    ],
+    "setup": [
+      {
+        "type": "spawn_monster",
+        "id": "goat_spawn",
+        "at": "the_heart_of_africa"
+      }
+    ],
+    "reckoning": [
+      {
+        "type": "monsters_move"
+      }
+    ],
+    "cultist": {
+      "horror": 0,
+      "horror_mod": 0,
+      "damage": 1,
+      "fight_mod": -1,
+      "toughness": 2,
+      "text": "Toughness 2. Reckoning: Recover 1 Health.",
+      "reckoning": [
+        {
+          "type": "monsters_heal",
+          "amount": 1
+        }
+      ],
+      "horror_test": false,
+      "damage_test": true
+    },
+    "monsters": [
+      "goat_spawn",
+      "dark_young"
+    ],
+    "mysteries_needed": 3,
+    "mysteries": [
+      {
+        "id": "sn_hunting_the_thousand",
+        "name": "Hunting the Thousand",
+        "flavor": "Shub-Niggurath's spawn, the Thousand Young, infest the planet in greater and greater numbers, threatening to overrun humanity.",
+        "text": "When a non-Epic Monster is defeated, the active investigator may spend 2 Clues to place that Monster on this card. At the end of the Mythos Phase, if the total toughness of all Monsters on this card is equal to or greater than twice investigators, solve this Mystery.",
+        "kind": "combat",
+        "amount": 2,
+        "per_investigator": true
+      },
+      {
+        "id": "sn_nature_of_the_all_mother",
+        "name": "Nature of the All-Mother",
+        "flavor": "Shub-Niggurath naturally corrupts all life that encounters her. Everywhere her worshipers are found, all living things grow more vicious and feral.",
+        "text": "When this card enters play, move each Clue on the game board to the nearest Wilderness space. After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
+        "kind": "encounter",
+        "amount": 1,
+        "where": {
+          "terrain": "wilderness"
+        },
+        "skill": "observation",
+        "per_investigator": true
+      },
+      {
+        "id": "sn_rituals_in_the_wild",
+        "name": "Rituals in the Wild",
+        "flavor": "Bonfires roar in the wildest corners of the planet as the Cult of the Black Goat performs their bestial rituals. The cultists howl to Shub-Niggurath to let loose her children upon the Earth.",
+        "text": "When this card enters play, place 1 Eldritch token on each of the following Wilderness spaces: 4, 10, 21, and Tunguska. As an encounter, an investigator on a space containing an Eldritch token may attempt to determine the ritual's purpose (Observation). If he passes, he may spend 2 Clues to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to half investigators, solve this Mystery and discard all Eldritch tokens from the game board.",
+        "kind": "encounter",
+        "amount": 1,
+        "where": {
+          "terrain": "wilderness"
+        },
+        "skill": "observation",
+        "clue_cost": 2,
+        "half_players": true
+      },
+      {
+        "id": "sn_spawn_of_the_black_goat",
+        "name": "Spawn of the Black Goat",
+        "flavor": "Shub-Niggurath's twin blasphemies will prepare the world for the Black Goat, destroying any potential challenge to their mother's reign. One of the pair, Nug, has begun its dreadful task.",
+        "text": "When this card enters play, spawn the Nug Epic Monster on The Amazon. At the end of the Mythos Phase, if the Nug Epic Monster has been defeated, solve this Mystery.",
+        "kind": "defeat",
+        "amount": 1,
+        "monster": "nug_epic",
+        "spawn_at": "the_amazon"
+      }
+    ],
+    "awakening": {
+      "text": "Battle in the Woods! The feral mother of all monstrosities has manifested! She is an enormous cloud from which dozens of tentacles extend and retract. Wherever she goes, she leaves behind large hoof prints. To behold her true, terrifying form is to come face to face with true, primal horror.",
+      "lose_immediately": false,
+      "effects": [],
+      "reckoning": [
+        {
+          "type": "monsters_move",
+          "toward": "shub_niggurath_epic"
+        }
+      ],
+      "doom_advance_effects": [
+        {
+          "type": "spawn_monster",
+          "count": 1,
+          "at": "the_heart_of_africa"
+        },
+        {
+          "type": "sheet_token",
+          "amount": 1,
+          "lose_at": 6
+        }
+      ],
+      "final_mystery": {
+        "id": "sn_final",
+        "name": "Battle in the Woods",
+        "flavor": "She is an enormous cloud from which dozens of tentacles extend and retract.",
+        "text": "Defeat the Shub-Niggurath Epic Monster.",
+        "kind": "defeat",
+        "amount": 1,
+        "monster": "shub_niggurath_epic",
+        "spawn_at": "random"
       }
     }
   },
   {
     "id": "cthulhu",
     "name": "Cthulhu",
-    "title": "The Dreamer Beneath the Waves",
+    "title": "The Madness from the Sea",
     "difficulty": "high",
     "art": "cthulhu",
-    "description": "In a drowned city at the bottom of the South Pacific, a vast thing lies dead but dreaming. Its dreams leak into the minds of artists, madmen, and sailors. When the stars come right, the city will rise, and the dreamer will wake.",
-    "doom": 15,
-    "dread_at": [
-      10,
-      5
-    ],
-    "rift_pressure": 4,
-    "rules_text": [
-      "-1 Nerve for investigators at sea.",
-      "Each Night, every investigator at sea tests Nerve or loses 1 Sanity.",
-      "Extra Drowned Ones and Tide Crawlers lurk in the monster pool."
+    "description": "Eons ago, Cthulhu came from the stars with his Star Spawn brethren. He now sleeps in the sunken city of R'lyeh, waiting for the stars to be right to rise again.",
+    "doom": 12,
+    "stages": [
+      {
+        "green": 0,
+        "yellow": 2,
+        "blue": 2
+      },
+      {
+        "green": 1,
+        "yellow": 3,
+        "blue": 1
+      },
+      {
+        "green": 3,
+        "yellow": 4,
+        "blue": 0
+      }
     ],
     "modifiers": [
       {
         "amount": -1,
-        "skill": "nerve",
+        "skill": "will",
         "where": {
           "terrain": "sea"
         }
       }
     ],
+    "rules_text": [
+      "When an investigator moves onto a space containing an Eldritch token, he becomes Delayed and loses 1 Sanity.",
+      "Reckoning: Each investigator on a Sea space that does not contain an Eldritch token places an Eldritch token on his space.",
+      "When 3 Mysteries have been solved, investigators win the game.",
+      "When Cthulhu awakens, flip this sheet."
+    ],
     "setup": [
       {
         "type": "spawn_monster",
-        "id": "drowned_one",
-        "at": "south_pacific"
+        "id": "deep_one",
+        "at": "space_3"
+      },
+      {
+        "type": "spawn_monster",
+        "id": "star_spawn",
+        "at": "space_2"
       }
     ],
-    "night": [
+    "reckoning": [
       {
         "type": "each_investigator",
         "where": {
@@ -177,13 +525,13 @@
         },
         "effects": [
           {
-            "type": "text",
-            "text": "The water whispers a name."
-          },
-          {
-            "type": "test",
-            "skill": "nerve",
-            "fail": [
+            "type": "pay",
+            "cost": {
+              "clues": 1
+            },
+            "prompt": "Cthulhu Reckoning at sea: spend 1 Clue to avoid losing 1 Sanity?",
+            "then": [],
+            "else": [
               {
                 "type": "sanity",
                 "amount": -1
@@ -193,78 +541,79 @@
         ]
       }
     ],
+    "cultist": {
+      "horror": 1,
+      "horror_mod": 0,
+      "damage": 2,
+      "fight_mod": 0,
+      "toughness": 1,
+      "text": "Before resolving the Strength test, test Will or lose 1 Sanity. When defeated, gain 1 Clue.",
+      "on_defeat": [
+        {
+          "type": "clues",
+          "amount": 1
+        }
+      ],
+      "horror_test": true,
+      "damage_test": true
+    },
     "monsters": [
-      "drowned_one",
-      "tide_crawler"
+      "deep_one",
+      "star_spawn"
     ],
-    "rites_needed": 3,
-    "rites": [
+    "mysteries_needed": 3,
+    "mysteries": [
       {
-        "id": "cth_chart",
-        "name": "Chart the Dreaming Currents",
-        "text": "Spend Clues at sea, where the dreams are strongest. 2 per investigator.",
-        "kind": "spend",
-        "resource": "clues",
-        "amount": 2,
-        "per_investigator": true,
+        "id": "cth_ryleh_risen",
+        "name": "R'lyeh Risen",
+        "flavor": "Eons ago, the city of R'lyeh was plunged to the bottom of the ocean by some forgotten disaster. It has remained trapped there, waiting for the right time to resurface. Now, that moment has finally arrived.",
+        "text": "When this card enters play, place the mystery token on space 3. As an encounter, an investigator on space 3 may explore the island city of R'lyeh by resolving a R'lyeh Risen Special Encounter. At the end of the Mythos Phase, if there are eldritch tokens on this card equal to half investigators, solve this Mystery.",
+        "kind": "encounter",
+        "amount": 1,
         "where": {
-          "terrain": "sea"
-        }
+          "id": "space_3"
+        },
+        "skill": "observation",
+        "half_players": true
       },
       {
-        "id": "cth_sleepers",
-        "name": "Wake the Sleepers",
-        "text": "Test Charm in Rio de Janeiro or Yokohama to talk the dreamers out of their trance. 2 successes per investigator.",
-        "kind": "test",
-        "skill": "charm",
-        "amount": 2,
-        "per_investigator": true,
-        "where": {
-          "id": [
-            "rio",
-            "yokohama"
-          ]
-        }
-      },
-      {
-        "id": "cth_seal",
-        "name": "Seal the Wet Gates",
-        "text": "Seal rifts anywhere. 1 per investigator.",
-        "kind": "seal",
+        "id": "cth_the_deep_ones_attack",
+        "name": "The Deep Ones Attack!",
+        "flavor": "Terrible storms have battered fishing villages across the globe, but it's merely the prelude to an invading army of deep ones!",
+        "text": "When this card enters play, each investigator places 1 Eldritch token on the nearest Sea space that does not contain an Eldritch token. As an encounter, an investigator on a space containing an Eldritch token may attempt to fend off the deep one invasion; a Deep One Monster ambushes him! If he defeats it, he may spend 1 Clue to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to investigators, solve this Mystery.",
+        "kind": "combat",
         "amount": 1,
         "per_investigator": true
       },
       {
-        "id": "cth_herald",
-        "name": "Slay the Herald",
-        "text": "Defeat the Spawn of the Deep, which waits in the North Pacific.",
-        "kind": "defeat",
-        "monster": "spawn_of_the_deep",
-        "spawn_at": "north_pacific"
-      },
-      {
-        "id": "cth_idol",
-        "name": "Return the Idol to the Sea",
-        "text": "Offer a relic at sea.",
-        "kind": "spend",
-        "resource": "relic",
+        "id": "cth_the_stars_are_right",
+        "name": "The Stars Are Right!",
+        "flavor": "All around the world, Cthulhu's worshipers and those sensitive to his dreams have been plagued by madness. They rush to the sea to witness the Ancient One's return.",
+        "text": "When this card enters play, move each Clue on the game board to the nearest Sea space. After an investigator resolves a Research Encounter, he may spend 1 Clue he gained from that encounter and place that Clue on this card. At the end of the Mythos Phase, if there are Clues on this card equal to investigators, solve this Mystery.",
+        "kind": "encounter",
         "amount": 1,
         "where": {
           "terrain": "sea"
-        }
+        },
+        "skill": "lore",
+        "per_investigator": true
+      },
+      {
+        "id": "cth_watching_the_stars",
+        "name": "Watching the Stars",
+        "flavor": "From the sunken city of Yhe, Cthylla rises to fulfill her destiny. Daughter of Cthulhu, she will give birth to the reincarnation of her father should his body ever be destroyed.",
+        "text": "When this card enters play, spawn the Cthylla Epic Monster on space 12. At the end of the Mythos Phase, if the Cthylla Epic Monster has been defeated, solve this Mystery.",
+        "kind": "defeat",
+        "amount": 1,
+        "monster": "cthylla_epic",
+        "spawn_at": "space_12"
       }
     ],
     "awakening": {
-      "text": "The stars are right. A city of green stone rises from the South Pacific, and its doors swing open. The dreamer wakes. You have four nights to sing it back to sleep.",
-      "effects": [
-        {
-          "type": "spawn_monster",
-          "id": "dreamer_risen",
-          "at": "south_pacific"
-        }
-      ],
-      "nights": 4,
-      "night": [
+      "text": "Risen From the Sea! At last the time has come, the deep ones have broken the elder sign that kept their master asleep. Cthulhu rises again, and madness fills the dreams of every living thing.",
+      "lose_immediately": false,
+      "effects": [],
+      "reckoning": [
         {
           "type": "each_investigator",
           "effects": [
@@ -275,318 +624,22 @@
           ]
         }
       ],
-      "final_rite": {
+      "doom_advance_effects": [
+        {
+          "type": "sheet_token",
+          "amount": 1,
+          "lose_at": 4
+        }
+      ],
+      "final_mystery": {
         "id": "cth_final",
-        "name": "Sing the City Down",
-        "text": "Test Lore in the South Pacific, in the shadow of the risen city. 3 successes per investigator.",
-        "kind": "test",
-        "skill": "lore",
-        "amount": 3,
-        "per_investigator": true,
-        "where": {
-          "id": "south_pacific"
-        }
-      }
-    }
-  },
-  {
-    "id": "yog_sothoth",
-    "name": "Yog-Sothoth",
-    "title": "The Key and the Gate",
-    "difficulty": "medium",
-    "art": "yog_sothoth",
-    "description": "Yog-Sothoth does not live behind a door. It is the door, and every door. It touches all places and all times at once, and sorcerers who call it never call it twice. Rifts open more often now, because something on the other side is pushing.",
-    "doom": 15,
-    "dread_at": [
-      10,
-      5
-    ],
-    "seal_mod": 1,
-    "rift_pressure": 4,
-    "rift_limit": 8,
-    "rules_text": [
-      "Sealing a rift needs 2 successes.",
-      "Each Night, something may push through a rift from the other side.",
-      "If 8 rifts are open at once, the investigators lose."
-    ],
-    "night": [
-      {
-        "type": "random",
-        "outcomes": [
-          {
-            "weight": 2,
-            "effects": []
-          },
-          {
-            "weight": 1,
-            "text": "Something pushes through from the other side.",
-            "effects": [
-              {
-                "type": "spawn_monster",
-                "at": "random_rift_site"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "monsters": [
-      "angle_hound"
-    ],
-    "rites_needed": 3,
-    "rites": [
-      {
-        "id": "ys_seal",
-        "name": "Close the Doors",
-        "text": "Seal rifts anywhere. 1 per investigator.",
-        "kind": "seal",
-        "amount": 1,
-        "per_investigator": true
-      },
-      {
-        "id": "ys_nameless",
-        "name": "Lay the Broken Seals",
-        "text": "Spend 2 Trophies in the Empty Quarter, at the nameless city.",
-        "kind": "spend",
-        "resource": "trophies",
-        "amount": 2,
-        "per_investigator": false,
-        "where": {
-          "id": "empty_quarter"
-        }
-      },
-      {
-        "id": "ys_formula",
-        "name": "Recite the Reversed Formula",
-        "text": "Test Lore (-1) in Providence or Prague. 2 successes per investigator.",
-        "kind": "test",
-        "skill": "lore",
-        "mod": -1,
-        "amount": 2,
-        "per_investigator": true,
-        "where": {
-          "id": [
-            "providence",
-            "prague"
-          ]
-        }
-      },
-      {
-        "id": "ys_twin",
-        "name": "Banish the Unseen Twin",
-        "text": "Defeat the Unseen Twin, which starts in the Yukon Wilds and hunts investigators.",
+        "name": "Risen From the Sea",
+        "flavor": "At last the time has come, the deep ones have broken the elder sign that kept their master asleep. Cthulhu rises again, and madness fills the dreams of every living thing.",
+        "text": "Defeat the Cthulhu Epic Monster on Space 3.",
         "kind": "defeat",
-        "monster": "unseen_twin",
-        "spawn_at": "yukon"
-      },
-      {
-        "id": "ys_pages",
-        "name": "Gather the Scattered Pages",
-        "text": "Spend Clues in Europe. 2 per investigator.",
-        "kind": "spend",
-        "resource": "clues",
-        "amount": 2,
-        "per_investigator": true,
-        "where": {
-          "region": "europe"
-        }
-      }
-    ],
-    "awakening": {
-      "text": "Every rift on Earth flares at once. Through them all you see the same thing: a mass of shining spheres, pressing closer. Yog-Sothoth is here, and it is everywhere. Lock the doors before it steps through.",
-      "effects": [
-        {
-          "type": "open_rift",
-          "count": 2
-        }
-      ],
-      "nights": 4,
-      "night": [
-        {
-          "type": "open_rift",
-          "count": 1
-        }
-      ],
-      "final_rite": {
-        "id": "ys_final",
-        "name": "Lock Every Door",
-        "text": "Seal rifts anywhere while the doors burn open. 1 per investigator.",
-        "kind": "seal",
         "amount": 1,
-        "per_investigator": true
-      }
-    }
-  },
-  {
-    "id": "nyarlathotep",
-    "name": "Nyarlathotep",
-    "title": "The Crawling Chaos",
-    "difficulty": "medium",
-    "art": "nyarlathotep",
-    "description": "He came out of Egypt, they say, tall and dark and smiling, and gave lectures on electricity and the stars. Crowds followed him. Cities went mad after he left. He is the messenger of older gods, and he wears a thousand faces. Some of those faces belong to people you trust.",
-    "doom": 12,
-    "dread_at": [
-      8,
-      4
-    ],
-    "rift_pressure": 4,
-    "rules_text": [
-      "-1 Charm for every investigator. No one can be trusted.",
-      "Each Night, the investigator with the most Clues tests Wits or loses 1 Clue to his agents.",
-      "Each Night, a Masked Acolyte may appear. Extra Acolytes walk among the crowds."
-    ],
-    "modifiers": [
-      {
-        "amount": -1,
-        "skill": "charm"
-      }
-    ],
-    "night": [
-      {
-        "type": "one_investigator",
-        "pick": "most_clues",
-        "where": {
-          "clues_at_least": 1
-        },
-        "effects": [
-          {
-            "type": "text",
-            "text": "A friendly stranger buys you a drink and asks about your work."
-          },
-          {
-            "type": "test",
-            "skill": "wits",
-            "fail": [
-              {
-                "type": "clues",
-                "amount": -1
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "random",
-        "outcomes": [
-          {
-            "weight": 1,
-            "effects": []
-          },
-          {
-            "weight": 1,
-            "text": "A smiling stranger in a porcelain mask steps off a train.",
-            "effects": [
-              {
-                "type": "spawn_monster",
-                "id": "masked_acolyte",
-                "at": "random_rift_site"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "monsters": [
-      "masked_acolyte",
-      "masked_acolyte"
-    ],
-    "rites_needed": 3,
-    "rites": [
-      {
-        "id": "ny_stranger",
-        "name": "Unmask the Stranger",
-        "text": "Defeat the Smiling Stranger, who starts in Cairo and hunts investigators.",
-        "kind": "defeat",
-        "monster": "smiling_stranger",
-        "spawn_at": "cairo"
-      },
-      {
-        "id": "ny_expose",
-        "name": "Expose the Cult",
-        "text": "Test Charm in a hub city (Providence, Rio, Paris, Cairo, Bombay, or Peking). 3 successes per investigator.",
-        "kind": "test",
-        "skill": "charm",
-        "amount": 3,
-        "per_investigator": true,
-        "where": {
-          "hub": true
-        }
-      },
-      {
-        "id": "ny_footsteps",
-        "name": "Follow His Footsteps",
-        "text": "Spend Clues anywhere in Africa. 2 per investigator.",
-        "kind": "spend",
-        "resource": "clues",
-        "amount": 2,
-        "per_investigator": true,
-        "where": {
-          "region": "africa"
-        }
-      },
-      {
-        "id": "ny_lectures",
-        "name": "Buy Back the Lecture Notes",
-        "text": "Spend Funds in New York or Paris. 4 per investigator.",
-        "kind": "spend",
-        "resource": "funds",
-        "amount": 4,
-        "per_investigator": true,
-        "where": {
-          "id": [
-            "new_york",
-            "paris"
-          ]
-        }
-      },
-      {
-        "id": "ny_relic",
-        "name": "Return the Stolen Relic",
-        "text": "Offer a relic in Cairo.",
-        "kind": "spend",
-        "resource": "relic",
-        "amount": 1,
-        "where": {
-          "id": "cairo"
-        }
-      }
-    ],
-    "awakening": {
-      "text": "Every face in every crowd turns toward you at once, and every one of them is smiling. The Crawling Chaos has dropped its masks. You have four nights before the world forgets it was ever sane.",
-      "effects": [
-        {
-          "type": "spawn_monster",
-          "at": "rifts"
-        }
-      ],
-      "nights": 4,
-      "night": [
-        {
-          "type": "one_investigator",
-          "pick": "lowest_sanity",
-          "effects": [
-            {
-              "type": "gain_condition",
-              "id": "paranoia"
-            },
-            {
-              "type": "sanity",
-              "amount": -1
-            }
-          ]
-        }
-      ],
-      "final_rite": {
-        "id": "ny_final",
-        "name": "Stare Down the Thousand Faces",
-        "text": "Test Nerve in Cairo, where he first appeared. 3 successes per investigator.",
-        "kind": "test",
-        "skill": "nerve",
-        "amount": 3,
-        "per_investigator": true,
-        "where": {
-          "id": "cairo"
-        }
+        "monster": "cthulhu_epic",
+        "spawn_at": "space_3"
       }
     }
   }

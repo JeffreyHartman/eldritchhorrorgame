@@ -27,12 +27,11 @@ def test_resource_effects(make_game: MakeGame) -> None:
         [
             {"type": "health", "amount": 2},
             {"type": "sanity", "amount": -1},
-            {"type": "funds", "amount": 3},
             {"type": "clues", "amount": 2},
-            {"type": "trophies", "amount": 1},
+            {"type": "gain_ticket", "kind": "train"},
         ],
     )
-    assert (inv.health, inv.sanity, inv.funds, inv.clues, inv.trophies) == (5, 5, 5, 2, 1)
+    assert (inv.health, inv.sanity, inv.clues, inv.tickets) == (5, 3, 2, ["train"])
 
 
 def test_test_effect_branches(make_game: MakeGame) -> None:
@@ -41,29 +40,29 @@ def test_test_effect_branches(make_game: MakeGame) -> None:
     effect = [
         {
             "type": "test",
-            "skill": "wits",
+            "skill": "observation",
             "pass": [{"type": "clues", "amount": 1}],
-            "fail": [{"type": "funds", "amount": -1}],
+            "fail": [{"type": "sanity", "amount": -1}],
         }
     ]
-    set_dice(game, 6, 1, 1, 1, 1)
+    set_dice(game, 6, 1)
     run(game, inv, effect)
-    set_dice(game, 1, 1, 1, 1, 1)
+    set_dice(game, 1, 1)
     run(game, inv, effect)
-    assert inv.clues == 1 and inv.funds == 1
+    assert inv.clues == 1 and inv.sanity == inv.max_sanity - 1
 
 
 def test_later_effects_stop_after_defeat(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
-    run(game, inv, [{"type": "health", "amount": -99}, {"type": "funds", "amount": 5}])
-    assert inv.defeated and inv.funds == 2
+    run(game, inv, [{"type": "health", "amount": -99}, {"type": "clues", "amount": 5}])
+    assert inv.defeated and inv.clues == 0
 
 
 def test_choice_respects_requirements(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
-    inv.funds = 0
+    inv.clues = 0
     script.add("effect_choice", lambda opts: next(i for i, o in enumerate(opts) if o.enabled))
     run(
         game,
@@ -72,8 +71,12 @@ def test_choice_respects_requirements(make_game: MakeGame, script: Script) -> No
             {
                 "type": "choice",
                 "options": [
-                    {"label": "Rich", "requires": {"funds_at_least": 5}, "effects": [{"type": "clues", "amount": 5}]},
-                    {"label": "Poor", "effects": [{"type": "clues", "amount": 1}]},
+                    {
+                        "label": "Has Clues",
+                        "requires": {"clues_at_least": 5},
+                        "effects": [{"type": "clues", "amount": 5}],
+                    },
+                    {"label": "No Clues", "effects": [{"type": "clues", "amount": 1}]},
                 ],
             }
         ],
@@ -84,20 +87,21 @@ def test_choice_respects_requirements(make_game: MakeGame, script: Script) -> No
 def test_pay_runs_then_or_else(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
+    inv.clues = 2
     data = [
         {
             "type": "pay",
-            "cost": {"funds": 2},
-            "then": [{"type": "clues", "amount": 1}],
+            "cost": {"clues": 2},
+            "then": [{"type": "gain_ticket", "kind": "ship"}],
             "else": [{"type": "sanity", "amount": -1}],
         }
     ]
     script.add("pay", True)
     run(game, inv, data)
-    assert inv.funds == 0 and inv.clues == 1
+    assert inv.clues == 0 and inv.tickets == ["ship"]
     script.add("pay", True)
     run(game, inv, data)
-    assert inv.sanity == inv.max_sanity - 1, "cannot pay with 0 Funds, so the else branch runs"
+    assert inv.sanity == inv.max_sanity - 1, "cannot pay with 0 Clues, so the else branch runs"
 
 
 def test_if_checks_the_investigator(make_game: MakeGame) -> None:
@@ -124,7 +128,7 @@ def test_random_is_deterministic_for_a_seed(make_game: MakeGame) -> None:
             "type": "random",
             "outcomes": [
                 {"weight": 1, "effects": [{"type": "clues", "amount": 1}]},
-                {"weight": 1, "effects": [{"type": "funds", "amount": 1}]},
+                {"weight": 1, "effects": [{"type": "gain_ticket", "kind": "train"}]},
             ],
         }
     ]
@@ -132,19 +136,18 @@ def test_random_is_deterministic_for_a_seed(make_game: MakeGame) -> None:
     for _ in range(2):
         game = make_game(seed=99)
         inv = first(game)
-        for _ in range(10):
+        for _ in range(4):
             run(game, inv, data)
-        results.append((inv.clues, inv.funds))
+        results.append((inv.clues, len(inv.tickets)))
     assert results[0] == results[1]
-    assert sum(results[0]) == 10 + 2
 
 
-def test_gain_and_lose_assets(make_game: MakeGame, script: Script) -> None:
+def test_gain_and_lose_assets(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
-    run(game, inv, [{"type": "gain_asset", "kind": "spell"}, {"type": "gain_asset", "id": "bronze_sickle"}])
+    run(game, inv, [{"type": "gain_asset", "kind": "spell"}, {"type": "gain_asset", "id": "lightning_gun"}])
     names = [game.asset_def(c).id for c in inv.assets]
-    assert "bronze_sickle" in names
+    assert "lightning_gun" in names
     assert any(game.asset_def(c).kind == "spell" for c in inv.assets)
     run(game, inv, [{"type": "lose_asset", "kind": "spell"}])
     assert not any(game.asset_def(c).kind == "spell" for c in inv.assets)
@@ -152,69 +155,74 @@ def test_gain_and_lose_assets(make_game: MakeGame, script: Script) -> None:
     assert inv.assets == []
 
 
-def test_gain_from_market_refills_it(make_game: MakeGame) -> None:
+def test_gain_from_reserve_refills_it(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
-    run(game, inv, [{"type": "gain_asset", "source": "market"}])
-    assert len(game.market) == game.content.rules.market_size
+    run(game, inv, [{"type": "gain_asset", "source": "reserve"}])
+    assert len(game.reserve) == game.content.rules.reserve_size
 
 
 def test_conditions_and_remove_self(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
-    run(game, inv, [{"type": "gain_condition", "id": "hexed"}, {"type": "gain_condition", "id": "paranoia"}])
+    run(game, inv, [{"type": "gain_condition", "id": "cursed"}, {"type": "gain_condition", "id": "paranoia"}])
     run(game, inv, [{"type": "remove_condition", "trait": "madness"}])
-    assert [c.def_id for c in inv.conditions] == ["hexed"]
+    assert [c.def_id for c in inv.conditions] == ["cursed"]
     run_effects(parse_effects([{"type": "remove_self"}], "t"), Ctx(game, inv, "t", condition=inv.conditions[0]))
     assert inv.conditions == []
 
 
-def test_improve_skill_has_a_cap(make_game: MakeGame) -> None:
+def test_improve_skill_has_a_cap_and_lily_chen_doubles(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
     for _ in range(5):
         run(game, inv, [{"type": "improve_skill", "skill": "lore"}])
     assert inv.skill("lore") == inv.skills["lore"] + game.content.rules.max_improvement
 
+    game2 = make_game(investigators=("lily_chen", "mark_harrigan"))
+    lily = first(game2)
+    run(game2, lily, [{"type": "improve_skill", "skill": "lore"}])
+    assert lily.skill("lore") == lily.skills["lore"] + 2
+
 
 def test_move_keywords(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
-    inv.location = "sahara"
+    inv.location = "the_amazon"
     run(game, inv, [{"type": "move", "to": "nearest_city"}])
     assert game.content.locations[inv.location].terrain == "city"
     run(game, inv, [{"type": "move", "to": "start"}])
-    assert inv.location == "chicago"
-    script.add("move", "Yukon")
+    assert inv.location == "space_14"
+    script.add("move", "Rome")
     run(game, inv, [{"type": "move", "to": "choose_within", "range": 1}])
-    assert inv.location == "yukon"
+    assert inv.location == "rome"
 
 
-def test_delay_skips_the_next_day_turn(make_game: MakeGame) -> None:
-    from pursuit.engine.phases import day_turn
+def test_delay_skips_the_next_action_turn(make_game: MakeGame) -> None:
+    from pursuit.engine.phases import action_turn
 
     game = make_game()
     inv = first(game)
     run(game, inv, [{"type": "delay"}])
-    day_turn(game, inv)
+    action_turn(game, inv)
     assert not inv.delayed
     assert inv.actions_taken == ["delayed", "delayed"]
 
 
 def test_world_effects(make_game: MakeGame) -> None:
     game = make_game()
-    run(game, None, [{"type": "open_rift", "count": 2}, {"type": "spawn_clue", "count": 2}])
-    assert len(game.open_rifts()) == 2
+    run(game, None, [{"type": "spawn_gate", "count": 2}, {"type": "spawn_clue", "count": 2}])
+    assert len(game.open_gates()) == 2
     assert sum(s.clue for s in game.locations.values()) == 2
     monsters = sum(len(s.monsters) for s in game.locations.values())
-    run(game, None, [{"type": "spawn_monster", "at": "rifts"}])
+    run(game, None, [{"type": "spawn_monster", "at": "gates"}])
     assert sum(len(s.monsters) for s in game.locations.values()) == monsters + 2
 
 
 def test_each_investigator_with_a_filter(make_game: MakeGame) -> None:
     game = make_game()
     a, b = game.investigators
-    a.location = "north_atlantic"
+    a.location = "space_2"
     run(
         game,
         None,
@@ -226,7 +234,7 @@ def test_each_investigator_with_a_filter(make_game: MakeGame) -> None:
             }
         ],
     )
-    assert (a.clues, b.clues) == (1, 0)
+    assert (a.clues, b.clues) == (1, 1)  # Akachi starts with 1 Clue
 
 
 def test_one_investigator_picks_lowest_sanity(make_game: MakeGame) -> None:
@@ -236,24 +244,25 @@ def test_one_investigator_picks_lowest_sanity(make_game: MakeGame) -> None:
     run(
         game, None, [{"type": "one_investigator", "pick": "lowest_sanity", "effects": [{"type": "clues", "amount": 1}]}]
     )
-    assert (a.clues, b.clues) == (0, 1)
+    assert (a.clues, b.clues) == (0, 2)
 
 
-def test_ambush_spawns_and_fights(make_game: MakeGame, script: Script) -> None:
+def test_ambush_spawns_fights_and_returns_to_cup_even_if_undefeated(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
-    script.add("combat", "Fight")
-    set_dice(game, 6, 1, 1, 1, 1)
-    run(game, inv, [{"type": "ambush", "id": "cultist"}])
+    # Shoggoth (toughness 3): Will 2 dice (5,5), Strength 7 dice (5,1,1,1,1,1,1) -> 1 wound, returned to cup
+    set_dice(game, 5, 5, 5, 1, 1, 1, 1, 1, 1)
+    run(game, inv, [{"type": "ambush", "id": "shoggoth"}])
     assert not game.locations[inv.location].monsters
 
 
-def test_close_rift_effect(make_game: MakeGame) -> None:
+def test_close_gate_effect(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
-    game.locations[inv.location].rift = True
-    run(game, inv, [{"type": "close_rift"}])
-    assert not game.locations[inv.location].rift and inv.trophies == 1
+    game.locations[inv.location].gate = True
+    script.add("mystery_spend", False)
+    run(game, inv, [{"type": "close_gate"}])
+    assert not game.locations[inv.location].gate
 
 
 def test_doom_effects(make_game: MakeGame) -> None:
@@ -263,19 +272,19 @@ def test_doom_effects(make_game: MakeGame) -> None:
     assert game.doom == doom - 1
 
 
-def test_rite_progress_effect(make_game: MakeGame, script: Script) -> None:
+def test_mystery_progress_effect(make_game: MakeGame) -> None:
     game = make_game()
-    game.rites[0].def_id = "ky_lake"
-    game.rites[0].required = 4
-    run(game, None, [{"type": "rite_progress", "amount": 2}])
-    assert any(r.progress == 2 for r in game.rites)
+    assert game.active_mystery is not None
+    game.active_mystery.required = 2
+    run(game, None, [{"type": "mystery_progress", "amount": 1}])
+    assert game.active_mystery.progress == 1
 
 
-def test_resolve_conditions_reveals_outcomes(make_game: MakeGame) -> None:
+def test_flip_conditions_resolves_back_and_discards(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
-    rules.gain_condition(game, inv, "blessed")  # its only outcome removes it
-    run(game, inv, [{"type": "resolve_conditions", "trait": "boon"}])
+    rules.gain_condition(game, inv, "blessed")
+    run(game, inv, [{"type": "flip_conditions", "trait": "boon"}])
     assert inv.conditions == []
 
 
@@ -288,10 +297,25 @@ def test_resolve_conditions_reveals_outcomes(make_game: MakeGame) -> None:
         ({"type": "choice", "options": [{"label": "only", "effects": []}]}, "at least 2 options"),
         ({"type": "move", "to": "choose_within"}, "range"),
         ({"type": "pay", "cost": {}}, "needs a cost"),
-        ({"type": "gain_asset", "source": "market", "kind": "spell"}, "market kind"),
+        ({"type": "gain_asset", "source": "reserve", "kind": "spell"}, "reserve kind"),
         ({"type": "remove_condition"}, "needs 'id' or 'trait'"),
     ],
 )
 def test_bad_effect_data_is_rejected(data: dict[str, Any], message: str) -> None:
     with pytest.raises(ContentError, match=message):
         parse_effects([data], "test")
+
+
+
+def test_targeted_spell_flips_and_discards_the_casters_copy(make_game: MakeGame) -> None:
+    from pursuit.engine import actions
+
+    game = make_game(investigators=("akachi_onyele", "mark_harrigan"))
+    caster, target = game.investigators
+    target.location = caster.location
+    owned = rules.new_card(game, "blessing_of_isis")
+    caster.assets.append(owned)
+    set_dice(game, 1, 1)  # 0 successes: the back discards the spell
+    actions.perform(game, caster, ("asset", owned.uid))
+    assert owned not in caster.assets
+    assert owned in game.spell_deck.discards

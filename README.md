@@ -85,6 +85,16 @@ uv run ruff format src tests      # format
 uv run mypy                       # type check
 ```
 
+Card prose (flavor text, bios, rules text) is synced from the
+[Eldritch Horror wiki](https://eldritchhorror.fandom.com/) through its open MediaWiki API:
+
+```sh
+python scripts/sync_wiki.py --apply   # rewrite the prose fields in the JSON data
+python scripts/sync_wiki.py           # report differences, write nothing
+```
+
+The script leaves `effects` alone because the wiki has English, not this engine's effect DSL.
+
 To measure balance, run bot games:
 
 ```sh

@@ -16,46 +16,70 @@ from pursuit.effects.base import Effect, read_effects
 if TYPE_CHECKING:
     from pursuit.engine.state import Game, Investigator
 
-SKILLS = ("lore", "charm", "wits", "brawn", "nerve")
+SKILLS = ("lore", "influence", "observation", "strength", "will")
 TERRAINS = ("city", "wilderness", "sea")
 REGIONS = (
-    "north_america",
-    "south_america",
+    "americas",
     "europe",
-    "africa",
-    "middle_east",
-    "asia",
-    "oceania",
-    "ocean",
+    "asia_australia",
+    "general",
 )
-ROUTE_KINDS = ("road", "rail", "sea")
+ROUTE_KINDS = ("uncharted", "train", "ship")
+TICKET_KINDS = ("train", "ship")
+OMEN_TRACK = ("green", "blue_a", "red", "blue_b")
+OMEN_COLORS = {"green": "green", "blue_a": "blue", "red": "red", "blue_b": "blue"}
+GATE_COLORS = ("green", "blue", "red")
+MYTHOS_COLORS = ("green", "yellow", "blue")
+MYTHOS_TRAITS = ("event", "ongoing", "rumor")
+MYTHOS_ICONS = (
+    "advance_omen",
+    "reckoning",
+    "spawn_gates",
+    "monster_surge",
+    "spawn_clues",
+    "place_rumor",
+    "place_eldritch",
+)
+EXPEDITION_LOCATIONS = (
+    "the_amazon",
+    "the_heart_of_africa",
+    "the_himalayas",
+    "the_pyramids",
+    "tunguska",
+    "antarctica",
+)
+LOCATION_DECKS = ("americas", "europe", "asia_australia")
+OTHER_WORLD_TYPES = (
+    "the_abyss",
+    "the_dreamlands",
+    "the_future",
+    "the_past",
+    "the_underworld",
+    "city_of_the_great_race",
+    "great_hall_of_celaeno",
+    "lost_carcosa",
+    "yuggoth",
+)
 CONTEXTS = (
     "any",
     "encounter",
     "combat",
     "horror",
-    "evade",
-    "seal",
-    "investigate",
-    "funds",
+    "fight",
+    "acquire",
     "cast",
-    "rite",
+    "mystery",
 )
-ASSET_KINDS = ("item", "ally", "service", "spell", "relic")
-MARKET_KINDS = ("item", "ally", "service")
+ASSET_KINDS = ("item", "ally", "service", "trinket", "spell", "artifact")
+RESERVE_KINDS = ("item", "ally", "service", "trinket")
 PERKS = (
-    "market_discount",
-    "free_travel_steps",
-    "earn_bonus",
     "rest_bonus",
-    "investigate_bonus",
-    "seal_bonus",
+    "acquire_bonus",
+    "double_improve",
 )
-BLOCKABLE_ACTIONS = ("travel", "rest", "investigate", "seal", "earn", "rite", "buy")
-CONDITION_TRIGGERS = ("night", "rest", "encounter", "never")
+BLOCKABLE_ACTIONS = ("travel", "rest", "trade", "prepare", "acquire", "component")
 MONSTER_FORMS = ("beast", "humanoid", "horror", "swarm", "spirit")
-RITE_KINDS = ("spend", "test", "seal", "defeat")
-RITE_RESOURCES = ("clues", "funds", "trophies", "relic")
+MYSTERY_KINDS = ("encounter", "gate", "combat", "defeat", "spend")
 
 
 def _skill_or_none(r: Reader, key: str) -> str | None:
@@ -70,10 +94,10 @@ class LocationFilter:
     ids: tuple[str, ...] = ()
     terrain: tuple[str, ...] = ()
     region: tuple[str, ...] = ()
-    hub: bool | None = None
-    rift: bool | None = None
+    gate: bool | None = None
     clue: bool | None = None
     monsters: bool | None = None
+    expedition: bool | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> LocationFilter:
@@ -81,10 +105,10 @@ class LocationFilter:
             ids=r.get_str_tuple("id"),
             terrain=r.get_str_tuple("terrain", TERRAINS),
             region=r.get_str_tuple("region", REGIONS),
-            hub=r.get_bool("hub", None),
-            rift=r.get_bool("rift", None),
+            gate=r.get_bool("gate", None),
             clue=r.get_bool("clue", None),
             monsters=r.get_bool("monsters", None),
+            expedition=r.get_bool("expedition", None),
         )
         r.done()
         return f
@@ -96,10 +120,10 @@ class LocationFilter:
             not self.ids or loc_id in self.ids,
             not self.terrain or ldef.terrain in self.terrain,
             not self.region or ldef.region in self.region,
-            self.hub is None or ldef.hub == self.hub,
-            self.rift is None or state.rift == self.rift,
+            self.gate is None or state.gate == self.gate,
             self.clue is None or state.clue == self.clue,
             self.monsters is None or bool(state.monsters) == self.monsters,
+            self.expedition is None or (game.active_expedition == loc_id) == self.expedition,
         )
         return all(checks)
 
@@ -111,10 +135,12 @@ class LocationFilter:
             parts.append("any " + " or ".join(self.terrain))
         if self.region:
             parts.append("in " + " or ".join(r.replace("_", " ").title() for r in self.region))
-        if self.rift:
-            parts.append("with a rift")
+        if self.gate:
+            parts.append("with a gate")
         if self.clue:
             parts.append("with a clue")
+        if self.expedition:
+            parts.append("at the Active Expedition")
         return ", ".join(parts) or "anywhere"
 
     def refs(self) -> Iterable[tuple[str, str]]:
@@ -133,13 +159,13 @@ class InvestigatorFilter:
     asset: str | None = None
     asset_kind: str | None = None
     asset_trait: str | None = None
-    funds_at_least: int | None = None
     clues_at_least: int | None = None
-    trophies_at_least: int | None = None
+    tickets_at_least: int | None = None
     sanity_at_most: int | None = None
     health_at_most: int | None = None
     at: LocationFilter | None = None
     alone: bool | None = None
+    lead: bool | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> InvestigatorFilter:
@@ -149,13 +175,13 @@ class InvestigatorFilter:
             asset=r.get_str("asset", None),
             asset_kind=r.get_enum("asset_kind", ASSET_KINDS, None),
             asset_trait=r.get_str("asset_trait", None),
-            funds_at_least=r.get_int("funds_at_least", None),
             clues_at_least=r.get_int("clues_at_least", None),
-            trophies_at_least=r.get_int("trophies_at_least", None),
+            tickets_at_least=r.get_int("tickets_at_least", None),
             sanity_at_most=r.get_int("sanity_at_most", None),
             health_at_most=r.get_int("health_at_most", None),
             at=read_location_filter(r, "at"),
             alone=r.get_bool("alone", None),
+            lead=r.get_bool("lead", None),
         )
         r.done()
         return f
@@ -174,11 +200,9 @@ class InvestigatorFilter:
             return False
         if self.asset_trait is not None and all(self.asset_trait not in a.traits for a in assets):
             return False
-        if self.funds_at_least is not None and inv.funds < self.funds_at_least:
-            return False
         if self.clues_at_least is not None and inv.clues < self.clues_at_least:
             return False
-        if self.trophies_at_least is not None and inv.trophies < self.trophies_at_least:
+        if self.tickets_at_least is not None and len(inv.tickets) < self.tickets_at_least:
             return False
         if self.sanity_at_most is not None and inv.sanity > self.sanity_at_most:
             return False
@@ -190,7 +214,7 @@ class InvestigatorFilter:
             others = [o for o in game.active_investigators() if o is not inv and o.location == inv.location]
             if (not others) != self.alone:
                 return False
-        return True
+        return self.lead is None or (game.lead_seat == inv.seat) == self.lead
 
     def refs(self) -> Iterable[tuple[str, str]]:
         if self.condition:
@@ -208,35 +232,32 @@ def read_investigator_filter(r: Reader, key: str) -> InvestigatorFilter | None:
 
 @dataclass(frozen=True)
 class Cost:
-    funds: int = 0
     clues: int = 0
     sanity: int = 0
     health: int = 0
-    trophies: int = 0
+    tickets: int = 0
 
     @classmethod
     def parse(cls, r: Reader) -> Cost:
         c = cls(
-            funds=r.get_int("funds", 0),
             clues=r.get_int("clues", 0),
             sanity=r.get_int("sanity", 0),
             health=r.get_int("health", 0),
-            trophies=r.get_int("trophies", 0),
+            tickets=r.get_int("tickets", 0),
         )
         r.done()
-        if min(c.funds, c.clues, c.sanity, c.health, c.trophies) < 0:
+        if min(c.clues, c.sanity, c.health, c.tickets) < 0:
             raise ContentError(f"{r.path}: costs cannot be negative")
         return c
 
     def is_free(self) -> bool:
-        return not (self.funds or self.clues or self.sanity or self.health or self.trophies)
+        return not (self.clues or self.sanity or self.health or self.tickets)
 
     def can_pay(self, inv: Investigator) -> bool:
         # Health and sanity costs never let a payment defeat the payer.
         return (
-            inv.funds >= self.funds
-            and inv.clues >= self.clues
-            and inv.trophies >= self.trophies
+            inv.clues >= self.clues
+            and len(inv.tickets) >= self.tickets
             and (self.sanity == 0 or inv.sanity > self.sanity)
             and (self.health == 0 or inv.health > self.health)
         )
@@ -244,11 +265,10 @@ class Cost:
     def describe(self) -> str:
         parts = []
         for name, value in (
-            ("Funds", self.funds),
             ("Clue", self.clues),
             ("Sanity", self.sanity),
             ("Health", self.health),
-            ("Trophy", self.trophies),
+            ("Ticket", self.tickets),
         ):
             if value:
                 parts.append(f"{value} {name}")
@@ -262,12 +282,18 @@ def read_cost(r: Reader, key: str) -> Cost:
 
 @dataclass(frozen=True)
 class Modifier:
-    """Extra dice (or fewer) for tests that match `skill` and `context`."""
+    """Skill bonus/penalty or additional dice for tests matching `skill` and `context`.
+
+    In Eldritch Horror, an investigator uses only their highest positive card skill
+    bonus (`additional=False`), while penalties and "roll additional dice" effects
+    (`additional=True`) stack with everything.
+    """
 
     amount: int
     skill: str | None = None
     context: str = "any"
     where: LocationFilter | None = None
+    additional: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Modifier:
@@ -276,6 +302,7 @@ class Modifier:
             skill=_skill_or_none(r, "skill"),
             context=r.get_enum("context", CONTEXTS, "any"),
             where=read_location_filter(r, "where"),
+            additional=r.get_bool("additional", False),
         )
         r.done()
         return m
@@ -284,9 +311,11 @@ class Modifier:
         return (self.skill is None or self.skill == skill) and (self.context == "any" or self.context in contexts)
 
     def describe(self) -> str:
-        sign = "+" if self.amount >= 0 else ""
         what = self.skill.title() if self.skill else "all tests"
         when = "" if self.context == "any" else f" ({self.context})"
+        if self.additional:
+            return f"+{self.amount} extra dice on {what}{when}"
+        sign = "+" if self.amount >= 0 else ""
         return f"{sign}{self.amount} {what}{when}"
 
 
@@ -307,30 +336,28 @@ def read_perks(r: Reader, key: str) -> dict[str, int]:
 
 
 @dataclass(frozen=True)
-class Boost:
-    """An optional, paid bonus that the owner may add to a matching test."""
+class RerollAbility:
+    """Allows rerolling 1 die (or all dice) on a matching test."""
 
     text: str
-    amount: int
-    context: str
-    skill: str | None
-    cost: Cost
-    exhaust: bool
-    discard: bool
+    skill: str | None = None
+    context: str = "any"
+    all_dice: bool = False
+    once_per_round: bool = False
+    discard: bool = False
 
     @classmethod
-    def parse(cls, r: Reader) -> Boost:
-        b = cls(
+    def parse(cls, r: Reader) -> RerollAbility:
+        a = cls(
             text=r.get_str("text"),
-            amount=r.get_int("amount"),
-            context=r.get_enum("context", CONTEXTS),
             skill=_skill_or_none(r, "skill"),
-            cost=read_cost(r, "cost"),
-            exhaust=r.get_bool("exhaust", True),
+            context=r.get_enum("context", CONTEXTS, "any"),
+            all_dice=r.get_bool("all_dice", False),
+            once_per_round=r.get_bool("once_per_round", False),
             discard=r.get_bool("discard", False),
         )
         r.done()
-        return b
+        return a
 
     def applies(self, skill: str, contexts: tuple[str, ...]) -> bool:
         return (self.skill is None or self.skill == skill) and (self.context == "any" or self.context in contexts)
@@ -338,13 +365,14 @@ class Boost:
 
 @dataclass(frozen=True)
 class ActionAbility:
-    """An ability that costs one action. Each one works once per round."""
+    """A component action (`Action:` or `Local Action:`). Each component works once per round."""
 
     text: str
     effects: tuple[Effect, ...]
     cost: Cost
     discard: bool
     target: str
+    local: bool
     requires: InvestigatorFilter | None
 
     @classmethod
@@ -354,7 +382,8 @@ class ActionAbility:
             effects=read_effects(r, "effects"),
             cost=read_cost(r, "cost"),
             discard=r.get_bool("discard", False),
-            target=r.get_enum("target", ("self", "investigator_here"), "self"),
+            target=r.get_enum("target", ("self", "investigator_here", "any_investigator"), "self"),
+            local=r.get_bool("local", False),
             requires=read_investigator_filter(r, "requires"),
         )
         r.done()
@@ -369,14 +398,43 @@ def read_action(r: Reader, key: str) -> ActionAbility | None:
 
 
 @dataclass(frozen=True)
+class CardBack:
+    """A hidden back variant on a double-sided Spell or Condition card."""
+
+    text: str
+    effects: tuple[Effect, ...]
+    weight: int = 1
+    min_successes: int | None = None
+    max_successes: int | None = None
+
+    @classmethod
+    def parse(cls, r: Reader) -> CardBack:
+        b = cls(
+            text=r.get_str("text"),
+            effects=read_effects(r, "effects"),
+            weight=r.get_int("weight", 1),
+            min_successes=r.get_int("min_successes", None),
+            max_successes=r.get_int("max_successes", None),
+        )
+        r.done()
+        if b.weight < 1:
+            raise ContentError(f"{r.path}: back weight must be at least 1")
+        return b
+
+
+def read_backs(r: Reader, key: str = "backs") -> tuple[CardBack, ...]:
+    return tuple(CardBack.parse(b) for b in r.objects(key, []))
+
+
+@dataclass(frozen=True)
 class LocationDef:
     id: str
     name: str
     code: str
     terrain: str
     region: str
-    hub: bool
-    rift_site: bool
+    gate_color: str | None
+    expedition: bool
     text: str
     pos: tuple[int, int]
 
@@ -399,31 +457,19 @@ class AssetDef:
     text: str
     flavor: str
     modifiers: tuple[Modifier, ...]
-    boosts: tuple[Boost, ...]
+    rerolls: tuple[RerollAbility, ...]
     action: ActionAbility | None
     on_gain: tuple[Effect, ...]
+    reckoning: tuple[Effect, ...]
+    backs: tuple[CardBack, ...]
+    damage_reduction: int = 0
+    sanity_reduction: int = 0
     perks: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
-class Outcome:
-    weight: int
-    text: str
-    effects: tuple[Effect, ...]
-
-
-@dataclass(frozen=True)
-class Cure:
-    text: str
-    cost: Cost
-    skill: str | None
-    mod: int
-
-
-@dataclass(frozen=True)
 class ConditionDef:
-    """A condition. Players see `text` and `modifiers`. The outcomes stay hidden
-    until the trigger fires and one outcome is drawn at random by weight."""
+    """A double-sided condition card. The front is visible; the back is hidden until flipped."""
 
     id: str
     name: str
@@ -431,10 +477,9 @@ class ConditionDef:
     text: str
     modifiers: tuple[Modifier, ...]
     blocks: tuple[str, ...]
-    trigger: str
-    chance: int
-    outcomes: tuple[Outcome, ...]
-    cure: Cure | None
+    action: ActionAbility | None
+    reckoning: tuple[Effect, ...]
+    backs: tuple[CardBack, ...]
 
 
 @dataclass(frozen=True)
@@ -448,13 +493,24 @@ class MonsterDef:
     horror_mod: int
     damage: int
     fight_mod: int
-    evade_mod: int
     toughness: int
     toughness_per_investigator: int
     roams: bool
     epic: bool
+    on_spawn: tuple[Effect, ...]
+    reckoning: tuple[Effect, ...]
     on_defeat: tuple[Effect, ...]
     art: str
+    horror_test: bool = True
+    damage_test: bool = True
+
+
+@dataclass(frozen=True)
+class EncounterSection:
+    text: str
+    effects: tuple[Effect, ...]
+    location: str | None = None
+    terrain: str | None = None
 
 
 @dataclass(frozen=True)
@@ -464,56 +520,70 @@ class EncounterDef:
     title: str
     text: str
     effects: tuple[Effect, ...]
+    terrain: str | None = None
+    location: str | None = None
+    sections: tuple[EncounterSection, ...] = ()
 
 
 @dataclass(frozen=True)
-class PortentTier:
+class MythosDef:
+    id: str
+    name: str
+    color: str
+    traits: tuple[str, ...]
+    icons: tuple[str, ...]
+    flavor: str
     text: str
     effects: tuple[Effect, ...]
+    reckoning: tuple[Effect, ...]
+    rumor_space: str | None = None
+    eldritch: int = 0
+    encounter_text: str = ""
+    encounter_effects: tuple[Effect, ...] = ()
+    on_zero_eldritch: tuple[Effect, ...] = ()
 
 
 @dataclass(frozen=True)
-class PortentDef:
-    """A Night card. `tiers[0]` resolves at Dread `min_dread`, `tiers[1]` one level higher,
-    and so on. At a Dread above the last tier, the last tier resolves."""
-
+class MysteryDef:
     id: str
     name: str
     flavor: str
-    min_dread: int
-    tiers: tuple[PortentTier, ...]
-
-    def tier(self, dread: int) -> PortentTier:
-        index = max(0, min(dread - self.min_dread, len(self.tiers) - 1))
-        return self.tiers[index]
-
-
-@dataclass(frozen=True)
-class RiteDef:
-    id: str
-    name: str
     text: str
     kind: str
     amount: int
+    half_players: bool
     per_investigator: bool
-    resource: str | None
     where: LocationFilter | None
     skill: str | None
     mod: int
+    clue_cost: int
     monster: str | None
     spawn_at: str | None
+    on_enter: tuple[Effect, ...]
 
     def required(self, investigators: int) -> int:
-        return self.amount * investigators if self.per_investigator else self.amount
+        if self.half_players:
+            return max(1, (investigators + 1) // 2) * self.amount
+        if self.per_investigator:
+            return self.amount * investigators
+        return self.amount
+
+
+@dataclass(frozen=True)
+class StageComp:
+    green: int
+    yellow: int
+    blue: int
 
 
 @dataclass(frozen=True)
 class AwakeningDef:
     text: str
     effects: tuple[Effect, ...]
-    nights: int
-    night: tuple[Effect, ...]
-    final_rite: RiteDef
+    reckoning: tuple[Effect, ...]
+    doom_advance_effects: tuple[Effect, ...]
+    lose_immediately: bool
+    final_mystery: MysteryDef | None
 
 
 @dataclass(frozen=True)
@@ -525,18 +595,35 @@ class OldOneDef:
     description: str
     art: str
     doom: int
-    dread_at: tuple[int, int]
-    seal_mod: int
-    rift_pressure: int
-    rift_limit: int | None
+    stages: tuple[StageComp, StageComp, StageComp]
     modifiers: tuple[Modifier, ...]
     rules_text: tuple[str, ...]
     setup: tuple[Effect, ...]
-    night: tuple[Effect, ...]
-    rites: tuple[RiteDef, ...]
-    rites_needed: int
+    reckoning: tuple[Effect, ...]
+    omen_green_eldritch_doom: bool
+    mysteries: tuple[MysteryDef, ...]
+    mysteries_needed: int
     awakening: AwakeningDef
+    cultist_horror: int
+    cultist_horror_mod: int
+    cultist_damage: int
+    cultist_fight_mod: int
+    cultist_toughness: int
+    cultist_text: str
+    cultist_reckoning: tuple[Effect, ...]
+    cultist_on_defeat: tuple[Effect, ...]
     monsters: tuple[str, ...]
+    cultist_horror_test: bool = True
+    cultist_damage_test: bool = True
+
+
+@dataclass(frozen=True)
+class DefeatedEncounterDef:
+    text: str
+    skill: str
+    mod: int
+    pass_text: str
+    fail_text: str
 
 
 @dataclass(frozen=True)
@@ -550,14 +637,25 @@ class InvestigatorDef:
     sanity: int
     skills: dict[str, int]
     start: str
-    funds: int
     clues: int
+    tickets: tuple[str, ...]
     assets: tuple[str, ...]
     conditions: tuple[str, ...]
     passive_text: str
     perks: dict[str, int]
     modifiers: tuple[Modifier, ...]
+    rerolls: tuple[RerollAbility, ...]
     action: ActionAbility | None
+    crippled: DefeatedEncounterDef
+    insane: DefeatedEncounterDef
+
+
+@dataclass(frozen=True)
+class ReferenceRow:
+    players: int
+    spawn_gates: int
+    spawn_clues: int
+    monster_surge: int
 
 
 @dataclass(frozen=True)
@@ -566,21 +664,20 @@ class DifficultyDef:
     label: str
     text: str
     doom_mod: int
-    funds_mod: int
-    start_rifts_mod: int
+    start_gates_mod: int
 
 
 @dataclass(frozen=True)
 class RulesDef:
     actions_per_turn: int
     success_on: int
-    market_size: int
-    max_paid_steps: int
-    step_cost: int
-    start_rifts: int
+    reserve_size: int
+    max_tickets: int
+    start_gates: int
     start_clues: int
-    night_doom: int
     max_improvement: int
     max_investigators: int
     defeat_doom: int
+    reference: dict[int, ReferenceRow]
     difficulties: dict[str, DifficultyDef]
+

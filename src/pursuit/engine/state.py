@@ -8,16 +8,18 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 
+from pursuit.content.defs import OMEN_COLORS, OMEN_TRACK
+
 if TYPE_CHECKING:
-    from pursuit.content.defs import AssetDef, LocationDef, OldOneDef, RiteDef
+    from pursuit.content.defs import AssetDef, LocationDef, MysteryDef, OldOneDef, ReferenceRow
     from pursuit.content.loader import Content
     from pursuit.controller import Controller
 
 
 class Phase(StrEnum):
-    DAY = "day"
+    ACTION = "action"
     ENCOUNTER = "encounter"
-    NIGHT = "night"
+    MYTHOS = "mythos"
 
 
 @dataclass
@@ -41,12 +43,30 @@ class MonsterInst:
 
 
 @dataclass
+class FallenInvestigator:
+    def_id: str
+    name: str
+    cause: str  # "health" or "sanity"
+    clues: int = 0
+    tickets: list[str] = field(default_factory=list)
+    assets: list[AssetCard] = field(default_factory=list)
+
+
+@dataclass
+class ActiveMythos:
+    def_id: str
+    eldritch: int = 0
+    rumor_space: str | None = None
+
+
+@dataclass
 class LocationState:
     id: str
     clue: bool = False
-    rift: bool = False
+    gate: bool = False
+    other_world: str | None = None
     monsters: list[MonsterInst] = field(default_factory=list)
-    belongings: list[AssetCard] = field(default_factory=list)
+    fallen: list[FallenInvestigator] = field(default_factory=list)
 
 
 @dataclass
@@ -60,15 +80,15 @@ class Investigator:
     max_sanity: int
     skills: dict[str, int]
     location: str
-    funds: int = 0
     clues: int = 0
-    trophies: int = 0
+    tickets: list[str] = field(default_factory=list)
     improvements: dict[str, int] = field(default_factory=dict)
     assets: list[AssetCard] = field(default_factory=list)
     conditions: list[ConditionInst] = field(default_factory=list)
     delayed: bool = False
     actions_taken: list[str] = field(default_factory=list)
     defeated: bool = False
+    devoured: bool = False
     eliminated: bool = False
 
     def skill(self, name: str) -> int:
@@ -82,8 +102,8 @@ class Deck[T]:
     cards: list[T] = field(default_factory=list)
     discards: list[T] = field(default_factory=list)
 
-    def draw(self, rng: random.Random) -> T | None:
-        if not self.cards and self.discards:
+    def draw(self, rng: random.Random, *, reshuffle: bool = True) -> T | None:
+        if not self.cards and self.discards and reshuffle:
             self.cards = self.discards
             self.discards = []
             rng.shuffle(self.cards)
@@ -111,7 +131,7 @@ class Deck[T]:
 
 
 @dataclass
-class RiteState:
+class MysteryState:
     def_id: str
     required: int
     progress: int = 0
@@ -149,22 +169,30 @@ class Game:
     locations: dict[str, LocationState]
     doom: int
     start_doom: int
-    dread: int = 1
+    omen_index: int = 0
+    green_eldritch: int = 0
+    sheet_tokens: int = 0
     round: int = 1
-    phase: Phase = Phase.DAY
+    phase: Phase = Phase.ACTION
     turn_index: int = 0
+    lead_seat: int = 0
     awakened: bool = False
-    endgame: int = 0
-    rites: list[RiteState] = field(default_factory=list)
-    final_rite: RiteState | None = None
-    market: list[AssetCard] = field(default_factory=list)
+    active_expedition: str | None = None
+    mystery_deck: list[str] = field(default_factory=list)
+    active_mystery: MysteryState | None = None
+    solved_mysteries: list[str] = field(default_factory=list)
+    final_mystery: MysteryState | None = None
+    reserve: list[AssetCard] = field(default_factory=list)
     asset_deck: Deck[AssetCard] = field(default_factory=Deck)
     spell_deck: Deck[AssetCard] = field(default_factory=Deck)
-    relic_deck: Deck[AssetCard] = field(default_factory=Deck)
+    artifact_deck: Deck[AssetCard] = field(default_factory=Deck)
     encounter_decks: dict[str, Deck[str]] = field(default_factory=dict)
-    portent_deck: Deck[str] = field(default_factory=Deck)
-    rift_deck: Deck[str] = field(default_factory=Deck)
+    mythos_deck: list[str] = field(default_factory=list)
+    mythos_discards: list[str] = field(default_factory=list)
+    active_mythos: list[ActiveMythos] = field(default_factory=list)
+    gate_deck: Deck[str] = field(default_factory=Deck)
     clue_deck: Deck[str] = field(default_factory=Deck)
+    other_world_deck: Deck[str] = field(default_factory=Deck)
     monster_cup: list[str] = field(default_factory=list)
     unused_investigators: list[str] = field(default_factory=list)
     next_uid: int = 1
@@ -190,16 +218,44 @@ class Game:
     def old_one(self) -> OldOneDef:
         return self.content.old_ones[self.old_one_id]
 
+    @property
+    def omen_space(self) -> str:
+        return OMEN_TRACK[self.omen_index % len(OMEN_TRACK)]
+
+    @property
+    def omen_color(self) -> str:
+        return OMEN_COLORS[self.omen_space]
+
+    @property
+    def reference(self) -> ReferenceRow:
+        n = max(1, min(self.content.rules.max_investigators, len(self.investigators)))
+        return self.content.rules.reference[n]
+
+    def lead_investigator(self) -> Investigator:
+        for inv in self.investigators:
+            if inv.seat == self.lead_seat and not inv.eliminated and not inv.defeated:
+                return inv
+        active = [i for i in self.investigators if not i.eliminated and not i.defeated]
+        return active[0] if active else self.investigators[0]
+
+    def turn_order(self) -> list[Investigator]:
+        n = len(self.investigators)
+        if n == 0:
+            return []
+        start = next((idx for idx, inv in enumerate(self.investigators) if inv.seat == self.lead_seat), 0)
+        return [self.investigators[(start + i) % n] for i in range(n)]
+
     def location_def(self, loc_id: str) -> LocationDef:
         return self.content.locations[loc_id]
 
     def asset_def(self, card: AssetCard) -> AssetDef:
         return self.content.assets[card.def_id]
 
-    def rite_def(self, rite: RiteState) -> RiteDef:
-        if rite.final:
-            return self.old_one.awakening.final_rite
-        return next(r for r in self.old_one.rites if r.id == rite.def_id)
+    def mystery_def(self, mys: MysteryState) -> MysteryDef:
+        if mys.final:
+            assert self.old_one.awakening.final_mystery is not None
+            return self.old_one.awakening.final_mystery
+        return next(m for m in self.old_one.mysteries if m.id == mys.def_id)
 
     def active_investigators(self) -> list[Investigator]:
         return [i for i in self.investigators if not i.eliminated]
@@ -207,18 +263,26 @@ class Game:
     def investigators_at(self, loc_id: str) -> list[Investigator]:
         return [i for i in self.active_investigators() if i.location == loc_id and not i.defeated]
 
-    def open_rifts(self) -> list[str]:
-        return [loc for loc, state in self.locations.items() if state.rift]
+    def open_gates(self) -> list[str]:
+        return [loc for loc, state in self.locations.items() if state.gate]
+
+    def matching_gates(self) -> list[str]:
+        color = self.omen_color
+        return [loc for loc in self.open_gates() if self.content.locations[loc].gate_color == color]
 
     def all_monsters(self) -> Iterator[tuple[str, MonsterInst]]:
         for loc, state in self.locations.items():
             for monster in state.monsters:
                 yield loc, monster
 
-    def active_rites(self) -> list[RiteState]:
-        if self.awakened:
-            return [self.final_rite] if self.final_rite else []
-        return list(self.rites)
+    def active_mysteries(self) -> list[MysteryState]:
+        out: list[MysteryState] = []
+        if self.active_mystery and not self.active_mystery.done:
+            out.append(self.active_mystery)
+        if self.awakened and self.final_mystery and not self.final_mystery.done:
+            out.append(self.final_mystery)
+        return out
 
     def bump(self, stat: str, amount: int = 1) -> None:
         self.stats[stat] = self.stats.get(stat, 0) + amount
+

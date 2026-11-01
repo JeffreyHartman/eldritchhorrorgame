@@ -1,0 +1,1388 @@
+[
+  {
+    "id": "expedition_the_amazon_1",
+    "title": "You see the vine-covered temple ahead of you, but...",
+    "location": "the_amazon",
+    "text": "You see the vine-covered temple ahead of you, but you're going to have to fight your way through a thick tangle of venomous snakes between yourself and the entrance (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You enter the Temple of Yig. Retreat Doom by 1. Strange runes are inscribed on the wall in a serpentine design. You must interpret their meaning to avoid their hypnotic effect (Lore). If you fail, gain an Amnesia Condition."
+          },
+          {
+            "type": "retreat_doom",
+            "amount": 1
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You've been bit! Lose 1 Health and gain an Internal Injury Condition. Something about the snakes is odd. You try to identify what makes them unique (Observation-1). If you pass, you notice a crescent on the snake's head; retreat Doom by 1."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "internal_injury"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you notice a crescent on the snake's head; retreat Doom by 1."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_amazon_2",
+    "title": "As you slip into a deep trance and touch the odd...",
+    "location": "the_amazon",
+    "text": "As you slip into a deep trance and touch the odd stone, the jungle around you subtle changes in appearance. You look for hints regarding this new jungle terrain (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You are in some other dimension. You use your arcane skills to return home (Lore). If you pass, you wake up back in the jungle next to a strange item; gain 1 Artifact. If you fail, the journey back unsettles you; lose 2 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you wake up back in the jungle next to a strange item; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the journey back unsettles you; lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "A towering, larva-like thing grabs you with its tendrils. You struggle fiercely to break free (Strength-1). If you pass, you retrieve a sample of the creature; gain 2 Clues. If you fail, it throws you high into the air; gain a Back Injury Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you retrieve a sample of the creature; gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "it throws you high into the air; gain a Back Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "back_injury"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_amazon_3",
+    "title": "You've heard rumors that a particular secret of the...",
+    "location": "the_amazon",
+    "text": "You've heard rumors that a particular secret of the ancients is visible from the top of a hill. You find that climbing the hillside is not an easy task (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You find a lost treasure. Gain 1 Artifact. From this height, you can survey the land for miles (Observation-1). If you pass, you see drawings that are hundreds of feet across; gain 1 Clue. If you fail, vertigo sets in; lose 1 Sanity."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you see drawings that are hundreds of feet across; gain 1 Clue."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "vertigo sets in; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You take too long climbing and you stumble around in the dark. Gain 1 Leg Injury Condition. You yell for help (Influence). If you pass, the rescue party's flashlights reveal what you tripped over; gain 1 Artifact. If you fail, you return to your camp alone in the cold and dark; lose 2 Health."
+          },
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the rescue party's flashlights reveal what you tripped over; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you return to your camp alone in the cold and dark; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_antarctica_1",
+    "title": "Flying over the area, you see evidence of an ancient...",
+    "location": "antarctica",
+    "text": "Flying over the area, you see evidence of an ancient stone city. You land your plane as close as you can and climb across the ice to reach the strange architecture (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The murals inside the city tell the story of the elder things. Retreat Doom by 1. However, your studies take a toll on your mind (Will). If you fail, you block everything you've learned from your mind; gain an Amnesia Condition."
+          },
+          {
+            "type": "retreat_doom",
+            "amount": 1
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you block everything you've learned from your mind; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You fall through the ice into a stone chamber. Lose 1 Health and gain a Back Injury Condition. You search the dark chamber (Observation-1). If you pass, you find the husk of an elder thing for study; retreat Doom by 1."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "back_injury"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find the husk of an elder thing for study; retreat Doom by 1."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_antarctica_2",
+    "title": "You hear a faint sound echoing up from the caves that...",
+    "location": "antarctica",
+    "text": "You hear a faint sound echoing up from the caves that lead down in to the darkness. You listen carefully to discern the sound's origin (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You identify the sound of shoggoths. You escape, but can barely keep yourself conscious waiting for a rescue (Will). If you pass, you spot something on the cave floor; gain 1 Artifact. If you fail, you pass out and hear the sounds of shoggoths everywhere you go; gain a Hallucinations Condition."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you spot something on the cave floor; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you pass out and hear the sounds of shoggoths everywhere you go; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "\"Tekeli-li! Tekeli-li!\" You recognize it too late. The shoggoths overwhelm you (Strength-1). If you pass, you overcome the threat; gain 2 Clues. If you fail, you escape by jumping off a ledge; gain a Leg Injury Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you overcome the threat; gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you escape by jumping off a ledge; gain a Leg Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "leg_injury"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_antarctica_3",
+    "title": "You find what you believe to be star-shaped burial...",
+    "location": "antarctica",
+    "text": "You find what you believe to be star-shaped burial mounds in the snow. It is physically exhausting, but you try to dig the bodies out of the ice and snow (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "An odd relic lies next to the creature's corpse. Gain 1 Artifact. Then you examine the body (Observation-1). If you fail, you lose 1 Sanity staring too long at this alien horror."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you lose 1 Sanity staring too long at this alien horror."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Chipping through the ice, you slip and injure yourself. Gain a Leg Injury Condition. The rest of the expedition crew is too terrified to approach and you beg them for help (Influence). If you pass, they spot something buried in the ice; gain 1 Artifact. If you fail, lose 2 Health as you crawl back to the camp."
+          },
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they spot something buried in the ice; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Health as you crawl back to the camp."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_heart_of_africa_1",
+    "title": "The whole jungle shakes, and the ground splits beneath...",
+    "location": "the_heart_of_africa",
+    "text": "The whole jungle shakes, and the ground splits beneath your feet. You fall through the crevice into a vast subterranean tunnel (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You follow the tunnel to the ancient city of G'harne. Retreat Doom by 1. If you have read about G'harne, you know to leave quickly (Lore). If you fail, you wake up in the jungle with no memory; gain an Amnesia Condition."
+          },
+          {
+            "type": "retreat_doom",
+            "amount": 1
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you wake up in the jungle with no memory; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "You land painfully on your spine. Lose 1 Health and gain a Back Injury Condition. While you're stuck here, you examine this tunnel (Observation-1). If you pass, you see that it was dug out by a large creature; retreat Doom by 1."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "back_injury"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you see that it was dug out by a large creature; retreat Doom by 1."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_heart_of_africa_2",
+    "title": "The old N'bangu man's map to the gray city of the...",
+    "location": "the_heart_of_africa",
+    "text": "The old N'bangu man's map to the gray city of the white god relies on landmarks that are now overgrown by the dense jungle. You search carefully to recognize anything familiar (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You find the remains of a white ape and study the bones (Lore). If you pass, you find a hastily drawn map that leads you to a hidden treasure; gain 1 Artifact. If you fail, something about this creature make you doubt your own humanity; gain a Hallucinations Condition."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find a hastily drawn map that leads you to a hidden treasure; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "something about this creature make you doubt your own humanity; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Stumbling across a copper mine, you are immediately accused of being a thief or a saboteur. You fight to escape into the jungle (Strength-1). If you pass, you find the gray city; gain 2 Clues. If you fail, gain a Detained Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find the gray city; gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_heart_of_africa_3",
+    "title": "Suddenly, you are surrounded by leopard men!",
+    "location": "the_heart_of_africa",
+    "text": "Suddenly, you are surrounded by leopard men! They quickly capture you, tie you up, and take you back to their village. On the way, you try to free yourself from the ropes that bind you (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "At their village, you spot a rare item sitting on an altar. Gain 1 Artifact. You escape and flee from the village as quickly as possible without watching where you are going (Observation-1). If you fail, you collide with a statue of Tsathoggua; lose 1 Sanity."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you collide with a statue of Tsathoggua; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Your escape attempt does more harm than good. Gain a Leg Injury Condition. You try to convince the leopard men that you are a messenger from their god (Influence). If you pass, they let you go; gain 1 Artifact. If you fail, the leopard men attack you with primitive weapons as you escape; lose 2 Health."
+          },
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they let you go; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the leopard men attack you with primitive weapons as you escape; lose 2 Health."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_himalayas_1",
+    "title": "A horrifying beast suddenly attacks you, almost as if...",
+    "location": "the_himalayas",
+    "text": "A horrifying beast suddenly attacks you, almost as if it had stepped right out of your nightmares. Spawn a Monster on your space and immediately encounter it. If you defeat it, resolve the pass effect. If you do not defeat it, resolve the fail effect.",
+    "effects": [
+      {
+        "type": "retreat_doom",
+        "amount": 1
+      },
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": 0,
+        "needed": 1,
+        "pass": [],
+        "fail": [
+          {
+            "type": "text",
+            "text": "lose 2 Sanity as your uncertainty unhinges your mind."
+          },
+          {
+            "type": "sanity",
+            "amount": -2
+          }
+        ]
+      },
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "discard the Monster and retreat Doom by 1."
+          },
+          {
+            "type": "retreat_doom",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "lose 1 Sanity as you cower in fear."
+          },
+          {
+            "type": "sanity",
+            "amount": -1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_himalayas_2",
+    "title": "You duck into a cave to find shelter from the deadly...",
+    "location": "the_himalayas",
+    "text": "You duck into a cave to find shelter from the deadly snowstorm. Inside, the tunnels twist and turn in the dark, making it almost impossible to navigate (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Inside a well-lit laboratory, you find a human brain inside a cylinder. You can speak to the brain, but it disturbs you to do so (Will). If you pass, it tells you where the mi-go store their equipment; gain 1 Artifact. If you fail, you retreat from all human contact; gain a Paranoia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "it tells you where the mi-go store their equipment; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you retreat from all human contact; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Large, winged, crab-like beings surround you. You're going to have to fight if you want to escape (Strength-1). If you pass, you subdue the mi-go for study; gain 2 Clues. If you fail, the creatures inject you with a glowing serum; gain an Internal Injury Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you subdue the mi-go for study; gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the creatures inject you with a glowing serum; gain an Internal Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "internal_injury"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_himalayas_3",
+    "title": "The gnoph-keh summons a terrible blizzard to destroy...",
+    "location": "the_himalayas",
+    "text": "The gnoph-keh summons a terrible blizzard to destroy you and your expedition. You'll have to survive the storm before you can continue (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You weather the storm in a cave and find a statue of a three-eyed horror, surrounded by odd relics. Gain 1 Artifact. You try to determine the statue's origins (Lore-1). If you fail, you do not recognize Rhan-Tegoth, and the icon remains a mystery that haunts your dreams; lose 2 Sanity."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you do not recognize Rhan-Tegoth, and the icon remains a mystery that haunts your dreams; lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Trapped by the storm, the other members of your expedition panic. You try to calm them (Influence). If you pass, they are willing to continue, and you make a discovery; gain 1 Artifact. if you fail, their refusal fills you with doubts; gain a Paranoia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they are willing to continue, and you make a discovery; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "their refusal fills you with doubts; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_pyramids_1",
+    "title": "Bandits tie your hands and blindfold you.",
+    "location": "the_pyramids",
+    "text": "Bandits tie your hands and blindfold you. They lower you into catacombs deep under the pyramids and leave you there to die. You try to free yourself from your bonds (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You see now that you are in the Temple of the Sphinx. Retreat Doom by 1. You use your knowledge of Egyptology to find an exit (Lore). If you fail, you wake up with no memory of how you escaped; gain an Amnesia Condition."
+          },
+          {
+            "type": "retreat_doom",
+            "amount": 1
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you wake up with no memory of how you escaped; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "While struggling with your bonds, you feel undead hands tearing at you. Lose 1 Health and gain an Internal Injury Condition. You gaze into the darkness (Observation-1). If you pass, you identify mummies with the heads of animals; retreat Doom by 1."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "internal_injury"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you identify mummies with the heads of animals; retreat Doom by 1."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_pyramids_2",
+    "title": "Inside the pyramid, you find a hidden passage leading...",
+    "location": "the_pyramids",
+    "text": "Inside the pyramid, you find a hidden passage leading to an undiscovered throne room. You explore the room for indications of its history (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You see a star map adjacent to a world map on the wall. You use the star map to determine a location on the world map (Lore). If you pass, you discover a hidden cabinet built into the wall; gain 1 Artifact. If you fail, the maps remain a mystery; you lose 2 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you discover a hidden cabinet built into the wall; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the maps remain a mystery; you lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "As you search, Nephren-Ka appears! With a wave of his hand, you are overcome by pain (Strength-1). If you pass, you crawl away; gain 2 Clues. If you fail, lose 1 Health and gain an Internal Injury Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you crawl away; gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health and gain an Internal Injury Condition."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "gain_condition",
+                "id": "internal_injury"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_the_pyramids_3",
+    "title": "You reach for the ancient relic when a small white cat...",
+    "location": "the_pyramids",
+    "text": "You reach for the ancient relic when a small white cat jumps in front of you. To your horror, the cat transforms into a demonic, feline creature and attacks (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The demon shrivels down to a husk, leaving the relic unguarded. Gain 1 Artifact. Examining the item, you may be too distracted to notice the warning hieroglyph (Observation-1). If you fail, you aren't prepared to evade the poisoned barb; lose 1 Health."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you aren't prepared to evade the poisoned barb; lose 1 Health."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The creature leaves you badly wounded. Gain a Leg Injury Condition. You cry out for help (Influence). If you pass, the men who come to find you distract the beast, allowing you to procure the relic; gain 1 Artifact. If you fail, lose 2 Health as you have to walk without receiving medical attention."
+          },
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the men who come to find you distract the beast, allowing you to procure the relic; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Health as you have to walk without receiving medical attention."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_tunguska_1",
+    "title": "A strange color that you've never seen before...",
+    "location": "tunguska",
+    "text": "A strange color that you've never seen before permeates the air. It crawls like a phosphorescent mist along every surface. You can feel its corrosive effect on your skin, and you struggle to escape the area (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "Behind you, the color flies up into space. You try to interpret what you've seen (Lore). If you pass, you're sure the threat has passed; retreat Doom by 1. If you fail, your mind cannot accept what you've seen; gain an Amnesia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you're sure the threat has passed; retreat Doom by 1."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "your mind cannot accept what you've seen; gain an Amnesia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "amnesia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The ground shakes and you are knocked off your feet. Lose 1 Health and gain a Leg Injury Condition. Gray dust fills the air, but you think you see a light (Observation-1). If you pass, you see the color fly up into the air; retreat Doom by 1."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "gain_condition",
+            "id": "leg_injury"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you see the color fly up into the air; retreat Doom by 1."
+              },
+              {
+                "type": "retreat_doom",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_tunguska_2",
+    "title": "A small piece of the stone you are standing on...",
+    "location": "tunguska",
+    "text": "A small piece of the stone you are standing on crumbles away, revealing a hollowed-out chamber beneath you. You look for a safe way to get inside (Observation).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You find a temple with scorched humans remains. You try to resist the urge to run away (Will). If you pass, you uncover a long-buried treasure; gain 1 Artifact. If you fail, the symbols of Cthugha compel you to run away in a mad panic; gain a Paranoia Condition."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you uncover a long-buried treasure; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the symbols of Cthugha compel you to run away in a mad panic; gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The ground beneath your feet collapses, and you scramble to avoid being trapped (Strength-1). If you pass, you find a mural of Cthugha; gain 2 Clues. If you fail, a boulder falls on you; gain a Back Injury Condition."
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find a mural of Cthugha; gain 2 Clues."
+              },
+              {
+                "type": "clues",
+                "amount": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "a boulder falls on you; gain a Back Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "back_injury"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "expedition_tunguska_3",
+    "title": "As you approach the crater described in Rasputin's...",
+    "location": "tunguska",
+    "text": "As you approach the crater described in Rasputin's notes, toxic fumes pour out of a fissure in the earth. You struggle to stay conscious and continue your descent (Strength).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "You find the remains of the monk's camp; gain 1 Artifact. You then search the crater (Observation-1). If you pass, you find traces of the comet; gain 1 Clue. If you fail, the shattered landscape is difficult to look at; lose 1 Sanity."
+          },
+          {
+            "type": "gain_asset",
+            "count": 1,
+            "kind": "artifact"
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you find traces of the comet; gain 1 Clue."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the shattered landscape is difficult to look at; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "The fumes burn your lungs and you cough up blood. Gain an Internal Injury Condition. You try to convince your guides to help (Influence). If you pass, they rescue you and recover Rasputin's possessions; gain 1 Artifact. If you fail, lose 2 Health crawling out on your own."
+          },
+          {
+            "type": "gain_condition",
+            "id": "internal_injury"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they rescue you and recover Rasputin's possessions; gain 1 Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Health crawling out on your own."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

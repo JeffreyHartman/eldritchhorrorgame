@@ -1,224 +1,683 @@
 [
   {
-    "id": "miriam_achterberg",
-    "name": "Dr. Miriam Achterberg",
-    "occupation": "The Archaeologist",
-    "bio": "Miriam spent twenty years digging up the Nile valley and publishing careful, dull papers. Then her team opened a tomb with the seals on the inside. She burned her notes, but she remembers every word.",
-    "quote": "Everything buried was buried for a reason.",
+    "id": "akachi_onyele",
+    "name": "Akachi Onyele",
+    "occupation": "The Shaman",
+    "bio": "As a young girl in Nigeria, Akachi stayed apart from other children, preferring the company of imaginary friends. Her elders feared madness, but the village dibia believed that she had been chosen by the gods. The wise old man taught her how to travel between worlds and how to marshal spirits. Now, she has become a wise leader herself, traveling across Africa and teaching others to protect themselves. She's recently arrived in Cape Town and from here, she will track down the dark forces that threaten humanity.",
+    "quote": "I will journey to the lands beyond. I do not fear them.",
     "health": 5,
     "sanity": 7,
-    "skills": {"lore": 4, "charm": 2, "wits": 3, "brawn": 2, "nerve": 3},
-    "start": "cairo",
-    "funds": 2,
-    "assets": ["field_journal"],
-    "passive_text": "+1 Lore when you seal a rift.",
-    "modifiers": [{"amount": 1, "skill": "lore", "context": "seal"}],
+    "skills": {
+      "lore": 3,
+      "influence": 2,
+      "observation": 2,
+      "strength": 2,
+      "will": 4
+    },
+    "start": "space_15",
+    "clues": 1,
+    "assets": [
+      "mists_of_relah"
+    ],
+    "passive_text": "When you close a Gate, you may move to any space containing a Gate or a Clue.",
     "action": {
-      "text": "Decipher: spend 1 Trophy to gain 2 Clues.",
-      "cost": {"trophies": 1},
+      "text": "Look at the top 2 Gates in the Gate stack; keep 1 on top and put the other on the bottom.",
       "effects": [
-        {"type": "text", "text": "Miriam reads the sealed rift's residue like an inscription."},
-        {"type": "clues", "amount": 2}
+        {
+          "type": "peek_gates"
+        }
       ]
+    },
+    "crippled": {
+      "text": "Akachi has slipped into a coma. Gain all of her possessions. You try to convince the hospital staff to share what she said before losing consciousness (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "The staff repeat her warnings in full; retreat Doom by 1.",
+      "fail_text": "The staff refuse to speak of what she whispered."
+    },
+    "insane": {
+      "text": "Akachi's mind wanders between worlds. Gain all of her possessions. You drink a bitter draught to follow her visions and hear her counsel (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "You hear Akachi's voice across the veil; retreat Doom by 1.",
+      "fail_text": "Nightmarish visions force you back before you can reach her."
     }
   },
   {
-    "id": "tug_mulroney",
-    "name": "Tobias \"Tug\" Mulroney",
-    "occupation": "The Dockhand",
-    "bio": "Tug unloaded freighters on the Brooklyn piers and boxed for cash on Saturdays. One night a crate from Singapore started to knock from the inside. He was the only one who did not run.",
-    "quote": "Hold the lamp steady. I'll do the rest.",
+    "id": "charlie_kane",
+    "name": "Charlie Kane",
+    "occupation": "The Politician",
+    "bio": "When the press asks if Charlie is planning a run for national office, he smiles and says that he's focused on the important issues. The truth is that he would love to launch his campaign, but right now the most important issue is preventing the end of the world without causing a panic. To do this, he's been calling in favors across the country. Most recently, Charlie's stopped in San Francisco to visit Hearst Castle. With the help of his friends and his finances, Charlies believes he can fix this problem without sacrificing a single vote.",
+    "quote": "It can be arranged. It's just a matter of acceptable terms.",
+    "health": 4,
+    "sanity": 8,
+    "skills": {
+      "lore": 2,
+      "influence": 4,
+      "observation": 3,
+      "strength": 2,
+      "will": 2
+    },
+    "start": "san_francisco",
+    "clues": 0,
+    "assets": [
+      "personal_assistant"
+    ],
+    "passive_text": "When you Acquire Assets, any investigator may receive the cards you purchase.",
+    "action": {
+      "text": "Another investigator of your choice may immediately perform 1 additional action.",
+      "target": "any_investigator",
+      "effects": [
+        {
+          "type": "extra_action"
+        }
+      ]
+    },
+    "crippled": {
+      "text": "The nurse hands you Charlie's parcel. Gain all of his possessions. You try to persuade the doctor to let you speak with him (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "Charlie is weak, but he briefs you on every contact he has; retreat Doom by 1.",
+      "fail_text": "The doctor bars the door and allows no visitors."
+    },
+    "insane": {
+      "text": "Charlie hands you all of his belongings in a hotel dining room, offering to sell you Atlantis. You negotiate carefully with him (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "He tells you everything he knows in exchange for a salt shaker; retreat Doom by 1.",
+      "fail_text": "Charlie storms out, promising to have you impeached."
+    }
+  },
+  {
+    "id": "diana_stanley",
+    "name": "Diana Stanley",
+    "occupation": "The Redeemed Cultist",
+    "bio": "When Diana was initiated into the Order of the Silver Twilight, she believed it to be nothing more than a community organization. But as she has learned more of its true nature, she has become convinced that a growing evil threatens the world, and that the Silver Twilight will play a role in that threat. She believes her best chance to prevent this is to use her position to sabotage the organization from within. Carl Sanford, the head of the Order, has recognized her skills and recently sent her to Panama for additional training",
+    "quote": "The Lodge is not as innocent as they pretend. I have learned that nothing is ever as it seems, myself included.",
+    "health": 7,
+    "sanity": 5,
+    "skills": {
+      "lore": 4,
+      "influence": 2,
+      "observation": 3,
+      "strength": 3,
+      "will": 1
+    },
+    "start": "space_7",
+    "clues": 0,
+    "assets": [
+      "arcane_manuscripts",
+      "wither"
+    ],
+    "passive_text": "+1 Lore when casting Spells.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "lore",
+        "context": "cast"
+      }
+    ],
+    "action": {
+      "text": "Blood Rite: lose 1 Health to gain 1 Spell or 1 Clue.",
+      "cost": {
+        "health": 1
+      },
+      "effects": [
+        {
+          "type": "choice",
+          "prompt": "What do you draw from the rite?",
+          "options": [
+            {
+              "label": "Gain 1 Spell",
+              "effects": [
+                {
+                  "type": "gain_asset",
+                  "kind": "spell"
+                }
+              ]
+            },
+            {
+              "label": "Gain 1 Clue",
+              "effects": [
+                {
+                  "type": "clues",
+                  "amount": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Diana lies hidden in a safe house. Gain all of her possessions. You search her coded lodge notebooks (Lore).",
+      "skill": "lore",
+      "mod": 0,
+      "pass_text": "You decipher the Lodge cipher; retreat Doom by 1.",
+      "fail_text": "The pages are too bloodstained to read."
+    },
+    "insane": {
+      "text": "Diana chants in a locked room, terrified the Lodge has found her. Gain all of her possessions. You try to calm her (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "She recognizes you and reveals the cult's next step; retreat Doom by 1.",
+      "fail_text": "She mistakes you for a Lodge assassin and says nothing."
+    }
+  },
+  {
+    "id": "jacqueline_fine",
+    "name": "Jacqueline Fine",
+    "occupation": "The Psychic",
+    "bio": "At first, Jacqueline's dreams of fire and destruction seemed like a curse. Monsters ran rampant through city streets and some greater darkness loomed on the horizon. However, she has recently learned to control her visions and observe events in detail. Yesterday, she traveled from Boston to Minneapolis to explore an abandoned warehouse she'd seen in her dreams. Inside, she found evidence of a terrible cult that had practiced unspeakable rituals there. Jacqueline hopes to use what she's learned to prevent the terrible future that haunts her sleep.",
+    "quote": "The visions are a warning. The future can be rewritten.",
+    "health": 4,
+    "sanity": 8,
+    "skills": {
+      "lore": 4,
+      "influence": 2,
+      "observation": 3,
+      "strength": 1,
+      "will": 3
+    },
+    "start": "space_5",
+    "clues": 1,
+    "assets": [
+      "flesh_ward"
+    ],
+    "passive_text": "You may reroll 1 die when resolving a Lore test.",
+    "rerolls": [
+      {
+        "text": "Reroll 1 die on a Lore test.",
+        "skill": "lore",
+        "once_per_round": true
+      }
+    ],
+    "action": {
+      "text": "Premonition: lose 1 Sanity to spawn 1 Clue or gain 1 Clue.",
+      "cost": {
+        "sanity": 1
+      },
+      "effects": [
+        {
+          "type": "clues",
+          "amount": 1
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Jacqueline is feverish in a quiet clinic. Gain all of her possessions. You piece together her sketches (Observation).",
+      "skill": "observation",
+      "mod": 0,
+      "pass_text": "Her drawings form a map of the threat; retreat Doom by 1.",
+      "fail_text": "The sketches seem only fragments of a nightmare."
+    },
+    "insane": {
+      "text": "Jacqueline speaks in a voice that is not her own. Gain all of her possessions. You listen for the pattern in her prophecies (Lore).",
+      "skill": "lore",
+      "mod": 0,
+      "pass_text": "Her prophecy names the hour and the place; retreat Doom by 1.",
+      "fail_text": "Her words dissolve into weeping."
+    }
+  },
+  {
+    "id": "jim_culver",
+    "name": "Jim Culver",
+    "occupation": "The Musician",
+    "bio": "Old Jim Culver's music gives sweet comfort to the soul, and it doesn't matter if that soul belongs to the living or the dead. Folks in their graves, they love their little chats with Jim. It used to bother him, but now he's happy for the company. Lately, some departed souls in San Antonio have been all riled up about something. They're downright terrified. And anything that scares the dead deserves old Jim's undivided attention.",
+    "quote": "No, not quiet at all. Dead folks get downright rambunctious when I play my horn.",
+    "health": 7,
+    "sanity": 5,
+    "skills": {
+      "lore": 3,
+      "influence": 3,
+      "observation": 2,
+      "strength": 2,
+      "will": 3
+    },
+    "start": "space_6",
+    "clues": 1,
+    "assets": [
+      "shrivelling"
+    ],
+    "passive_text": "Investigators on your space roll 1 additional die when resolving tests during Combat Encounters.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "context": "combat",
+        "additional": true
+      }
+    ],
+    "action": {
+      "text": "Each investigator on your space recovers 1 Sanity.",
+      "effects": [
+        {
+          "type": "text",
+          "text": "Jim plays a low, warm melody on his horn."
+        },
+        {
+          "type": "each_investigator",
+          "here": true,
+          "effects": [
+            {
+              "type": "sanity",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Jim sits on a hospital cot with his trumpet case beside him. Gain all of his possessions. You listen to the last tune he hums (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "The melody carries a message from beyond; retreat Doom by 1.",
+      "fail_text": "Jim drifts to sleep before finishing the song."
+    },
+    "insane": {
+      "text": "Jim is playing to an empty graveyard at midnight. Gain all of his possessions. You talk with him between songs (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "He tells you what the ghosts told him; retreat Doom by 1.",
+      "fail_text": "He keeps playing for an audience only he can see."
+    }
+  },
+  {
+    "id": "leo_anderson",
+    "name": "Leo Anderson",
+    "occupation": "The Expedition Leader",
+    "bio": "Leo Anderson has spent his whole life getting into the deadliest and most obscure corners of the globe. Along the way, he's lost good people. Fever takes some; others are claimed by wild beasts. After a recent, disastrous venture in the Yucatan, Leo barely made it back to Buenos Aires alive. He's sick of burying the people who trusted him. But the job's not done yet. The world is in danger, and crying in his drink won't fix that. He's picked up a little hired help here, and in the morning, he'll head back out into the wild.",
+    "quote": "Keep moving. You can die on your own time.",
+    "health": 6,
+    "sanity": 6,
+    "skills": {
+      "lore": 2,
+      "influence": 3,
+      "observation": 3,
+      "strength": 3,
+      "will": 2
+    },
+    "start": "buenos_aires",
+    "clues": 0,
+    "tickets": [
+      "ship"
+    ],
+    "assets": [
+      "hired_muscle"
+    ],
+    "passive_text": "Roll 1 additional die on tests while on a Wilderness space.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "where": {
+          "terrain": "wilderness"
+        },
+        "additional": true
+      }
+    ],
+    "action": {
+      "text": "Recruit: on a City space, test Influence. If you pass, gain 1 Ally Asset.",
+      "requires": {
+        "at": {
+          "terrain": "city"
+        }
+      },
+      "effects": [
+        {
+          "type": "test",
+          "skill": "influence",
+          "pass": [
+            {
+              "type": "gain_asset",
+              "kind": "ally",
+              "source": "choice"
+            }
+          ]
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Leo refuses to leave his map table despite his wounds. Gain all of his possessions. You review his expedition logs (Observation).",
+      "skill": "observation",
+      "mod": 0,
+      "pass_text": "His logs pinpoint the site; retreat Doom by 1.",
+      "fail_text": "Water damage has blurred the coordinates."
+    },
+    "insane": {
+      "text": "Leo is calling roll for an expedition whose members died years ago. Gain all of his possessions. You steady him like a soldier (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "He salutes and hands you his final report; retreat Doom by 1.",
+      "fail_text": "He wanders into the crowd calling for his guides."
+    }
+  },
+  {
+    "id": "lily_chen",
+    "name": "Lily Chen",
+    "occupation": "The Martial Artist",
+    "bio": "Lily speaks rarely and when she does, her words are measured and wise. After a lifetime of disciplined training, every gesture is graceful, uncluttered by hesitation. When she was an infant, an obscure sect of monks believed that she was born for a special purpose, to face a great evil. Now, the monks believe that the great evil is at hand, and they have brought Lily to Shanghai to begin fulfilling her destiny.",
+    "quote": "I have been preparing to confront this evil for my entire life. My focus must be absolute.",
+    "health": 6,
+    "sanity": 6,
+    "skills": {
+      "lore": 2,
+      "influence": 2,
+      "observation": 2,
+      "strength": 4,
+      "will": 3
+    },
+    "start": "shanghai",
+    "clues": 0,
+    "assets": [
+      "protective_amulet",
+      "lucky_rabbits_foot"
+    ],
+    "passive_text": "When you improve a skill, immediately improve that skill again.",
+    "perks": {
+      "double_improve": 1
+    },
+    "action": {
+      "text": "Spend 1 Health or Sanity to recover 1 Health or Sanity.",
+      "effects": [
+        {
+          "type": "swap_health_sanity"
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Lily meditates despite her broken bones. Gain all of her possessions. You join her breathing exercise (Strength).",
+      "skill": "strength",
+      "mod": 0,
+      "pass_text": "She passes on the monastery's secret teaching; retreat Doom by 1.",
+      "fail_text": "Her strength fails before she can speak."
+    },
+    "insane": {
+      "text": "Lily strikes endlessly at shadows in a courtyard. Gain all of her possessions. You match her forms to reach her mind (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "She bows and tells you what she saw; retreat Doom by 1.",
+      "fail_text": "She leaps over the wall and vanishes into the night."
+    }
+  },
+  {
+    "id": "lola_hayes",
+    "name": "Lola Hayes",
+    "occupation": "The Actress",
+    "bio": "Around the world, Lola has performed dramatic roles for sold-out houses. However, after being cast in the controversial play, The King in Yellow, Lola needed to \"take some time\" to recover for her \"exhaustion.\" Now that she has checked herself out of the asylum, she's ready for her big comeback. But this time she'll play a different role in the fight against the horrors that threaten this world. She's started by traveling to Tokyo to track down the other surviving cast member of her previous theatrical endeavor.",
+    "quote": "I've played so many roles. Madness is to be expected.",
+    "health": 5,
+    "sanity": 7,
+    "skills": {
+      "lore": 2,
+      "influence": 4,
+      "observation": 2,
+      "strength": 2,
+      "will": 3
+    },
+    "start": "tokyo",
+    "clues": 0,
+    "assets": [
+      "derringer_18"
+    ],
+    "passive_text": "Once per round, you may reroll 1 die on any test.",
+    "rerolls": [
+      {
+        "text": "Lola's poise: reroll 1 die.",
+        "context": "any",
+        "once_per_round": true
+      }
+    ],
+    "action": {
+      "text": "Rehearsal: improve 1 skill of your choice.",
+      "effects": [
+        {
+          "type": "improve_skill",
+          "skill": "choose"
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Lola nods at the equipment strewn across her hotel room. Gain all of her possessions. You try to persuade her to visit a hospital (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "She sighs with relief and tells you of the horrors she encountered; retreat Doom by 1.",
+      "fail_text": "The day after Lola leaves the city, she succumbs to her wounds."
+    },
+    "insane": {
+      "text": "The trail of Lola's belongings leads into a derelict theater. Gain all of her possessions. You try to direct her performance to reveal what she knows (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "She tells you of the Tattered King; retreat Doom by 1.",
+      "fail_text": "Lola's dialogue degenerates into gibberish."
+    }
+  },
+  {
+    "id": "mark_harrigan",
+    "name": "Mark Harrigan",
+    "occupation": "The Soldier",
+    "bio": "During the war, Mark witnessed horrors he could not explain, and he wrote of what he saw in letters to his beloved wife, Sophie. When Mark returned home, he discovered that Sophie was no longer human. One of the beasts that Mark had seen overseas had taken over her body, killing her in the process. Afterward, Mark's thirst for vengeance lead him to Helsinki, where some of these creatures had posed as German soldiers during the Great War.",
+    "quote": "I'm walking out that door, and I'm taking this book. Anyone who wants to stop me is welcome to try.",
     "health": 8,
     "sanity": 4,
-    "skills": {"lore": 1, "charm": 2, "wits": 2, "brawn": 5, "nerve": 3},
-    "start": "new_york",
-    "funds": 1,
-    "assets": ["baling_hook"],
-    "passive_text": "+1 Nerve against horror. He has seen worse on the docks.",
-    "modifiers": [{"amount": 1, "skill": "nerve", "context": "horror"}],
+    "skills": {
+      "lore": 1,
+      "influence": 2,
+      "observation": 2,
+      "strength": 5,
+      "will": 3
+    },
+    "start": "space_14",
+    "clues": 0,
+    "assets": [
+      "kerosene",
+      "revolver_38"
+    ],
+    "passive_text": "Cannot become Delayed while in Combat; +1 Strength in Combat.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "strength",
+        "context": "combat",
+        "additional": true
+      }
+    ],
     "action": {
-      "text": "Rough first aid: an investigator here recovers 2 Health.",
-      "target": "investigator_here",
-      "effects": [{"type": "health", "amount": 2}]
+      "text": "Charge: move 1 space toward a space containing a Monster.",
+      "effects": [
+        {
+          "type": "move",
+          "to": "choose_adjacent"
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Mark is bandaged in a field hospital. Gain all of his possessions. You promise to finish his fight (Strength).",
+      "skill": "strength",
+      "mod": 0,
+      "pass_text": "He grips your arm and shares his tactical notes; retreat Doom by 1.",
+      "fail_text": "He turns his face to the wall in silence."
+    },
+    "insane": {
+      "text": "Mark is firing at the walls of a burned hotel room. Gain all of his possessions. You call him back to the present (Will).",
+      "skill": "will",
+      "mod": 0,
+      "pass_text": "He lowers his weapon and tells you what broke through; retreat Doom by 1.",
+      "fail_text": "He flees into the smoke, still calling Sophie's name."
     }
   },
   {
-    "id": "celestine_boudreaux",
-    "name": "Celestine Boudreaux",
-    "occupation": "The Singer",
-    "bio": "Celestine sings in a Royal Street club where the crowd is half gangsters and half society. Her grandmother taught her songs that keep the bayou quiet. Lately the bayou has started singing back.",
-    "quote": "Every room has a mood, honey. I can change it.",
+    "id": "norman_withers",
+    "name": "Norman Withers",
+    "occupation": "The Astronomer",
+    "bio": "The scientific community ridiculed Norman for his claim that six stars disappeared from the sky. After exhausting every plausible astronomical explanation for answers, he took a position at Miskatonic University and began exploring more improbable possibilities in the restricted section of their library. While reading an ancient text of dark prophecies, Norman found an exact description of the phenomenon he'd observed. If the tome is to be believed, a terrible incursion into our world is imminent.",
+    "quote": "Let them call me a crackpot! Something is happening to the stars, and I am not imagining it.",
     "health": 5,
     "sanity": 7,
-    "skills": {"lore": 2, "charm": 5, "wits": 3, "brawn": 1, "nerve": 3},
-    "start": "new_orleans",
-    "funds": 3,
-    "assets": ["rabbits_foot"],
-    "passive_text": "Gain 1 extra Funds when you raise funds.",
-    "perks": {"earn_bonus": 1},
+    "skills": {
+      "lore": 3,
+      "influence": 1,
+      "observation": 3,
+      "strength": 2,
+      "will": 4
+    },
+    "start": "arkham",
+    "clues": 1,
+    "assets": [
+      "feed_the_mind"
+    ],
+    "passive_text": "Roll 1 additional die when resolving tests on a space with a Gate.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "where": {
+          "gate": true
+        },
+        "additional": true
+      }
+    ],
     "action": {
-      "text": "A song for the weary: every investigator here recovers 1 Sanity.",
+      "text": "Read the Stars: spend 1 Clue on a space with a Gate to close that Gate.",
+      "cost": {
+        "clues": 1
+      },
+      "requires": {
+        "at": {
+          "gate": true
+        }
+      },
       "effects": [
-        {"type": "text", "text": "Celestine sings low, and for a moment the dark feels far away."},
-        {"type": "each_investigator", "here": true, "effects": [{"type": "sanity", "amount": 1}]}
+        {
+          "type": "close_gate"
+        }
       ]
+    },
+    "crippled": {
+      "text": "Norman lies in an observatory dome. Gain all of his possessions. You check his star charts (Lore).",
+      "skill": "lore",
+      "mod": 0,
+      "pass_text": "His equations predict the next alignment; retreat Doom by 1.",
+      "fail_text": "The lenses are shattered and the charts incomplete."
+    },
+    "insane": {
+      "text": "Norman stares directly at the sky, muttering numbers. Gain all of his possessions. You copy down his calculations (Observation).",
+      "skill": "observation",
+      "mod": 0,
+      "pass_text": "The numbers form a true ephemeris of the threat; retreat Doom by 1.",
+      "fail_text": "He erases the chalkboard before you can finish."
     }
   },
   {
-    "id": "hollis_grange",
-    "name": "Hollis Grange",
-    "occupation": "The Private Eye",
-    "bio": "Hollis left the Chicago police when he found out who paid his captain. Now he finds missing people for a fee. The last six he found had all been somewhere they should not have been able to reach.",
-    "quote": "People lie. Footprints don't.",
-    "health": 6,
-    "sanity": 6,
-    "skills": {"lore": 2, "charm": 2, "wits": 5, "brawn": 3, "nerve": 2},
-    "start": "chicago",
-    "funds": 2,
-    "assets": ["revolver"],
-    "passive_text": "Gain 1 extra Clue when you investigate.",
-    "perks": {"investigate_bonus": 1},
-    "action": {
-      "text": "Work the paper trail: test Wits (-1). If you pass, gain 1 Clue.",
-      "effects": [
-        {"type": "test", "skill": "wits", "mod": -1,
-         "pass": [{"type": "text", "text": "A ledger, a forged signature, a name."}, {"type": "clues", "amount": 1}],
-         "fail": [{"type": "text", "text": "The trail ends in a burned file room."}]}
-      ]
-    }
-  },
-  {
-    "id": "agnieszka_wolna",
-    "name": "Sister Agnieszka Wolna",
-    "occupation": "The Nun",
-    "bio": "Agnieszka nursed soldiers through the Great War and kept her faith. In Prague she was asked to sit with a dying alchemist. What he told her before the end sent her across the world.",
-    "quote": "Fear is a door. I choose not to open it.",
-    "health": 5,
-    "sanity": 8,
-    "skills": {"lore": 3, "charm": 3, "wits": 2, "brawn": 1, "nerve": 5},
-    "start": "prague",
-    "funds": 1,
-    "assets": ["blessed_rosary"],
-    "passive_text": "Recover 1 extra Health and Sanity when you rest.",
-    "perks": {"rest_bonus": 1},
-    "action": {
-      "text": "Absolution: lose 1 Sanity. An investigator here discards every Madness and Curse condition.",
-      "cost": {"sanity": 1},
-      "target": "investigator_here",
-      "effects": [
-        {"type": "remove_condition", "trait": "madness"},
-        {"type": "remove_condition", "trait": "curse"}
-      ]
-    }
-  },
-  {
-    "id": "rashid_haddad",
-    "name": "Rashid Haddad",
-    "occupation": "The Antiquarian",
-    "bio": "Rashid sells rare books and rarer artifacts from a shop near the Tigris. He knows every buyer and every forger from Istanbul to Bombay. Lately his best customers have been buying up one book in particular.",
-    "quote": "Everything has a price. Some prices you pay later.",
-    "health": 6,
-    "sanity": 6,
-    "skills": {"lore": 3, "charm": 4, "wits": 3, "brawn": 2, "nerve": 2},
-    "start": "baghdad",
-    "funds": 4,
-    "assets": [],
-    "passive_text": "Market assets cost you 1 less.",
-    "perks": {"market_discount": 1},
-    "action": {
-      "text": "Haggle: test Charm (-1). If you pass, take one asset from the market for free.",
-      "effects": [
-        {"type": "test", "skill": "charm", "mod": -1,
-         "pass": [{"type": "gain_asset", "source": "market"}],
-         "fail": [{"type": "text", "text": "The merchant laughs and names a higher price."}]}
-      ]
-    }
-  },
-  {
-    "id": "ingrid_solveig",
-    "name": "Ingrid Solveig",
-    "occupation": "The Aviator",
-    "bio": "Ingrid flew mail over the Arctic in a plane held together with wire and prayer. She saw lights on the ice cap that moved against the wind. She has been chasing them ever since.",
-    "quote": "Everything looks smaller from ten thousand feet. Almost everything.",
-    "health": 6,
+    "id": "silas_marsh",
+    "name": "Silas Marsh",
+    "occupation": "The Sailor",
+    "bio": "Even as a child in Innsmouth, Silas had a special connection to the sea. He's an able and well-reasoned man on land, but on the ocean he possesses a singular strength and wit. It's earned him a sterling reputation in every port across the globe, particularly in Sydney, where Silas set ashore last night. But this morning, the smell of the briny air carries dread as well as joy. There is something in his past, something in Innsmouth, that he knows will some day catch up to him.",
+    "quote": "Leave your fears on the docks, lads. I'll not carry that cargo. The wind is up! Full sail!",
+    "health": 7,
     "sanity": 5,
-    "skills": {"lore": 2, "charm": 2, "wits": 3, "brawn": 3, "nerve": 4},
-    "start": "reykjavik",
-    "funds": 3,
-    "assets": [],
-    "passive_text": "Your first rail or sea step each Travel is free.",
-    "perks": {"free_travel_steps": 1},
+    "skills": {
+      "lore": 1,
+      "influence": 3,
+      "observation": 3,
+      "strength": 3,
+      "will": 3
+    },
+    "start": "sydney",
+    "clues": 0,
+    "tickets": [
+      "ship"
+    ],
+    "assets": [
+      "fishing_net"
+    ],
+    "passive_text": "If you are on a Sea space, investigators on your space roll 1 additional die when resolving tests.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "where": {
+          "terrain": "sea"
+        },
+        "additional": true
+      }
+    ],
     "action": {
-      "text": "Fly: pay 1 Funds to move to any location up to 3 steps away.",
-      "cost": {"funds": 1},
-      "effects": [{"type": "move", "to": "choose_within", "range": 3}]
+      "text": "Move 1 space along a Ship path, then perform 1 additional action.",
+      "effects": [
+        {
+          "type": "move",
+          "to": "ship_path"
+        },
+        {
+          "type": "extra_action"
+        }
+      ]
+    },
+    "crippled": {
+      "text": "Silas had hidden his belongings in the prearranged cache, but the man himself is nowhere to be found. Gain all of his possessions. You search local hospitals filled with the unidentified dead or dying (Observation).",
+      "skill": "observation",
+      "mod": 0,
+      "pass_text": "You find Silas alive but incapacitated, and arrange a private nurse to watch over him; retreat Doom by 1.",
+      "fail_text": "Silas dies alone and unrecognized."
+    },
+    "insane": {
+      "text": "You find Silas and gain all of his possessions. He tells you, 'I'm a Marsh. It's in my blood. Not long now, I'll join my family, down in the deep.' You ask a doctor to watch him overnight (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "The sailor shares all he's learned before dying peacefully in his sleep; retreat Doom by 1.",
+      "fail_text": "Silas surrenders his humanity and disappears into the sea."
     }
   },
   {
-    "id": "kenji_mori",
-    "name": "Dr. Kenji Mori",
-    "occupation": "The Surgeon",
-    "bio": "Kenji worked for three days without sleep after the Great Kanto earthquake. Among the wounded he found a fisherman with gills. The man died in surgery. Kenji kept the X-rays.",
-    "quote": "Hold still. This will hurt, and then it will help.",
+    "id": "trish_scarborough",
+    "name": "Trish Scarborough",
+    "occupation": "The Spy",
+    "bio": "Everyone expected great things from Trish when she was young. In school, she excelled in athletics and the sciences, but she surprised everyone after graduation by settling into a humble position at a commercial code company. What almost no one knows is that this particular company is a front for the Bureau's code-breaking agency, the Black Chamber. Now she finds herself in the city of Krasnoyarsk meeting another agent who has important information about an impending threat from a world beyond our own.",
+    "quote": "We lie all the time. But the truth is in there. You just have to know how to decode people.",
     "health": 6,
     "sanity": 6,
-    "skills": {"lore": 3, "charm": 3, "wits": 3, "brawn": 2, "nerve": 3},
-    "start": "yokohama",
-    "funds": 2,
-    "assets": ["doctors_bag"],
-    "passive_text": "+1 Wits when you investigate. A clinician notices details.",
-    "modifiers": [{"amount": 1, "skill": "wits", "context": "investigate"}],
+    "skills": {
+      "lore": 2,
+      "influence": 3,
+      "observation": 4,
+      "strength": 3,
+      "will": 1
+    },
+    "start": "space_16",
+    "clues": 1,
+    "tickets": [
+      "train"
+    ],
+    "assets": [
+      "automatic_45"
+    ],
+    "passive_text": "+1 Observation on all tests.",
+    "modifiers": [
+      {
+        "amount": 1,
+        "skill": "observation",
+        "additional": true
+      }
+    ],
     "action": {
-      "text": "Surgery: an investigator here recovers 3 Health and discards every Injury condition.",
-      "target": "investigator_here",
+      "text": "Dead Drop: gain 1 Clue.",
       "effects": [
-        {"type": "health", "amount": 3},
-        {"type": "remove_condition", "trait": "injury"}
+        {
+          "type": "clues",
+          "amount": 1
+        }
       ]
-    }
-  },
-  {
-    "id": "ada_penhallow",
-    "name": "Ada Penhallow",
-    "occupation": "The Occultist",
-    "bio": "Ada is the last of an old Providence family that her neighbors avoid. She inherited the house, the library, and the debts her ancestors made with things that are not people. She intends to pay them off on her own terms.",
-    "quote": "My great-grandfather opened this door. I will be the one to close it.",
-    "health": 4,
-    "sanity": 6,
-    "skills": {"lore": 5, "charm": 2, "wits": 3, "brawn": 1, "nerve": 3},
-    "start": "providence",
-    "funds": 1,
-    "assets": ["withering_word"],
-    "passive_text": "+1 Lore when you cast a spell.",
-    "modifiers": [{"amount": 1, "skill": "lore", "context": "cast"}],
-    "action": {
-      "text": "Commune: lose 1 Sanity to gain 1 Spell.",
-      "cost": {"sanity": 1},
-      "effects": [{"type": "gain_asset", "kind": "spell"}]
-    }
-  },
-  {
-    "id": "elijah_brandt",
-    "name": "Elijah Brandt",
-    "occupation": "The Reporter",
-    "bio": "Elijah writes for a Chicago daily from a desk in Paris. His editor wants stories about jazz and expatriates. Elijah keeps filing stories about disappearances, and his editor keeps spiking them.",
-    "quote": "If the people knew, they'd fight. So I'm going to tell them.",
-    "health": 6,
-    "sanity": 5,
-    "skills": {"lore": 2, "charm": 3, "wits": 4, "brawn": 2, "nerve": 3},
-    "start": "paris",
-    "funds": 2,
-    "assets": ["folding_camera"],
-    "passive_text": "+1 Charm in any city.",
-    "modifiers": [{"amount": 1, "skill": "charm", "where": {"terrain": "city"}}],
-    "action": {
-      "text": "Run the story: in a city, test Charm and get 2 successes to make Doom retreat by 1.",
-      "requires": {"at": {"terrain": "city"}},
-      "effects": [
-        {"type": "test", "skill": "charm", "needed": 2,
-         "pass": [{"type": "text", "text": "The story runs on the front page. People lock their doors, and some of them start asking questions."}, {"type": "retreat_doom", "amount": 1}],
-         "fail": [{"type": "text", "text": "The editor spikes the story again."}]}
-      ]
+    },
+    "crippled": {
+      "text": "Trish left her briefcase in a station locker. Gain all of her possessions. You crack her one-time pad (Observation).",
+      "skill": "observation",
+      "mod": 0,
+      "pass_text": "Her decoded cables expose the enemy network; retreat Doom by 1.",
+      "fail_text": "Without the key phrase, the cipher is unbreakable."
+    },
+    "insane": {
+      "text": "Trish is burning codebook after codebook in a furnace. Gain all of her possessions. You convince her you know the recognition signal (Influence).",
+      "skill": "influence",
+      "mod": 0,
+      "pass_text": "She hands you the master dossier; retreat Doom by 1.",
+      "fail_text": "She swallows the last key page and says nothing."
     }
   }
 ]

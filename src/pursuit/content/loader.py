@@ -19,35 +19,42 @@ import pursuit.effects.library  # noqa: F401  (registers every effect type)
 from pursuit.content.defs import (
     ASSET_KINDS,
     BLOCKABLE_ACTIONS,
-    CONDITION_TRIGGERS,
-    MARKET_KINDS,
+    EXPEDITION_LOCATIONS,
+    GATE_COLORS,
+    LOCATION_DECKS,
     MONSTER_FORMS,
+    MYSTERY_KINDS,
+    MYTHOS_COLORS,
+    MYTHOS_ICONS,
+    MYTHOS_TRAITS,
+    OTHER_WORLD_TYPES,
     REGIONS,
-    RITE_KINDS,
-    RITE_RESOURCES,
+    RESERVE_KINDS,
     ROUTE_KINDS,
     SKILLS,
     TERRAINS,
+    TICKET_KINDS,
     ActionAbility,
     AssetDef,
     AwakeningDef,
-    Boost,
     ConditionDef,
-    Cure,
+    DefeatedEncounterDef,
     DifficultyDef,
     EncounterDef,
+    EncounterSection,
     InvestigatorDef,
     LocationDef,
     MonsterDef,
+    MysteryDef,
+    MythosDef,
     OldOneDef,
-    Outcome,
-    PortentDef,
-    PortentTier,
-    RiteDef,
+    ReferenceRow,
+    RerollAbility,
     RouteDef,
     RulesDef,
+    StageComp,
     read_action,
-    read_cost,
+    read_backs,
     read_location_filter,
     read_modifiers,
     read_perks,
@@ -56,7 +63,8 @@ from pursuit.content.reader import ContentError, Reader
 from pursuit.effects.base import Effect, read_effects, walk
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-SPECIAL_DECKS = ("rift",)
+BASE_ENCOUNTER_DECKS = (*LOCATION_DECKS, "general", "expedition")
+OTHER_WORLD_DECKS = tuple(f"other_world_{name}" for name in OTHER_WORLD_TYPES)
 
 
 @dataclass(frozen=True)
@@ -70,13 +78,10 @@ class Content:
     monsters: dict[str, MonsterDef]
     assets: dict[str, AssetDef]
     conditions: dict[str, ConditionDef]
-    portents: dict[str, PortentDef]
+    mythos: dict[str, MythosDef]
     encounters: dict[str, EncounterDef]
     decks: dict[str, tuple[str, ...]]
-
-    def deck_for_location(self, loc_id: str) -> str:
-        loc = self.locations[loc_id]
-        return loc.id if loc.hub else loc.terrain
+    other_worlds: tuple[str, ...] = ()
 
 
 def data_dir() -> Path:
@@ -133,21 +138,23 @@ class _Loader:
     def load(self) -> Content:
         rules = self.rules()
         locations, routes = self.map()
+        old_ones = _index(self.old_ones(), lambda d: d.id, "old one")
         content = Content(
             rules=rules,
             locations=locations,
             routes=routes,
             adjacency=_adjacency(locations, routes),
             investigators=_index(self.investigators(), lambda d: d.id, "investigator"),
-            old_ones=_index(self.old_ones(), lambda d: d.id, "old one"),
+            old_ones=old_ones,
             monsters=_index(self.monsters(), lambda d: d.id, "monster"),
             assets=_index(self.assets(), lambda d: d.id, "asset"),
             conditions=_index(self.conditions(), lambda d: d.id, "condition"),
-            portents=_index(self.portents(), lambda d: d.id, "portent"),
+            mythos=_index(self.mythos(), lambda d: d.id, "mythos"),
             encounters={},
             decks={},
+            other_worlds=OTHER_WORLD_TYPES,
         )
-        encounters, decks = self.encounters(locations)
+        encounters, decks = self.encounters(old_ones)
         content.encounters.update(encounters)
         content.decks.update(decks)
         _Checker(content).check()
@@ -164,23 +171,31 @@ class _Loader:
                 label=d.get_str("label"),
                 text=d.get_str("text"),
                 doom_mod=d.get_int("doom_mod", 0),
-                funds_mod=d.get_int("funds_mod", 0),
-                start_rifts_mod=d.get_int("start_rifts_mod", 0),
+                start_gates_mod=d.get_int("start_gates_mod", 0),
             )
             d.done()
             diffs[diff.id] = diff
+        ref = {}
+        for rr in r.objects("reference"):
+            row = ReferenceRow(
+                players=rr.get_int("players"),
+                spawn_gates=rr.get_int("spawn_gates"),
+                spawn_clues=rr.get_int("spawn_clues"),
+                monster_surge=rr.get_int("monster_surge"),
+            )
+            rr.done()
+            ref[row.players] = row
         rules = RulesDef(
             actions_per_turn=r.get_int("actions_per_turn"),
             success_on=r.get_int("success_on"),
-            market_size=r.get_int("market_size"),
-            max_paid_steps=r.get_int("max_paid_steps"),
-            step_cost=r.get_int("step_cost"),
-            start_rifts=r.get_int("start_rifts"),
+            reserve_size=r.get_int("reserve_size"),
+            max_tickets=r.get_int("max_tickets"),
+            start_gates=r.get_int("start_gates"),
             start_clues=r.get_int("start_clues"),
-            night_doom=r.get_int("night_doom"),
             max_improvement=r.get_int("max_improvement"),
             max_investigators=r.get_int("max_investigators"),
             defeat_doom=r.get_int("defeat_doom"),
+            reference=ref,
             difficulties=diffs,
         )
         r.done()
@@ -188,6 +203,9 @@ class _Loader:
             raise ContentError("rules.json: difficulties must include 'normal'")
         if not 2 <= rules.success_on <= 6:
             raise ContentError("rules.json: success_on must be 2 to 6")
+        for p in range(1, rules.max_investigators + 1):
+            if p not in ref:
+                raise ContentError(f"rules.json: reference missing entry for {p} player(s)")
         return rules
 
     def map(self) -> tuple[dict[str, LocationDef], tuple[RouteDef, ...]]:
@@ -203,8 +221,8 @@ class _Loader:
                 code=lr.get_str("code"),
                 terrain=lr.get_enum("terrain", TERRAINS),
                 region=lr.get_enum("region", REGIONS),
-                hub=lr.get_bool("hub", False),
-                rift_site=lr.get_bool("rift_site", False),
+                gate_color=lr.get_enum("gate_color", GATE_COLORS, None),
+                expedition=lr.get_bool("expedition", False),
                 text=lr.get_str("text"),
                 pos=(pos[0], pos[1]),
             )
@@ -234,6 +252,17 @@ class _Loader:
             seen.add(pair)
         return locations, tuple(routes)
 
+    def _defeated_encounter(self, r: Reader) -> DefeatedEncounterDef:
+        e = DefeatedEncounterDef(
+            text=r.get_str("text"),
+            skill=r.get_enum("skill", SKILLS),
+            mod=r.get_int("mod", 0),
+            pass_text=r.get_str("pass_text"),
+            fail_text=r.get_str("fail_text"),
+        )
+        r.done()
+        return e
+
     def investigators(self) -> list[InvestigatorDef]:
         out = []
         for r in _list_of_objects(self.file("investigators.json"), "investigators.json"):
@@ -250,14 +279,17 @@ class _Loader:
                 sanity=r.get_int("sanity"),
                 skills=skills,
                 start=r.get_str("start"),
-                funds=r.get_int("funds", 0),
                 clues=r.get_int("clues", 0),
+                tickets=r.get_str_tuple("tickets", TICKET_KINDS),
                 assets=r.get_str_tuple("assets"),
                 conditions=r.get_str_tuple("conditions"),
                 passive_text=r.get_str("passive_text", ""),
                 perks=read_perks(r, "perks"),
                 modifiers=read_modifiers(r, "modifiers"),
+                rerolls=tuple(RerollAbility.parse(rr) for rr in r.objects("rerolls", [])),
                 action=read_action(r, "action"),
+                crippled=self._defeated_encounter(r.get_obj("crippled")),
+                insane=self._defeated_encounter(r.get_obj("insane")),
             )
             r.done()
             out.append(inv)
@@ -276,13 +308,16 @@ class _Loader:
                 horror_mod=r.get_int("horror_mod", 0),
                 damage=r.get_int("damage"),
                 fight_mod=r.get_int("fight_mod", 0),
-                evade_mod=r.get_int("evade_mod", 0),
                 toughness=r.get_int("toughness"),
                 toughness_per_investigator=r.get_int("toughness_per_investigator", 0),
                 roams=r.get_bool("roams", False),
                 epic=r.get_bool("epic", False),
+                on_spawn=read_effects(r, "on_spawn"),
+                reckoning=read_effects(r, "reckoning"),
                 on_defeat=read_effects(r, "on_defeat"),
                 art=r.get_str("art", ""),
+                horror_test=r.get_bool("horror_test", True),
+                damage_test=r.get_bool("damage_test", True),
             )
             r.done()
             if m.toughness < 1 or m.damage < 0 or m.horror < 0 or m.count < 1:
@@ -292,7 +327,8 @@ class _Loader:
 
     def assets(self) -> list[AssetDef]:
         out = []
-        for name, default_kind in (("assets.json", None), ("spells.json", "spell"), ("relics.json", "relic")):
+        files = (("assets.json", None), ("spells.json", "spell"), ("artifacts.json", "artifact"))
+        for name, default_kind in files:
             for r in _list_of_objects(self.file(name), name):
                 kind = r.get_enum("kind", ASSET_KINDS, default_kind)
                 if kind is None:
@@ -307,33 +343,28 @@ class _Loader:
                     text=r.get_str("text"),
                     flavor=r.get_str("flavor", ""),
                     modifiers=read_modifiers(r, "modifiers"),
-                    boosts=tuple(Boost.parse(b) for b in r.objects("boosts", [])),
+                    rerolls=tuple(RerollAbility.parse(rr) for rr in r.objects("rerolls", [])),
                     action=read_action(r, "action"),
                     on_gain=read_effects(r, "on_gain"),
+                    reckoning=read_effects(r, "reckoning"),
+                    backs=read_backs(r, "backs"),
+                    damage_reduction=r.get_int("damage_reduction", 0),
+                    sanity_reduction=r.get_int("sanity_reduction", 0),
                     perks=read_perks(r, "perks"),
                 )
                 r.done()
                 if a.count < 1 or a.cost < 0:
                     raise ContentError(f"{r.path}: count must be at least 1 and cost at least 0")
-                if a.kind == "service" and not a.on_gain:
-                    raise ContentError(f"{r.path}: a service needs on_gain effects")
+                if a.kind == "service" and not a.on_gain and a.action is None and a.id != "bank_loan":
+                    raise ContentError(f"{r.path}: a service needs on_gain effects or an action")
+                if a.kind == "spell" and not a.backs:
+                    raise ContentError(f"{r.path}: a spell needs at least one back")
                 out.append(a)
         return out
 
     def conditions(self) -> list[ConditionDef]:
         out = []
         for r in _list_of_objects(self.file("conditions.json"), "conditions.json"):
-            outcomes = []
-            for o in r.objects("outcomes", []):
-                outcomes.append(Outcome(o.get_int("weight", 1), o.get_str("text"), read_effects(o, "effects")))
-                o.done()
-            cure = None
-            cr = r.opt_obj("cure")
-            if cr is not None:
-                skill = cr.get_enum("skill", SKILLS, None)
-                cure = Cure(cr.get_str("text"), read_cost(cr, "cost"), skill, cr.get_int("mod", 0))
-                cr.done()
-            trigger = r.get_enum("trigger", CONDITION_TRIGGERS)
             c = ConditionDef(
                 id=_id(r),
                 name=r.get_str("name"),
@@ -341,83 +372,102 @@ class _Loader:
                 text=r.get_str("text"),
                 modifiers=read_modifiers(r, "modifiers"),
                 blocks=r.get_str_tuple("blocks", BLOCKABLE_ACTIONS),
-                trigger=trigger,
-                chance=r.get_int("chance", 6 if trigger != "night" else 2),
-                outcomes=tuple(outcomes),
-                cure=cure,
+                action=read_action(r, "action"),
+                reckoning=read_effects(r, "reckoning"),
+                backs=read_backs(r, "backs"),
             )
             r.done()
-            if c.trigger != "never" and not c.outcomes:
-                raise ContentError(f"{r.path}: a condition with a trigger needs outcomes")
-            if not 1 <= c.chance <= 6:
-                raise ContentError(f"{r.path}: chance must be 1 to 6")
-            if any(o.weight < 1 for o in c.outcomes):
-                raise ContentError(f"{r.path}: outcome weights must be at least 1")
+            if not c.backs:
+                raise ContentError(f"{r.path}: a condition needs at least one back")
             out.append(c)
         return out
 
-    def portents(self) -> list[PortentDef]:
+    def mythos(self) -> list[MythosDef]:
         out = []
-        for r in _list_of_objects(self.file("portents.json"), "portents.json"):
-            tiers = []
-            for t in r.objects("tiers"):
-                tiers.append(PortentTier(t.get_str("text"), read_effects(t, "effects")))
-                t.done()
-            p = PortentDef(_id(r), r.get_str("name"), r.get_str("flavor"), r.get_int("min_dread", 1), tuple(tiers))
+        for r in _list_of_objects(self.file("mythos.json"), "mythos.json"):
+            m = MythosDef(
+                id=_id(r),
+                name=r.get_str("name"),
+                color=r.get_enum("color", MYTHOS_COLORS),
+                traits=r.get_str_tuple("traits", MYTHOS_TRAITS),
+                icons=r.get_str_tuple("icons", MYTHOS_ICONS),
+                flavor=r.get_str("flavor", ""),
+                text=r.get_str("text"),
+                effects=read_effects(r, "effects"),
+                reckoning=read_effects(r, "reckoning"),
+                rumor_space=r.get_str("rumor_space", None),
+                eldritch=r.get_int("eldritch", 0),
+                encounter_text=r.get_str("encounter_text", ""),
+                encounter_effects=read_effects(r, "encounter_effects"),
+                on_zero_eldritch=read_effects(r, "on_zero_eldritch"),
+            )
             r.done()
-            if not 1 <= p.min_dread <= 3:
-                raise ContentError(f"{r.path}: min_dread must be 1 to 3")
-            if len(p.tiers) != 4 - p.min_dread:
-                raise ContentError(
-                    f"{r.path}: a portent with min_dread {p.min_dread} needs {4 - p.min_dread} tier(s), "
-                    f"one for each Dread level from {p.min_dread} to 3"
-                )
-            out.append(p)
+            if not m.traits:
+                raise ContentError(f"{r.path}: mythos card needs at least one trait")
+            if "rumor" in m.traits and not m.rumor_space:
+                raise ContentError(f"{r.path}: a rumor mythos card needs 'rumor_space'")
+            out.append(m)
         return out
 
-    def rite(self, r: Reader) -> RiteDef:
-        rite = RiteDef(
+    def mystery(self, r: Reader) -> MysteryDef:
+        m = MysteryDef(
             id=_id(r),
             name=r.get_str("name"),
+            flavor=r.get_str("flavor", ""),
             text=r.get_str("text"),
-            kind=r.get_enum("kind", RITE_KINDS),
+            kind=r.get_enum("kind", MYSTERY_KINDS),
             amount=r.get_int("amount", 1),
+            half_players=r.get_bool("half_players", False),
             per_investigator=r.get_bool("per_investigator", False),
-            resource=r.get_enum("resource", RITE_RESOURCES, None),
             where=read_location_filter(r, "where"),
             skill=r.get_enum("skill", SKILLS, None),
             mod=r.get_int("mod", 0),
+            clue_cost=r.get_int("clue_cost", 0),
             monster=r.get_str("monster", None),
             spawn_at=r.get_str("spawn_at", None),
+            on_enter=read_effects(r, "on_enter"),
         )
         r.done()
-        if rite.amount < 1:
+        if m.amount < 1:
             raise ContentError(f"{r.path}: amount must be at least 1")
-        if rite.kind == "spend" and rite.resource is None:
-            raise ContentError(f"{r.path}: a spend rite needs a resource")
-        if rite.kind == "test" and rite.skill is None:
-            raise ContentError(f"{r.path}: a test rite needs a skill")
-        if rite.kind == "defeat" and rite.monster is None:
-            raise ContentError(f"{r.path}: a defeat rite needs a monster")
-        if rite.kind in ("spend", "test") and rite.where is None:
-            raise ContentError(f"{r.path}: a {rite.kind} rite needs a 'where' location filter")
-        return rite
+        if m.kind == "defeat" and m.monster is None:
+            raise ContentError(f"{r.path}: a defeat mystery needs a monster")
+        return m
+
+    def _stage(self, r: Reader) -> StageComp:
+        s = StageComp(r.get_int("green"), r.get_int("yellow"), r.get_int("blue"))
+        r.done()
+        return s
 
     def old_ones(self) -> list[OldOneDef]:
         out = []
         for r in _list_of_objects(self.file("old_ones.json"), "old_ones.json"):
             aw = r.get_obj("awakening")
+            fm_r = aw.opt_obj("final_mystery")
             awakening = AwakeningDef(
                 text=aw.get_str("text"),
                 effects=read_effects(aw, "effects"),
-                nights=aw.get_int("nights"),
-                night=read_effects(aw, "night"),
-                final_rite=self.rite(aw.get_obj("final_rite")),
+                reckoning=read_effects(aw, "reckoning"),
+                doom_advance_effects=read_effects(aw, "doom_advance_effects"),
+                lose_immediately=aw.get_bool("lose_immediately", False),
+                final_mystery=self.mystery(fm_r) if fm_r is not None else None,
             )
             aw.done()
-            dread = r.get_list("dread_at")
-            if len(dread) != 2 or not all(isinstance(x, int) for x in dread):
-                raise ContentError(f"{r.at('dread_at')}: expected two integers")
+            stages_list = [self._stage(sr) for sr in r.objects("stages")]
+            if len(stages_list) != 3:
+                raise ContentError(f"{r.at('stages')}: expected 3 stages")
+            cult_r = r.get_obj("cultist")
+            c_horror = cult_r.get_int("horror", 0)
+            c_horror_mod = cult_r.get_int("horror_mod", 0)
+            c_damage = cult_r.get_int("damage", 1)
+            c_fight_mod = cult_r.get_int("fight_mod", 0)
+            c_toughness = cult_r.get_int("toughness", 1)
+            c_text = cult_r.get_str("text", "")
+            c_reckoning = read_effects(cult_r, "reckoning")
+            c_on_defeat = read_effects(cult_r, "on_defeat")
+            c_horror_test = cult_r.get_bool("horror_test", c_horror > 0)
+            c_damage_test = cult_r.get_bool("damage_test", c_damage > 0)
+            cult_r.done()
             o = OldOneDef(
                 id=_id(r),
                 name=r.get_str("name"),
@@ -426,46 +476,80 @@ class _Loader:
                 description=r.get_str("description"),
                 art=r.get_str("art"),
                 doom=r.get_int("doom"),
-                dread_at=(dread[0], dread[1]),
-                seal_mod=r.get_int("seal_mod", 0),
-                rift_pressure=r.get_int("rift_pressure"),
-                rift_limit=r.get_int("rift_limit", None),
+                stages=(stages_list[0], stages_list[1], stages_list[2]),
                 modifiers=read_modifiers(r, "modifiers"),
                 rules_text=r.get_str_tuple("rules_text"),
                 setup=read_effects(r, "setup"),
-                night=read_effects(r, "night"),
-                rites=tuple(self.rite(x) for x in r.objects("rites")),
-                rites_needed=r.get_int("rites_needed"),
+                reckoning=read_effects(r, "reckoning"),
+                omen_green_eldritch_doom=r.get_bool("omen_green_eldritch_doom", False),
+                mysteries=tuple(self.mystery(x) for x in r.objects("mysteries")),
+                mysteries_needed=r.get_int("mysteries_needed", 3),
                 awakening=awakening,
+                cultist_horror=c_horror,
+                cultist_horror_mod=c_horror_mod,
+                cultist_damage=c_damage,
+                cultist_fight_mod=c_fight_mod,
+                cultist_toughness=c_toughness,
+                cultist_text=c_text,
+                cultist_reckoning=c_reckoning,
+                cultist_on_defeat=c_on_defeat,
                 monsters=r.get_str_tuple("monsters"),
+                cultist_horror_test=c_horror_test,
+                cultist_damage_test=c_damage_test,
             )
             r.done()
-            if not o.doom > o.dread_at[0] > o.dread_at[1] > 0:
-                raise ContentError(f"{r.path}: need doom > dread_at[0] > dread_at[1] > 0")
-            if not 1 <= o.rites_needed <= len(o.rites):
-                raise ContentError(f"{r.path}: rites_needed must be between 1 and the number of rites")
-            if awakening.nights < 1:
-                raise ContentError(f"{r.path}.awakening: nights must be at least 1")
+            if o.doom < 1:
+                raise ContentError(f"{r.path}: doom must be at least 1")
+            if not 1 <= o.mysteries_needed <= len(o.mysteries):
+                raise ContentError(f"{r.path}: mysteries_needed must be between 1 and the number of mysteries")
+            if not awakening.lose_immediately and awakening.final_mystery is None:
+                raise ContentError(f"{r.path}.awakening: needs final_mystery unless lose_immediately is true")
             out.append(o)
         return out
 
+    def _section(self, r: Reader) -> EncounterSection:
+        section = EncounterSection(
+            text=r.get_str("text"),
+            effects=read_effects(r, "effects"),
+            location=r.get_str("location", None),
+            terrain=r.get_enum("terrain", TERRAINS, None),
+        )
+        r.done()
+        if bool(section.location) == bool(section.terrain):
+            raise ContentError(f"{r.path}: a section needs exactly one of 'location' or 'terrain'")
+        return section
+
     def encounters(
-        self, locations: dict[str, LocationDef]
+        self, old_ones: dict[str, OldOneDef]
     ) -> tuple[dict[str, EncounterDef], dict[str, tuple[str, ...]]]:
         folder = self.root / "encounters"
         if not folder.is_dir():
             raise ContentError(f"{folder}: encounter folder not found")
         encounters: dict[str, EncounterDef] = {}
         decks: dict[str, tuple[str, ...]] = {}
-        valid = {*TERRAINS, *SPECIAL_DECKS, *(loc.id for loc in locations.values() if loc.hub)}
+        research_decks = {f"research_{oid}" for oid in old_ones}
+        valid = {*BASE_ENCOUNTER_DECKS, *research_decks, *OTHER_WORLD_DECKS}
         for path in sorted(folder.glob("*.json")):
             deck = path.stem
             name = f"encounters/{path.name}"
             if deck not in valid:
-                raise ContentError(f"{name}: '{deck}' is not a terrain, 'rift', or a hub location id")
+                raise ContentError(f"{name}: '{deck}' is not a valid encounter deck")
             ids = []
             for r in _list_of_objects(_read_json(path), name):
-                e = EncounterDef(_id(r), deck, r.get_str("title"), r.get_str("text"), read_effects(r, "effects"))
+                e = EncounterDef(
+                    id=_id(r),
+                    deck=deck,
+                    title=r.get_str("title"),
+                    text=r.get_str("text", ""),
+                    effects=read_effects(r, "effects"),
+                    terrain=r.get_enum("terrain", TERRAINS, None),
+                    location=r.get_str("location", None),
+                    sections=tuple(self._section(sr) for sr in r.objects("sections", [])),
+                )
+                if e.sections and (e.text or e.effects or e.terrain or e.location):
+                    raise ContentError(f"{r.path}: use either 'sections' or a single-section card, not both")
+                if not e.sections and not e.text:
+                    raise ContentError(f"{r.path}: missing required field 'text'")
                 r.done()
                 if e.id in encounters:
                     raise ContentError(f"{r.path}: duplicate encounter id '{e.id}'")
@@ -502,7 +586,8 @@ class _Checker:
         self.check_assets()
         self.check_monsters()
         self.check_old_ones()
-        self.check_portents()
+        self.check_mythos()
+        self.check_encounters()
         self.check_effects()
 
     def fail(self, msg: str) -> None:
@@ -530,8 +615,11 @@ class _Checker:
         unreachable = sorted(set(c.locations) - seen)
         if unreachable:
             self.fail(f"map.json: cannot reach {', '.join(unreachable)}")
-        if not any(loc.rift_site for loc in c.locations.values()):
-            self.fail("map.json: at least one location must be a rift_site")
+        if not any(loc.gate_color for loc in c.locations.values()):
+            self.fail("map.json: at least one location must have a gate_color")
+        for exp in EXPEDITION_LOCATIONS:
+            if exp not in c.locations or not c.locations[exp].expedition:
+                self.fail(f"map.json: expedition location '{exp}' is missing or not marked expedition")
 
     def check_investigators(self) -> None:
         c = self.c
@@ -553,59 +641,128 @@ class _Checker:
                 self.fail(f"{where}: skills must be 1 to 6")
 
     def check_assets(self) -> None:
-        if not any(a.kind in MARKET_KINDS for a in self.c.assets.values()):
-            self.fail("assets.json: the market needs at least one item, ally, or service")
+        if not any(a.kind in RESERVE_KINDS for a in self.c.assets.values()):
+            self.fail("assets.json: the reserve needs at least one item, ally, trinket, or service")
 
     def check_monsters(self) -> None:
         if not any(not m.epic for m in self.c.monsters.values()):
             self.fail("monsters.json: need at least one ordinary (non-epic) monster")
+        if "cultist" not in self.c.monsters:
+            self.fail("monsters.json: must define 'cultist'")
 
     def check_old_ones(self) -> None:
         c = self.c
+        by_color = {
+            color: sum(1 for m in c.mythos.values() if m.color == color) for color in MYTHOS_COLORS
+        }
         for o in c.old_ones.values():
             where = f"old_ones.json '{o.id}'"
             for m in o.monsters:
                 if m not in c.monsters or c.monsters[m].epic:
                     self.fail(f"{where}: '{m}' is not an ordinary monster")
-            for rite in (*o.rites, o.awakening.final_rite):
-                if rite.monster and (rite.monster not in c.monsters or not c.monsters[rite.monster].epic):
-                    self.fail(f"{where}: rite '{rite.id}' needs an epic monster, not '{rite.monster}'")
-                if rite.spawn_at and rite.spawn_at not in c.locations:
-                    self.fail(f"{where}: rite '{rite.id}' spawns at unknown location '{rite.spawn_at}'")
-                if rite.where:
-                    for _table, ref in rite.where.refs():
+            need_green = sum(s.green for s in o.stages)
+            need_yellow = sum(s.yellow for s in o.stages)
+            need_blue = sum(s.blue for s in o.stages)
+            if need_green > by_color["green"] or need_yellow > by_color["yellow"] or need_blue > by_color["blue"]:
+                self.fail(f"{where}: not enough mythos cards to build stages")
+            mysteries = list(o.mysteries)
+            if o.awakening.final_mystery is not None:
+                mysteries.append(o.awakening.final_mystery)
+            for mys in mysteries:
+                if mys.monster and (mys.monster not in c.monsters or not c.monsters[mys.monster].epic):
+                    self.fail(f"{where}: mystery '{mys.id}' needs an epic monster, not '{mys.monster}'")
+                if mys.spawn_at and mys.spawn_at != "random" and mys.spawn_at not in c.locations:
+                    self.fail(f"{where}: mystery '{mys.id}' spawns at unknown location '{mys.spawn_at}'")
+                if mys.where:
+                    for _table, ref in mys.where.refs():
                         if ref not in c.locations:
-                            self.fail(f"{where}: rite '{rite.id}' refers to unknown location '{ref}'")
-            ids = [r.id for r in o.rites]
+                            self.fail(f"{where}: mystery '{mys.id}' refers to unknown location '{ref}'")
+            ids = [m.id for m in o.mysteries]
             if len(ids) != len(set(ids)):
-                self.fail(f"{where}: rite ids must be unique")
+                self.fail(f"{where}: mystery ids must be unique")
 
-    def check_portents(self) -> None:
-        if not any(p.min_dread == 1 for p in self.c.portents.values()):
-            self.fail("portents.json: need at least one portent with min_dread 1")
+    def check_mythos(self) -> None:
+        c = self.c
+        for m in c.mythos.values():
+            if m.rumor_space and m.rumor_space not in c.locations:
+                self.fail(f"mythos.json '{m.id}': unknown rumor_space '{m.rumor_space}'")
+
+    def check_encounters(self) -> None:
+        c = self.c
+        cities = {
+            region: {loc.id for loc in c.locations.values() if loc.region == region and loc.terrain == "city"}
+            for region in LOCATION_DECKS
+        }
+        named_cities = {
+            loc.id for loc in c.locations.values() if loc.terrain == "city" and not loc.id.startswith("space_")
+        }
+        for e in c.encounters.values():
+            if e.location and e.location not in c.locations:
+                self.fail(f"encounters '{e.id}': unknown location '{e.location}'")
+            if e.deck == "expedition" and (e.location not in EXPEDITION_LOCATIONS):
+                self.fail(f"encounters '{e.id}': expedition card needs an expedition location")
+            if e.deck in LOCATION_DECKS:
+                expected = cities[e.deck] & named_cities
+                actual = {s.location for s in e.sections}
+                if actual != expected:
+                    self.fail(
+                        f"encounters '{e.id}': {e.deck} sections must cover {', '.join(sorted(expected))}"
+                    )
+            elif e.deck == "general":
+                actual_terrains = {s.terrain for s in e.sections}
+                if actual_terrains != set(TERRAINS):
+                    self.fail(f"encounters '{e.id}': general sections must cover every terrain")
+            elif e.sections:
+                self.fail(f"encounters '{e.id}': deck '{e.deck}' does not use sections")
+            for s in e.sections:
+                if s.location and s.location not in c.locations:
+                    self.fail(f"encounters '{e.id}': unknown section location '{s.location}'")
 
     def effect_lists(self) -> Iterable[tuple[str, Sequence[Effect], bool]]:
         """Every effect list in the content, with a flag for 'runs with no investigator'."""
         c = self.c
         for e in c.encounters.values():
             yield f"encounters '{e.id}'", e.effects, False
-        for p in c.portents.values():
-            for i, t in enumerate(p.tiers):
-                yield f"portents.json '{p.id}' tier {i + 1}", t.effects, True
+            for i, section in enumerate(e.sections):
+                yield f"encounters '{e.id}' section {i}", section.effects, False
+        for m in c.mythos.values():
+            yield f"mythos.json '{m.id}' effects", m.effects, True
+            yield f"mythos.json '{m.id}' reckoning", m.reckoning, True
+            yield f"mythos.json '{m.id}' encounter_effects", m.encounter_effects, False
+            yield f"mythos.json '{m.id}' on_zero_eldritch", m.on_zero_eldritch, True
         for o in c.old_ones.values():
             yield f"old_ones.json '{o.id}' setup", o.setup, True
-            yield f"old_ones.json '{o.id}' night", o.night, True
+            yield f"old_ones.json '{o.id}' reckoning", o.reckoning, True
             yield f"old_ones.json '{o.id}' awakening", o.awakening.effects, True
-            yield f"old_ones.json '{o.id}' awakening night", o.awakening.night, True
-        for m in c.monsters.values():
-            yield f"monsters.json '{m.id}' on_defeat", m.on_defeat, False
+            yield f"old_ones.json '{o.id}' awakening reckoning", o.awakening.reckoning, True
+            yield f"old_ones.json '{o.id}' awakening doom_advance", o.awakening.doom_advance_effects, True
+            yield f"old_ones.json '{o.id}' cultist reckoning", o.cultist_reckoning, True
+            yield f"old_ones.json '{o.id}' cultist on_defeat", o.cultist_on_defeat, False
+            for mys in o.mysteries:
+                yield f"old_ones.json '{o.id}' mystery '{mys.id}' on_enter", mys.on_enter, True
+            if o.awakening.final_mystery:
+                yield (
+                    f"old_ones.json '{o.id}' final_mystery on_enter",
+                    o.awakening.final_mystery.on_enter,
+                    True,
+                )
+        for mon in c.monsters.values():
+            yield f"monsters.json '{mon.id}' on_spawn", mon.on_spawn, True
+            yield f"monsters.json '{mon.id}' reckoning", mon.reckoning, True
+            yield f"monsters.json '{mon.id}' on_defeat", mon.on_defeat, False
         for a in c.assets.values():
             yield f"asset '{a.id}' on_gain", a.on_gain, False
+            yield f"asset '{a.id}' reckoning", a.reckoning, False
             if a.action:
                 yield f"asset '{a.id}' action", a.action.effects, False
+            for i, back in enumerate(a.backs):
+                yield f"asset '{a.id}' back {i}", back.effects, False
         for cond in c.conditions.values():
-            for i, out in enumerate(cond.outcomes):
-                yield f"conditions.json '{cond.id}' outcome {i}", out.effects, False
+            yield f"conditions.json '{cond.id}' reckoning", cond.reckoning, False
+            if cond.action:
+                yield f"conditions.json '{cond.id}' action", cond.action.effects, False
+            for i, back in enumerate(cond.backs):
+                yield f"conditions.json '{cond.id}' back {i}", back.effects, False
         for inv in c.investigators.values():
             if inv.action:
                 yield f"investigators.json '{inv.id}' action", inv.action.effects, False
@@ -626,6 +783,8 @@ class _Checker:
                 self.check_world(where, effects)
         for a in self.c.assets.values():
             self.check_ability_refs(f"asset '{a.id}'", a.action)
+        for cond in self.c.conditions.values():
+            self.check_ability_refs(f"condition '{cond.id}'", cond.action)
         for inv in self.c.investigators.values():
             self.check_ability_refs(f"investigator '{inv.id}'", inv.action)
 
@@ -652,3 +811,4 @@ class _Checker:
                 )
             for child in effect.children():
                 self.check_world(where, child)
+

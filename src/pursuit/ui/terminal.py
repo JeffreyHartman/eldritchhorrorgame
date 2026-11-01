@@ -23,8 +23,8 @@ InputFn = Callable[[str], str]
 HOTKEYS = {
     "m": "Map",
     "i": "Investigators",
-    "r": "Rites",
-    "k": "Market",
+    "r": "Mysteries",
+    "k": "Reserve",
     "l": "Log",
     "h": "Help",
     "s": "Save",
@@ -32,31 +32,31 @@ HOTKEYS = {
 }
 
 HELP_TEXT = """\
-[bold]Your turn (Day)[/]
-You have 2 actions. Each action works once per round.
-  Travel         Move along a route. Then pay $1 per extra step by rail or sea.
-  Rest           Recover Health and Sanity. Not while a monster is here.
-  Investigate    Test Wits to take the Clue token here.
-  Seal the rift  Test Lore to close the rift here. You gain a Trophy.
-  Raise funds    In a city, test Charm. Gain $1 plus $1 per success.
-  Perform rite   Work on a rite where its text says.
-Free actions: visit the market (in a city), trade, collect belongings.
+[bold]Action Phase[/]
+You have 2 actions. Each action works at most once per round.
+  Travel              Move 1 space along any path, then spend Train/Ship Tickets for extra steps.
+  Rest                Recover 1 Health and 1 Sanity (not while a Monster is on your space).
+  Trade               Trade possessions, Clues, and tickets with an investigator on your space.
+  Prepare for Travel  On a City space, gain 1 Train or Ship Ticket matching a connected path (max 2).
+  Acquire Assets      On a City space with no Monsters, test Influence to gain cards from the reserve.
+  Component Actions   Perform an Action or Local Action on a card or Investigator sheet.
 
 [bold]Tests[/]
-Roll one die per point of skill, plus bonuses. Each 5 or 6 is a success.
-If you fail, you may spend a Clue to reroll every failed die.
+Roll dice equal to your skill + your single highest positive card bonus + additional dice - penalties.
+Each 5 or 6 is a success (4+ if Blessed, 6 if Cursed).
+Spend 1 Clue to reroll 1 die.
 
-[bold]Encounters[/]
-First you face every monster here. Fight with Brawn, or evade with Wits.
-Then draw an encounter for your location. At a rift, you may step through it.
+[bold]Encounter Phase[/]
+If Monsters are on your space, fight each one (Will test vs horror, Strength test vs damage).
+If no Monsters remain on your space, choose a location or token encounter:
+  Research (Clue token), Other World (Gate token), Expedition, Rumor, Mystery, or Fallen Investigator.
 
-[bold]Night[/]
-Doom advances. A portent card resolves at the current Dread level.
-Conditions may come due. What they do stays hidden until then.
+[bold]Mythos Phase[/]
+Draw 1 Mythos card and resolve its icons in order:
+  Advance Omen, Reckoning, Spawn Gates, Monster Surge, Spawn Clues, Rumor, Eldritch tokens, Card Effect.
 
 [bold]Winning[/]
-Complete every rite before Doom reaches 0. If it does, the Old One wakes,
-and you get a few nights to complete one final rite.
+Solve 3 Mysteries before the Ancient One awakens (or also solve the Final Mystery if it awakens).
 """
 
 
@@ -124,8 +124,8 @@ class TerminalController:
         else:
             style = render.EVENT_STYLE.get(event.kind, "white")
             self.console.print(Text("  • " + event.text, style=style))
-        # The Day dashboard shows the round and whose turn it is, so these need no pause.
-        quiet = event.kind in ("phase", "turn") and event.data.get("phase") == "day"
+        # The Action dashboard shows the round and whose turn it is, so these need no pause.
+        quiet = event.kind in ("phase", "turn") and event.data.get("phase") == "action"
         if not quiet:
             self.unread = True
 
@@ -235,7 +235,7 @@ class TerminalController:
         self.console.clear()
         self.console.print(render.header(game))
         phase = event.data.get("phase")
-        if phase == "night":
+        if phase == "mythos":
             self.console.print(render.art_text("night", "bold blue"), justify="center")
             self.console.print(Rule(f"[bold blue]{event.text}[/]", style="blue"))
         elif phase == "encounter":
@@ -264,20 +264,25 @@ class TerminalController:
 
     def _on_encounter(self, game: Game, event: Event) -> None:
         deck = event.data.get("deck", "")
-        terrain = "rift" if deck == "rift" else game.content.locations[event.data["location"]].terrain
-        style = "bold red" if deck == "rift" else render.TERRAIN_STYLE[terrain]
+        is_other_world = deck.startswith("other_world")
+        terrain = "rift" if is_other_world else game.content.locations[event.data["location"]].terrain
+        style = "bold red" if is_other_world else render.TERRAIN_STYLE[terrain]
         body = Group(render.art_text(terrain, style), Text(event.text, style="italic"))
         self.console.print(Panel(body, title=f"[bold]{event.data.get('title', 'Encounter')}[/]", border_style=style))
 
-    def _on_portent(self, game: Game, event: Event) -> None:
+    def _on_mythos(self, game: Game, event: Event) -> None:
+        if "title" not in event.data:
+            self.console.print(Text("  • " + event.text, style="bold magenta"))
+            return
         body = Group(
             Text(event.data.get("flavor", ""), style="italic grey70"),
             Text(""),
             Text(event.text, style="bold"),
         )
-        title = f"[bold magenta]Portent: {event.data.get('title', '')}[/]"
-        subtitle = f"Dread {render.DREAD_NAMES.get(event.data.get('dread', 1), 'I')}"
-        self.console.print(Panel(body, title=title, subtitle=subtitle, border_style="magenta", box=box.DOUBLE))
+        color = event.data.get("color", "yellow")
+        title = f"[bold magenta]Mythos ({color}): {event.data.get('title', '')}[/]"
+        icons = ", ".join(event.data.get("icons", []))
+        self.console.print(Panel(body, title=title, subtitle=icons, border_style="magenta", box=box.DOUBLE))
 
     def _on_combat(self, game: Game, event: Event) -> None:
         if event.data.get("start"):

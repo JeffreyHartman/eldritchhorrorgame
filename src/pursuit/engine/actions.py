@@ -1,6 +1,7 @@
-"""Day actions. Each costs one of the investigator's actions and works once per round.
+"""Action Phase actions. Each investigator may perform up to 2 actions per round.
 
-Free actions (buy, trade, collect belongings) cost nothing and can repeat.
+Each action (Travel, Rest, Trade, Prepare for Travel, Acquire Assets, or any single
+component action) may be performed at most once per round.
 """
 
 from __future__ import annotations
@@ -12,41 +13,13 @@ from pursuit.controller import Option
 from pursuit.effects.base import Ctx, run_effects
 from pursuit.engine import rules
 from pursuit.engine.dice import dice_pool, run_test
-from pursuit.engine.state import AssetCard, Game, Investigator, RiteState
+from pursuit.engine.state import AssetCard, ConditionInst, Game, Investigator
 
-FREE_ACTIONS = ("buy", "trade", "collect", "end")
+FREE_ACTIONS = ("end",)
 
 
 def actions_left(game: Game, inv: Investigator) -> int:
     return max(0, game.content.rules.actions_per_turn - len(inv.actions_taken))
-
-
-def seal_needed(game: Game) -> int:
-    return max(1, 1 + game.old_one.seal_mod)
-
-
-def rite_actions(game: Game, inv: Investigator) -> list[tuple[int, RiteState]]:
-    found = []
-    for i, rite in enumerate(game.active_rites()):
-        rdef = game.rite_def(rite)
-        if rite.done or rdef.kind not in ("spend", "test"):
-            continue
-        if rdef.where is not None and not rdef.where.matches(game, inv.location):
-            continue
-        found.append((i, rite))
-    return found
-
-
-def _can_contribute(game: Game, inv: Investigator, rite: RiteState) -> bool:
-    rdef = game.rite_def(rite)
-    if rdef.kind == "test":
-        return True
-    return {
-        "clues": inv.clues > 0,
-        "funds": inv.funds > 0,
-        "trophies": inv.trophies > 0,
-        "relic": any(game.asset_def(c).kind == "relic" for c in inv.assets),
-    }[rdef.resource or ""]
 
 
 def _ability_ok(game: Game, inv: Investigator, ability: ActionAbility) -> bool:
@@ -55,7 +28,12 @@ def _ability_ok(game: Game, inv: Investigator, ability: ActionAbility) -> bool:
     return ability.requires is None or ability.requires.matches(game, inv)
 
 
-def day_options(game: Game, inv: Investigator) -> list[Option]:
+def _available_ticket_kinds(game: Game, loc_id: str) -> list[str]:
+    kinds = {k for _, k in rules.neighbors(game, loc_id) if k in ("train", "ship")}
+    return [k for k in ("train", "ship") if k in kinds]
+
+
+def action_options(game: Game, inv: Investigator) -> list[Option]:
     content = game.content
     state = game.locations[inv.location]
     ldef = content.locations[inv.location]
@@ -63,7 +41,8 @@ def day_options(game: Game, inv: Investigator) -> list[Option]:
     opts: list[Option] = []
 
     def action(key: str, value: Any, label: str, detail: str, ok: bool = True, why: str = "") -> None:
-        block = rules.blocked(game, inv, key.split(":")[0])
+        base_key = key.split(":")[0]
+        block = rules.blocked(game, inv, base_key)
         if left <= 0:
             ok, why = False, "no actions left"
         elif key in inv.actions_taken:
@@ -72,7 +51,8 @@ def day_options(game: Game, inv: Investigator) -> list[Option]:
             ok, why = False, f"{block} prevents this"
         opts.append(Option(label, value, detail if ok else why or detail, enabled=ok))
 
-    action("travel", ("travel",), "Travel", "Move along a route. Pay Funds to continue by rail or sea.")
+    action("travel", ("travel",), "Travel", "Move 1 space along any path, then spend travel tickets.")
+
     rest_amount = 1 + rules.perk(game, inv, "rest_bonus")
     action(
         "rest",
@@ -80,88 +60,97 @@ def day_options(game: Game, inv: Investigator) -> list[Option]:
         "Rest",
         f"Recover {rest_amount} Health and {rest_amount} Sanity.",
         not state.monsters,
-        "monsters are here",
+        "monsters are on your space",
+    )
+
+    ticket_kinds = _available_ticket_kinds(game, inv.location)
+    can_prepare = ldef.terrain == "city" and bool(ticket_kinds)
+    prepare_why = "only on a City space" if ldef.terrain != "city" else "no Train or Ship paths here"
+    action(
+        "prepare",
+        ("prepare",),
+        "Prepare for Travel",
+        f"Gain 1 {' or '.join(k.title() for k in ticket_kinds)} Ticket." if can_prepare else "Gain 1 travel ticket.",
+        can_prepare,
+        prepare_why,
+    )
+
+    inf_dice = dice_pool(game, inv, "influence", 0, ("acquire",))
+    can_acquire = ldef.terrain == "city" and not state.monsters and bool(game.reserve)
+    acquire_why = (
+        "only on a City space"
+        if ldef.terrain != "city"
+        else "monsters are on your space"
+        if state.monsters
+        else "the reserve is empty"
     )
     action(
-        "investigate",
-        ("investigate",),
-        "Investigate",
-        f"Test Wits ({dice_pool(game, inv, 'wits', 0, ('investigate',))} dice) to take the Clue here.",
-        state.clue,
-        "there is no clue here",
+        "acquire",
+        ("acquire",),
+        "Acquire Assets",
+        f"Test Influence ({inf_dice} dice) to gain Assets from the reserve.",
+        can_acquire,
+        acquire_why,
     )
-    need = seal_needed(game)
+
+    others = [o for o in game.investigators_at(inv.location) if o is not inv]
     action(
-        "seal",
-        ("seal",),
-        "Seal the rift",
-        f"Test Lore ({dice_pool(game, inv, 'lore', 0, ('seal',))} dice), {need} success(es) needed.",
-        state.rift and not state.monsters,
-        "no rift here" if not state.rift else "monsters guard the rift",
+        "trade",
+        ("trade",),
+        "Trade",
+        "Trade Assets, Artifacts, Spells, Clues, and travel tickets with an investigator here.",
+        bool(others),
+        "no other investigator on your space",
     )
-    action(
-        "earn",
-        ("earn",),
-        "Raise funds",
-        f"Test Charm ({dice_pool(game, inv, 'charm', 0, ('funds',))} dice). Gain 1 Funds plus 1 per success.",
-        ldef.terrain == "city",
-        "only in a city",
-    )
-    for i, rite in rite_actions(game, inv):
-        rdef = game.rite_def(rite)
+
+    # Component actions: investigator sheet, owned assets/spells/artifacts, conditions, and local actions on space
+    idef = content.investigators[inv.def_id]
+    if idef.action is not None:
         action(
-            "rite",
-            ("rite", i),
-            f"Perform rite: {rdef.name}",
-            f"{rite.progress}/{rite.required}. {rdef.text}",
-            _can_contribute(game, inv, rite),
-            "you have nothing to give this rite",
+            "component:ability",
+            ("ability",),
+            f"Action: {idef.name}",
+            idef.action.text,
+            _ability_ok(game, inv, idef.action),
+            "requirements not met",
         )
+
     for card in inv.assets:
         adef = game.asset_def(card)
         if adef.action is None:
             continue
         action(
-            f"asset:{card.uid}",
+            f"component:asset:{card.uid}",
             ("asset", card.uid),
-            f"Use {adef.name}",
+            f"Action: {adef.name}",
             adef.action.text,
             not card.exhausted and _ability_ok(game, inv, adef.action),
             "already used this round" if card.exhausted else "requirements not met",
         )
-    idef = content.investigators[inv.def_id]
-    if idef.action is not None:
-        action(
-            "ability",
-            ("ability",),
-            "Use your ability",
-            idef.action.text,
-            _ability_ok(game, inv, idef.action),
-            "requirements not met",
-        )
-    for inst in inv.conditions:
-        cdef = content.conditions[inst.def_id]
-        if cdef.cure is not None:
+
+    for person in game.investigators_at(inv.location):
+        for inst in person.conditions:
+            cdef = content.conditions[inst.def_id]
+            if cdef.action is None:
+                continue
+            if person is not inv and not cdef.action.local:
+                continue
+            owner_tag = "" if person is inv else f" ({person.name})"
             action(
-                "cure",
-                ("cure", inst.uid),
-                f"Deal with {cdef.name}",
-                cdef.cure.text,
-                cdef.cure.cost.can_pay(inv),
-                f"costs {cdef.cure.cost.describe()}",
+                f"component:condition:{inst.uid}",
+                ("condition", person.seat, inst.uid),
+                f"{'Local ' if cdef.action.local else ''}Action: {cdef.name}{owner_tag}",
+                cdef.action.text,
+                _ability_ok(game, inv, cdef.action),
+                "requirements not met",
             )
 
-    in_city = ldef.terrain == "city" and bool(game.market) and not rules.blocked(game, inv, "buy")
-    others = [o for o in game.investigators_at(inv.location) if o is not inv]
-    opts.append(Option("Visit the market", ("buy",), "Free. Buy assets with Funds.", enabled=in_city))
-    opts.append(Option("Trade", ("trade",), "Free. Swap with an investigator here.", enabled=bool(others)))
-    opts.append(
-        Option(
-            "Collect belongings", ("collect",), "Free. Take what the fallen left here.", enabled=bool(state.belongings)
-        )
-    )
     opts.append(Option("End turn", ("end",), f"{left} action(s) left."))
     return opts
+
+
+# Alias for backward compatibility in callers
+day_options = action_options
 
 
 def perform(game: Game, inv: Investigator, value: tuple) -> None:
@@ -169,34 +158,26 @@ def perform(game: Game, inv: Investigator, value: tuple) -> None:
     handlers = {
         "travel": _travel,
         "rest": _rest,
-        "investigate": _investigate,
-        "seal": _seal,
-        "earn": _earn,
+        "prepare": _prepare,
+        "acquire": _acquire,
+        "trade": _trade,
     }
     if key in handlers:
         if handlers[key](game, inv):
             inv.actions_taken.append(key)
-    elif key == "rite":
-        rite = game.active_rites()[value[1]]
-        if _rite(game, inv, rite):
-            inv.actions_taken.append("rite")
-    elif key == "asset":
-        card = next(c for c in inv.assets if c.uid == value[1])
-        if _use_asset(game, inv, card):
-            inv.actions_taken.append(f"asset:{card.uid}")
     elif key == "ability":
         ability = game.content.investigators[inv.def_id].action
         if ability is not None and _run_ability(game, inv, ability, f"ability:{inv.def_id}"):
-            inv.actions_taken.append("ability")
-    elif key == "cure":
-        if _cure(game, inv, value[1]):
-            inv.actions_taken.append("cure")
-    elif key == "buy":
-        _buy(game, inv)
-    elif key == "trade":
-        _trade(game, inv)
-    elif key == "collect":
-        _collect(game, inv)
+            inv.actions_taken.append("component:ability")
+    elif key == "asset":
+        card = next(c for c in inv.assets if c.uid == value[1])
+        if _use_asset(game, inv, card):
+            inv.actions_taken.append(f"component:asset:{card.uid}")
+    elif key == "condition":
+        owner = next(i for i in game.investigators if i.seat == value[1])
+        inst = next((c for c in owner.conditions if c.uid == value[2]), None)
+        if inst is not None and _use_condition(game, inv, owner, inst):
+            inv.actions_taken.append(f"component:condition:{inst.uid}")
     else:
         raise ValueError(f"unknown action {value!r}")
 
@@ -207,7 +188,7 @@ def perform(game: Game, inv: Investigator, value: tuple) -> None:
 def _travel(game: Game, inv: Investigator) -> bool:
     content = game.content
     near = rules.neighbors(game, inv.location)
-    options = [Option(f"{content.locations[d].name}", d, f"by {k}, {content.locations[d].terrain}") for d, k in near]
+    options = [Option(f"{content.locations[d].name}", d, f"{k} path, {content.locations[d].terrain}") for d, k in near]
     options.append(Option("Cancel", None))
     pick = rules.choose(game, "Travel where?", options, kind="travel", inv=inv)
     dest = options[pick].value
@@ -215,24 +196,28 @@ def _travel(game: Game, inv: Investigator) -> bool:
         return False
     kind = dict(near)[dest]
     rules.move_investigator(game, inv, dest, kind)
-    free = rules.perk(game, inv, "free_travel_steps")
-    for _ in range(content.rules.max_paid_steps):
-        cost = 0 if free > 0 else content.rules.step_cost
-        onward = [(d, k) for d, k in rules.neighbors(game, inv.location) if k in ("rail", "sea")]
-        if not onward or inv.funds < cost:
+
+    while inv.tickets:
+        onward = [
+            (d, k)
+            for d, k in rules.neighbors(game, inv.location)
+            if k in ("train", "ship") and k in inv.tickets
+        ]
+        if not onward:
             break
-        price = "free" if cost == 0 else f"{cost} Funds"
-        options = [Option(content.locations[d].name, d, f"by {k}, {price}") for d, k in onward]
+        options = [
+            Option(content.locations[d].name, (d, k), f"spend {k.title()} Ticket")
+            for d, k in onward
+        ]
         options.append(Option(f"Stop at {content.locations[inv.location].name}", None))
-        pick = rules.choose(game, f"Continue by rail or sea ({price})?", options, kind="travel_onward", inv=inv)
-        dest = options[pick].value
-        if dest is None:
+        pick = rules.choose(game, "Spend a travel ticket to continue?", options, kind="travel_onward", inv=inv)
+        choice = options[pick].value
+        if choice is None:
             break
-        if cost:
-            rules.change_funds(game, inv, -cost)
-        else:
-            free -= 1
-        rules.move_investigator(game, inv, dest, dict(onward)[dest])
+        dest_id, route_kind = choice
+        inv.tickets.remove(route_kind)
+        rules.emit(game, "info", f"{inv.name} spends a {route_kind.title()} Ticket.")
+        rules.move_investigator(game, inv, dest_id, route_kind)
     return True
 
 
@@ -241,76 +226,151 @@ def _rest(game: Game, inv: Investigator) -> bool:
     rules.emit(game, "info", f"{inv.name} rests.")
     rules.change_health(game, inv, amount)
     rules.change_sanity(game, inv, amount)
-    rules.trigger_conditions(game, inv, "rest")
+    for card in list(inv.assets):
+        if (
+            card.def_id == "arcane_tome"
+            and not card.exhausted
+            and rules.confirm(game, "Use Arcane Tome (test Lore -1 to gain 1 Spell)?", kind="rest_tome", inv=inv)
+        ):
+            card.exhausted = True
+            res = run_test(game, inv, "lore", -1, contexts=("encounter",), label="Arcane Tome")
+            if res.passed:
+                spell = rules.draw_matching(game, kind="spell")
+                if spell is not None:
+                    rules.gain_card(game, inv, spell)
     return True
 
 
-def _investigate(game: Game, inv: Investigator) -> bool:
-    state = game.locations[inv.location]
-    result = run_test(game, inv, "wits", contexts=("investigate",), label="the investigation")
-    if result.passed and state.clue:
-        state.clue = False
-        rules.change_clues(game, inv, 1 + rules.perk(game, inv, "investigate_bonus"))
-    else:
-        rules.emit(game, "info", "The trail goes cold, for now.")
-    return True
-
-
-def _seal(game: Game, inv: Investigator) -> bool:
-    need = seal_needed(game)
-    result = run_test(game, inv, "lore", contexts=("seal",), needed=need, label="sealing the rift")
-    if result.passed:
-        rules.close_rift(game, inv, inv.location)
-    else:
-        rules.emit(game, "info", "The rift resists, and something on the other side notices you.")
-        rules.change_sanity(game, inv, -1)
-    return True
-
-
-def _earn(game: Game, inv: Investigator) -> bool:
-    result = run_test(game, inv, "charm", contexts=("funds",), needed=1, label="raising funds")
-    rules.change_funds(game, inv, 1 + result.successes + rules.perk(game, inv, "earn_bonus"))
-    return True
-
-
-def _rite(game: Game, inv: Investigator, rite: RiteState) -> bool:
-    rdef = game.rite_def(rite)
-    remaining = rite.required - rite.progress
-    if rdef.kind == "test":
-        assert rdef.skill is not None
-        result = run_test(game, inv, rdef.skill, rdef.mod, contexts=("rite",), needed=remaining, label=rdef.name)
-        if result.successes:
-            rules.add_rite_progress(game, rite, result.successes)
-        else:
-            rules.emit(game, "info", "The rite falters. Nothing is gained.")
-        return True
-    if rdef.resource == "relic":
-        relics = [c for c in inv.assets if game.asset_def(c).kind == "relic"]
-        options = [Option(game.asset_def(c).name, c.uid) for c in relics] + [Option("Cancel", None)]
-        pick = rules.choose(game, "Offer which relic to the rite?", options, kind="rite_relic", inv=inv)
-        if options[pick].value is None:
-            return False
-        rules.discard_asset(game, inv, relics[pick])
-        rules.add_rite_progress(game, rite, 1)
-        return True
-    have = {"clues": inv.clues, "funds": inv.funds, "trophies": inv.trophies}[rdef.resource or ""]
-    most = min(have, remaining)
-    options = [Option(f"Give {n}", n) for n in range(most, 0, -1)] + [Option("Cancel", 0)]
-    pick = rules.choose(game, f"Give how many {rdef.resource} to '{rdef.name}'?", options, kind="rite_amount", inv=inv)
-    amount = options[pick].value
-    if not amount:
+def _prepare(game: Game, inv: Investigator) -> bool:
+    kinds = _available_ticket_kinds(game, inv.location)
+    if not kinds:
         return False
-    if rdef.resource == "clues":
-        rules.change_clues(game, inv, -amount)
-    elif rdef.resource == "funds":
-        rules.change_funds(game, inv, -amount)
-    else:
-        inv.trophies -= amount
-    rules.add_rite_progress(game, rite, amount)
+    options = [Option(f"{k.title()} Ticket", k) for k in kinds]
+    pick = rules.choose(game, "Gain which travel ticket?", options, kind="prepare_ticket", inv=inv, auto_single=True)
+    rules.gain_ticket(game, inv, options[pick].value)
     return True
 
 
-def _run_ability(game: Game, inv: Investigator, ability: ActionAbility, source: str) -> bool:
+def _acquire(game: Game, inv: Investigator) -> bool:
+    result = run_test(game, inv, "influence", contexts=("acquire",), needed=1, label="Acquire Assets")
+    budget = result.successes + rules.perk(game, inv, "acquire_bonus")
+    bought_any = False
+
+    while game.reserve:
+        affordable = [c for c in game.reserve if game.asset_def(c).cost <= budget]
+        if not affordable:
+            break
+        options = []
+        for card in game.reserve:
+            adef = game.asset_def(card)
+            options.append(
+                Option(
+                    f"{adef.name} (cost {adef.cost})",
+                    card.uid,
+                    adef.text,
+                    enabled=adef.cost <= budget,
+                )
+            )
+        options.append(Option("Done acquiring assets", None))
+        pick = rules.choose(
+            game,
+            f"Acquire Assets: {budget} success(es) remaining.",
+            options,
+            kind="acquire",
+            inv=inv,
+        )
+        uid = options[pick].value
+        if uid is None:
+            break
+        card = next(c for c in game.reserve if c.uid == uid)
+        game.reserve.remove(card)
+        budget -= game.asset_def(card).cost
+        bought_any = True
+        game.bump("assets_acquired")
+
+        recipient = inv
+        if inv.def_id == "charlie_kane" and len(game.active_investigators()) > 1:
+            people = [i for i in game.active_investigators() if not i.defeated]
+            r_opts = [Option(p.name, p.seat, rules.loc_name(game, p.location)) for p in people]
+            r_pick = rules.choose(
+                game,
+                f"Charlie Kane: who receives {game.asset_def(card).name}?",
+                r_opts,
+                kind="ability_target",
+                inv=inv,
+            )
+            recipient = people[r_pick]
+        rules.gain_card(game, recipient, card)
+
+    if not bought_any and game.reserve:
+        options = [Option(f"Discard {game.asset_def(c).name}", c.uid, game.asset_def(c).text) for c in game.reserve]
+        options.append(Option("Keep reserve as is", None))
+        pick = rules.choose(
+            game,
+            "You gained no cards. Discard 1 card from the reserve?",
+            options,
+            kind="acquire_discard",
+            inv=inv,
+        )
+        uid = options[pick].value
+        if uid is not None:
+            card = next(c for c in game.reserve if c.uid == uid)
+            game.reserve.remove(card)
+            game.asset_deck.discard(card)
+            rules.emit(game, "info", f"{inv.name} discards {game.asset_def(card).name} from the reserve.")
+
+    rules.refill_reserve(game)
+    return True
+
+
+def _trade(game: Game, inv: Investigator) -> bool:
+    others = [o for o in game.investigators_at(inv.location) if o is not inv]
+    if not others:
+        return False
+    options = [Option(o.name, o.seat) for o in others]
+    other = others[rules.choose(game, "Trade with whom?", options, kind="trade_partner", inv=inv, auto_single=True)]
+    traded = False
+    while True:
+        options = [
+            Option(f"Give a card to {other.name}", "give_asset", enabled=bool(inv.assets)),
+            Option(f"Take a card from {other.name}", "take_asset", enabled=bool(other.assets)),
+            Option(f"Give 1 Clue to {other.name}", "give_clue", enabled=inv.clues > 0),
+            Option(f"Take 1 Clue from {other.name}", "take_clue", enabled=other.clues > 0),
+            Option(f"Give a Ticket to {other.name}", "give_ticket", enabled=bool(inv.tickets)),
+            Option(f"Take a Ticket from {other.name}", "take_ticket", enabled=bool(other.tickets)),
+            Option("Done trading", "done"),
+        ]
+        what = options[rules.choose(game, "Trade possessions.", options, kind="trade", inv=inv)].value
+        if what == "done":
+            return traded
+        giver, taker = (inv, other) if what.startswith("give") else (other, inv)
+        if what.endswith("asset"):
+            cards = giver.assets
+            pick = rules.choose(
+                game,
+                "Which possession?",
+                [Option(game.asset_def(c).name, c.uid) for c in cards],
+                kind="trade_asset",
+                inv=inv,
+                auto_single=True,
+            )
+            card = cards.pop(pick)
+            taker.assets.append(card)
+            rules.emit(game, "info", f"{giver.name} trades {game.asset_def(card).name} to {taker.name}.")
+            traded = True
+        elif what.endswith("ticket"):
+            ticket = giver.tickets.pop(0)
+            rules.emit(game, "info", f"{giver.name} trades a {ticket.title()} Ticket to {taker.name}.")
+            rules.gain_ticket(game, taker, ticket)
+            traded = True
+        else:
+            giver.clues -= 1
+            taker.clues += 1
+            rules.emit(game, "info", f"{giver.name} gives 1 Clue to {taker.name}.")
+            traded = True
+
+
+def _run_ability(game: Game, inv: Investigator, ability: ActionAbility, source: str, **ctx_kwargs: Any) -> bool:
     target = inv
     if ability.target == "investigator_here":
         people = game.investigators_at(inv.location)
@@ -320,11 +380,22 @@ def _run_ability(game: Game, inv: Investigator, ability: ActionAbility, source: 
         ]
         target = people[
             rules.choose(
-                game, "Choose an investigator here.", options, kind="ability_target", inv=inv, auto_single=True
+                game, "Choose an investigator on your space.", options, kind="ability_target", inv=inv, auto_single=True
+            )
+        ]
+    elif ability.target == "any_investigator":
+        people = [p for p in game.active_investigators() if not p.defeated and p is not inv] or [inv]
+        options = [
+            Option(p.name, p.seat, f"in {rules.loc_name(game, p.location)}")
+            for p in people
+        ]
+        target = people[
+            rules.choose(
+                game, "Choose an investigator.", options, kind="ability_target", inv=inv, auto_single=True
             )
         ]
     rules.pay_cost(game, inv, ability.cost)
-    run_effects(ability.effects, Ctx(game, target, source))
+    run_effects(ability.effects, Ctx(game, target, source, **ctx_kwargs))
     return True
 
 
@@ -333,97 +404,19 @@ def _use_asset(game: Game, inv: Investigator, card: AssetCard) -> bool:
     assert adef.action is not None
     rules.emit(game, "info", f"{inv.name} uses {adef.name}.")
     card.exhausted = True
-    _run_ability(game, inv, adef.action, f"asset:{adef.id}")
+    _run_ability(game, inv, adef.action, f"asset:{adef.id}", asset=card)
     if adef.action.discard and card in inv.assets:
         rules.discard_asset(game, inv, card)
     return True
 
 
-def _cure(game: Game, inv: Investigator, uid: int) -> bool:
-    inst = next((c for c in inv.conditions if c.uid == uid), None)
-    if inst is None:
-        return False
+def _use_condition(game: Game, actor: Investigator, owner: Investigator, inst: ConditionInst) -> bool:
     cdef = game.content.conditions[inst.def_id]
-    cure = cdef.cure
-    assert cure is not None
-    rules.pay_cost(game, inv, cure.cost)
-    if cure.skill is not None:
-        result = run_test(game, inv, cure.skill, cure.mod, label=f"dealing with {cdef.name}")
-        if not result.passed:
-            rules.emit(game, "info", f"{cdef.name} still clings to {inv.name}.")
-            return True
-    rules.remove_condition(game, inv, inst)
+    assert cdef.action is not None
+    rules.emit(game, "info", f"{actor.name} acts on {cdef.name}.")
+    rules.pay_cost(game, actor, cdef.action.cost)
+    run_effects(cdef.action.effects, Ctx(game, actor, f"condition_action:{cdef.id}", condition=inst))
+    if cdef.action.discard and inst in owner.conditions:
+        rules.remove_condition(game, owner, inst)
     return True
 
-
-def _buy(game: Game, inv: Investigator) -> None:
-    while game.market:
-        options = []
-        for card in game.market:
-            adef = game.asset_def(card)
-            price = rules.market_price(game, inv, card)
-            options.append(Option(f"{adef.name} ({price} Funds)", card.uid, adef.text, enabled=inv.funds >= price))
-        options.append(Option("Leave the market", None))
-        pick = rules.choose(game, f"The market. You have {inv.funds} Funds.", options, kind="buy", inv=inv)
-        if options[pick].value is None:
-            return
-        card = game.market.pop(pick)
-        rules.change_funds(game, inv, -rules.market_price(game, inv, card))
-        game.bump("assets_bought")
-        rules.gain_card(game, inv, card)
-        rules.refill_market(game)
-
-
-def _trade(game: Game, inv: Investigator) -> None:
-    others = [o for o in game.investigators_at(inv.location) if o is not inv]
-    if not others:
-        return
-    options = [Option(o.name, o.seat) for o in others]
-    other = others[rules.choose(game, "Trade with whom?", options, kind="trade_partner", inv=inv, auto_single=True)]
-    while True:
-        options = [
-            Option(f"Give an asset to {other.name}", "give_asset", enabled=bool(inv.assets)),
-            Option(f"Take an asset from {other.name}", "take_asset", enabled=bool(other.assets)),
-            Option(f"Give 1 Funds to {other.name}", "give_funds", enabled=inv.funds > 0),
-            Option(f"Take 1 Funds from {other.name}", "take_funds", enabled=other.funds > 0),
-            Option(f"Give 1 Clue to {other.name}", "give_clue", enabled=inv.clues > 0),
-            Option(f"Take 1 Clue from {other.name}", "take_clue", enabled=other.clues > 0),
-            Option("Done trading", "done"),
-        ]
-        what = options[rules.choose(game, "Trade.", options, kind="trade", inv=inv)].value
-        if what == "done":
-            return
-        giver, taker = (inv, other) if what.startswith("give") else (other, inv)
-        if what.endswith("asset"):
-            cards = giver.assets
-            pick = rules.choose(
-                game,
-                "Which asset?",
-                [Option(game.asset_def(c).name, c.uid) for c in cards],
-                kind="trade_asset",
-                inv=inv,
-            )
-            card = cards.pop(pick)
-            taker.assets.append(card)
-            rules.emit(game, "info", f"{giver.name} hands {game.asset_def(card).name} to {taker.name}.")
-        elif what.endswith("funds"):
-            giver.funds -= 1
-            taker.funds += 1
-            rules.emit(game, "info", f"{giver.name} gives 1 Funds to {taker.name}.")
-        else:
-            giver.clues -= 1
-            taker.clues += 1
-            rules.emit(game, "info", f"{giver.name} gives 1 Clue to {taker.name}.")
-
-
-def _collect(game: Game, inv: Investigator) -> None:
-    pile = game.locations[inv.location].belongings
-    while pile:
-        options = [Option(game.asset_def(c).name, c.uid, game.asset_def(c).text) for c in pile]
-        options.append(Option("Done", None))
-        pick = rules.choose(game, "Take what?", options, kind="collect", inv=inv)
-        if options[pick].value is None:
-            return
-        card = pile.pop(pick)
-        inv.assets.append(card)
-        rules.emit(game, "gain", f"{inv.name} takes {game.asset_def(card).name}.")

@@ -1,15 +1,16 @@
-"""The round loop: Day (actions), Encounters, then Night (doom, a portent, conditions).
+"""The round loop: Action Phase, Encounter Phase, then Mythos Phase.
 
 Each phase reads `game.phase` and `game.turn_index`, so a game loaded from a save resumes
-at the same investigator's Day turn.
+at the same investigator's turn.
 """
 
 from __future__ import annotations
 
+from pursuit.content.defs import LOCATION_DECKS, EncounterDef, EncounterSection
 from pursuit.controller import Option
 from pursuit.effects.base import Ctx, run_effects
-from pursuit.engine import actions, combat, rules
-from pursuit.engine.state import Game, Investigator, Phase
+from pursuit.engine import actions, combat, dice, rules
+from pursuit.engine.state import ActiveMythos, FallenInvestigator, Game, Investigator, MysteryState, Phase
 
 
 def play(game: Game) -> str:
@@ -20,22 +21,23 @@ def play(game: Game) -> str:
 
 
 def step(game: Game) -> None:
-    if game.phase == Phase.DAY:
-        day_phase(game)
+    if game.phase == Phase.ACTION:
+        action_phase(game)
     elif game.phase == Phase.ENCOUNTER:
         encounter_phase(game)
     else:
-        night_phase(game)
+        mythos_phase(game)
 
 
-def day_phase(game: Game) -> None:
+def action_phase(game: Game) -> None:
+    order = game.turn_order()
     if game.turn_index == 0:
-        rules.emit(game, "phase", f"Round {game.round}: Day", phase="day", round=game.round)
-    while game.turn_index < len(game.investigators):
-        inv = game.investigators[game.turn_index]
+        rules.emit(game, "phase", f"Round {game.round}: Action Phase", phase="action", round=game.round)
+    while game.turn_index < len(order):
+        inv = order[game.turn_index]
         if not inv.eliminated and not inv.defeated:
             game.ctl.checkpoint(game)
-            day_turn(game, inv)
+            action_turn(game, inv)
             rules.process_defeats(game)
             if game.outcome:
                 return
@@ -44,14 +46,19 @@ def day_phase(game: Game) -> None:
     game.turn_index = 0
 
 
-def day_turn(game: Game, inv: Investigator) -> None:
-    rules.emit(game, "turn", f"{inv.name}'s Day turn.", investigator=inv.name, phase="day")
+# Alias for backward compatibility
+day_phase = action_phase
+
+
+def action_turn(game: Game, inv: Investigator) -> None:
+    rules.emit(game, "turn", f"{inv.name}'s Action turn.", investigator=inv.name, phase="action")
     if inv.delayed:
         inv.delayed = False
         inv.actions_taken = ["delayed"] * game.content.rules.actions_per_turn
-        rules.emit(game, "info", f"{inv.name} is delayed and loses this turn's actions.")
+        rules.emit(game, "info", f"{inv.name} stands up from being Delayed and cannot perform actions this turn.")
+        return
     while not game.outcome and not inv.defeated:
-        options = actions.day_options(game, inv)
+        options = actions.action_options(game, inv)
         pick = rules.choose(game, f"{inv.name}, choose an action.", options, kind="action", inv=inv)
         value = options[pick].value
         if value[0] == "end":
@@ -59,18 +66,22 @@ def day_turn(game: Game, inv: Investigator) -> None:
         actions.perform(game, inv, value)
 
 
+day_turn = action_turn
+
+
 def encounter_phase(game: Game) -> None:
+    order = game.turn_order()
     if game.turn_index == 0:
-        rules.emit(game, "phase", f"Round {game.round}: Encounters", phase="encounter", round=game.round)
-    while game.turn_index < len(game.investigators):
-        inv = game.investigators[game.turn_index]
+        rules.emit(game, "phase", f"Round {game.round}: Encounter Phase", phase="encounter", round=game.round)
+    while game.turn_index < len(order):
+        inv = order[game.turn_index]
         if not inv.eliminated and not inv.defeated:
             encounter_turn(game, inv)
             rules.process_defeats(game)
             if game.outcome:
                 return
         game.turn_index += 1
-    game.phase = Phase.NIGHT
+    game.phase = Phase.MYTHOS
     game.turn_index = 0
 
 
@@ -81,80 +92,269 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
     content = game.content
     state = game.locations[inv.location]
     ldef = content.locations[inv.location]
-    deck_name = content.deck_for_location(inv.location)
-    options = [Option(f"Explore {ldef.name}", deck_name, ldef.text)]
-    if state.rift:
-        options.append(Option("Step through the rift", "rift", "Dangerous. A success can seal the rift."))
+
+    options: list[Option] = []
+    if ldef.region in LOCATION_DECKS and not ldef.id.startswith("space_"):
+        region_label = ldef.region.replace("_", "/").title()
+        options.append(Option(f"{ldef.name} ({region_label} Encounter)", ("deck", ldef.region), ldef.text))
+    options.append(Option(f"General ({ldef.terrain.title()}) Encounter", ("deck", "general"), ldef.text))
+
+    if state.clue:
+        options.append(
+            Option("Research Encounter (Clue token)", ("research",), "Draw a Research Encounter to claim this Clue.")
+        )
+    if state.gate:
+        options.append(
+            Option("Other World Encounter (Gate token)", ("other_world",), "Step through the Gate to try to close it.")
+        )
+    if game.active_expedition == inv.location:
+        options.append(
+            Option("Expedition Encounter", ("expedition",), "Explore the Active Expedition for an Artifact or reward.")
+        )
+    for active in game.active_mythos:
+        if active.rumor_space == inv.location:
+            mdef = content.mythos[active.def_id]
+            options.append(Option(f"Rumor Encounter: {mdef.name}", ("rumor", active.def_id), mdef.encounter_text))
+    for mys in game.active_mysteries():
+        mys_def = game.mystery_def(mys)
+        if mys_def.kind in ("encounter", "spend") and (
+            mys_def.where is None or mys_def.where.matches(game, inv.location)
+        ):
+            options.append(Option(f"Mystery Encounter: {mys_def.name}", ("mystery", mys.def_id), mys_def.text))
+    for i, fallen in enumerate(state.fallen):
+        kind_label = "Crippled" if fallen.cause == "health" else "Insane"
+        options.append(
+            Option(
+                f"Encounter {fallen.name} ({kind_label})",
+                ("fallen", i),
+                "Retrieve possessions and attempt to retreat Doom.",
+            )
+        )
+
     pick = rules.choose(game, "Choose your encounter.", options, kind="encounter", inv=inv, auto_single=True)
-    deck_name = options[pick].value
+    choice = options[pick].value
+    tag = choice[0]
+    game.bump("encounters")
+
+    if tag == "deck":
+        _draw_and_run_encounter(game, inv, choice[1])
+    elif tag == "research":
+        _draw_and_run_encounter(game, inv, f"research_{game.old_one_id}")
+    elif tag == "other_world":
+        other_world = state.other_world
+        if other_world is None:
+            other_world = game.rng.choice(list(content.other_worlds))
+            state.other_world = other_world
+        _draw_and_run_encounter(game, inv, f"other_world_{other_world}")
+    elif tag == "expedition":
+        _draw_and_run_encounter(game, inv, "expedition")
+        rules.update_expedition(game)
+    elif tag == "rumor":
+        found_rumor = next((a for a in game.active_mythos if a.def_id == choice[1]), None)
+        if found_rumor is not None:
+            mdef = content.mythos[found_rumor.def_id]
+            rules.emit(game, "encounter", mdef.encounter_text, title=mdef.name, deck="rumor", location=inv.location)
+            run_effects(mdef.encounter_effects, Ctx(game, inv, f"rumor:{mdef.id}", mythos=found_rumor))
+    elif tag == "mystery":
+        found_mys = next((m for m in game.active_mysteries() if m.def_id == choice[1]), None)
+        if found_mys is not None:
+            _resolve_mystery_encounter(game, inv, found_mys)
+    elif tag == "fallen" and choice[1] < len(state.fallen):
+        fallen = state.fallen.pop(choice[1])
+        _resolve_fallen_encounter(game, inv, fallen)
+
+
+def _encounter_section(game: Game, inv: Investigator, edef: EncounterDef) -> EncounterSection | None:
+    """Pick the section matching the investigator's city or terrain."""
+    ldef = game.content.locations[inv.location]
+    for section in edef.sections:
+        if section.location == inv.location or section.terrain == ldef.terrain:
+            return section
+    return None
+
+
+def _draw_and_run_encounter(game: Game, inv: Investigator, deck_name: str) -> None:
+    content = game.content
     deck = game.encounter_decks[deck_name]
     enc_id = deck.draw(game.rng)
     if enc_id is None:
         return
     edef = content.encounters[enc_id]
-    game.bump("encounters")
-    rules.emit(game, "encounter", edef.text, title=edef.title, deck=deck_name, encounter=edef.id, location=inv.location)
-    run_effects(edef.effects, Ctx(game, inv, f"encounter:{edef.id}"))
+    section = _encounter_section(game, inv, edef)
+    text = section.text if section is not None else edef.text
+    effects = section.effects if section is not None else edef.effects
+    rules.emit(
+        game,
+        "encounter",
+        text,
+        title=edef.title,
+        deck=deck_name,
+        encounter=edef.id,
+        location=inv.location,
+    )
+    run_effects(effects, Ctx(game, inv, f"encounter:{edef.id}"))
     deck.discard(enc_id)
-    if not inv.defeated and not game.outcome:
-        rules.trigger_conditions(game, inv, "encounter")
 
 
-def night_phase(game: Game) -> None:
-    old = game.old_one
-    rules.emit(game, "phase", f"Round {game.round}: Night", phase="night", round=game.round)
-    was_awake = game.awakened
+def _resolve_mystery_encounter(game: Game, inv: Investigator, mys: MysteryState) -> None:
+    mdef = game.mystery_def(mys)
+    rules.emit(game, "encounter", mdef.text, title=mdef.name, deck="mystery", location=inv.location)
+    if mdef.kind == "spend":
+        if inv.clues >= max(1, mdef.clue_cost):
+            cost = max(1, mdef.clue_cost)
+            rules.change_clues(game, inv, -cost)
+            rules.add_mystery_progress(game, mys, 1)
+        else:
+            rules.emit(game, "info", f"{inv.name} does not have enough Clues ({max(1, mdef.clue_cost)} needed).")
+        return
+    if mdef.skill is not None:
+        res = dice.run_test(game, inv, mdef.skill, mdef.mod, contexts=("mystery", "encounter"), label=mdef.name)
+        if res.passed:
+            if mdef.clue_cost > 0:
+                if inv.clues >= mdef.clue_cost and rules.confirm(
+                    game,
+                    f"Spend {mdef.clue_cost} Clue(s) to advance '{mdef.name}'?",
+                    kind="mystery_spend",
+                    inv=inv,
+                ):
+                    rules.change_clues(game, inv, -mdef.clue_cost)
+                    rules.add_mystery_progress(game, mys, 1)
+            else:
+                rules.add_mystery_progress(game, mys, 1)
 
-    pressure = len(game.open_rifts()) >= old.rift_pressure
-    reason = "night falls" + (", and the open rifts press on the world" if pressure else "")
-    rules.advance_doom(game, game.content.rules.night_doom + (1 if pressure else 0), reason)
-    if game.outcome:
+
+def _resolve_fallen_encounter(game: Game, inv: Investigator, fallen: FallenInvestigator) -> None:
+    idef = game.content.investigators[fallen.def_id]
+    enc = idef.crippled if fallen.cause == "health" else idef.insane
+    rules.emit(
+        game,
+        "encounter",
+        enc.text,
+        title=f"Fallen Investigator: {fallen.name}",
+        deck="fallen",
+        location=inv.location,
+    )
+    if fallen.clues:
+        rules.change_clues(game, inv, fallen.clues)
+    for t in fallen.tickets:
+        rules.gain_ticket(game, inv, t)
+    for card in fallen.assets:
+        inv.assets.append(card)
+        rules.emit(game, "gain", f"{inv.name} recovers {game.asset_def(card).name}.")
+    res = dice.run_test(game, inv, enc.skill, enc.mod, contexts=("encounter",), label=fallen.name)
+    if res.passed:
+        rules.emit(game, "info", enc.pass_text)
+        rules.retreat_doom(game, 1)
+    else:
+        rules.emit(game, "info", enc.fail_text)
+
+
+def mythos_phase(game: Game) -> None:
+    rules.emit(game, "phase", f"Round {game.round}: Mythos Phase", phase="mythos", round=game.round)
+    if not game.mythos_deck:
+        rules.lose(game, "The Mythos deck is empty, and time has run out for humanity.")
         return
 
-    portent_id = game.portent_deck.draw(game.rng)
-    if portent_id is not None:
-        pdef = game.content.portents[portent_id]
-        tier = pdef.tier(game.dread)
-        game.bump("portents")
-        rules.emit(
-            game,
-            "portent",
-            tier.text,
-            title=pdef.name,
-            flavor=pdef.flavor,
-            portent=pdef.id,
-            dread=game.dread,
-        )
-        run_effects(tier.effects, Ctx(game, None, f"portent:{pdef.id}"))
-        game.portent_deck.discard(portent_id)
+    mythos_id = game.mythos_deck.pop(0)
+    mdef = game.content.mythos[mythos_id]
+    game.bump("mythos_drawn")
+    rules.emit(
+        game,
+        "mythos",
+        mdef.text,
+        title=mdef.name,
+        flavor=mdef.flavor,
+        mythos=mdef.id,
+        color=mdef.color,
+        icons=list(mdef.icons),
+        traits=list(mdef.traits),
+    )
+
+    ref = game.reference
+    active_card: ActiveMythos | None = None
+    if "ongoing" in mdef.traits or "rumor" in mdef.traits:
+        active_card = ActiveMythos(def_id=mdef.id, eldritch=0, rumor_space=mdef.rumor_space)
+        game.active_mythos.append(active_card)
+
+    # Resolve the 7 Mythos elements in rulebook order:
+    # 1. Advance Omen
+    if "advance_omen" in mdef.icons and not game.outcome:
+        rules.advance_omen(game, 1)
         rules.process_defeats(game)
-        if game.outcome:
-            return
 
-    if game.awakened and was_awake:
-        run_effects(old.awakening.night, Ctx(game, None, f"awakened:{old.id}"))
-    elif not game.awakened:
-        run_effects(old.night, Ctx(game, None, f"night:{old.id}"))
-    rules.process_defeats(game)
+    # 2. Resolve Reckoning Effects
+    if "reckoning" in mdef.icons and not game.outcome:
+        rules.resolve_reckoning(game)
+        rules.process_defeats(game)
+
+    # 3. Spawn Gates
+    if "spawn_gates" in mdef.icons and not game.outcome:
+        for _ in range(ref.spawn_gates):
+            if game.outcome:
+                break
+            rules.spawn_gate(game)
+        rules.process_defeats(game)
+
+    # 4. Monster Surge
+    if "monster_surge" in mdef.icons and not game.outcome:
+        rules.monster_surge(game)
+        rules.process_defeats(game)
+
+    # 5. Spawn Clues
+    if "spawn_clues" in mdef.icons and not game.outcome:
+        for _ in range(ref.spawn_clues):
+            rules.spawn_clue(game)
+
+    # 6. Place Rumor Token
+    if "place_rumor" in mdef.icons and active_card is not None and mdef.rumor_space and not game.outcome:
+        active_card.rumor_space = mdef.rumor_space
+        rules.emit(game, "mythos", f"A Rumor token is placed at {rules.loc_name(game, mdef.rumor_space)}.")
+
+    # 7. Place Eldritch Tokens
+    if "place_eldritch" in mdef.icons and active_card is not None and mdef.eldritch > 0 and not game.outcome:
+        active_card.eldritch = mdef.eldritch
+        rules.emit(game, "mythos", f"{mdef.eldritch} Eldritch token(s) are placed on '{mdef.name}'.")
+
+    # Resolve Effect
+    if mdef.effects and not game.outcome:
+        run_effects(mdef.effects, Ctx(game, None, f"mythos:{mdef.id}", mythos=active_card))
+        rules.process_defeats(game)
+
+    if active_card is None:
+        game.mythos_discards.append(mdef.id)
+
     if game.outcome:
         return
 
-    for inv in game.active_investigators():
-        if not inv.defeated:
-            rules.trigger_conditions(game, inv, "night")
-    rules.process_defeats(game)
+    # End of Mythos Phase: replace defeated investigators, check mysteries, pass Lead Investigator
+    rules.replace_defeated_investigators(game)
     if game.outcome:
         return
 
-    rules.rotate_market(game)
+    active_invs = [i for i in game.investigators if not i.eliminated and not i.defeated]
+    if len(active_invs) > 1:
+        options = [Option(i.name, i.seat, f"in {rules.loc_name(game, i.location)}") for i in active_invs]
+        pick = rules.choose(
+            game,
+            "Pass the Lead Investigator token to whom?",
+            options,
+            kind="pass_lead",
+            inv=game.lead_investigator(),
+        )
+        game.lead_seat = active_invs[pick].seat
+
     start_round(game)
+
+
+night_phase = mythos_phase
 
 
 def start_round(game: Game) -> None:
     game.round += 1
-    game.phase = Phase.DAY
+    game.phase = Phase.ACTION
     game.turn_index = 0
     for inv in game.investigators:
         inv.actions_taken = []
         for card in inv.assets:
             card.exhausted = False
+

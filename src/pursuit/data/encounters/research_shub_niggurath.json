@@ -1,0 +1,752 @@
+[
+  {
+    "id": "research_shub_niggurath_city_1",
+    "title": "You search for insight into what the Order of the...",
+    "terrain": "city",
+    "text": "You search for insight into what the Order of the Death's Head was doing before they left the city (Observation). If you pass, you find notes about a creature; gain this Clue and discard 1 Monster of your choice. If you fail; advance Doom by 1.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you find notes about a creature; gain this Clue and discard 1 Monster of your choice. If you fail; advance Doom by 1."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "advance_doom",
+            "amount": 1
+          },
+          {
+            "type": "discard_monster",
+            "where": "choose_space"
+          }
+        ],
+        "fail": []
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_2",
+    "title": "You've captured one of the Brotherhood's knights.",
+    "terrain": "city",
+    "text": "You've captured one of the Brotherhood's knights. These assassins are rarely captured alive, and this may be your only chance to interrogate one (Observation). If you pass, you question him briefly before he swallows a poison capsule; gain this Clue. If you fail, he struggles and escapes; lose 2 Health.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you question him briefly before he swallows a poison capsule; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "he struggles and escapes; lose 2 Health."
+          },
+          {
+            "type": "health",
+            "amount": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_3",
+    "title": "A midnight break-in at the museum has left several...",
+    "terrain": "city",
+    "text": "A midnight break-in at the museum has left several guards dead. Based on descriptions of the stolen items, you try to identify what was taken (Observation). If you pass, you recognize the items as the legendary Furnace of Yeb and Torch of Nug; gain this Clue.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you recognize the items as the legendary Furnace of Yeb and Torch of Nug; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": []
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_4",
+    "title": "In your nightmare, the chanting of the Cult of the...",
+    "terrain": "city",
+    "text": "In your nightmare, the chanting of the Cult of the Black Goat threatens your sanity (Will). If you pass, you remember the words when you wake up; gain this Clue. If you fail, you find yourself in an open field the next morning; move to the nearest Wilderness space and gain an Amnesia Condition.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you remember the words when you wake up; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you find yourself in an open field the next morning; move to the nearest Wilderness space and gain an Amnesia Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "amnesia"
+          },
+          {
+            "type": "nearest_terrain",
+            "terrain": "wilderness"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_5",
+    "title": "You search an underground temple dedicated to a...",
+    "terrain": "city",
+    "text": "You search an underground temple dedicated to a fertility goddess (Observation-1). If you pass, you find a hidden tunnel that connects the temple to a cemetery; gain this Clue and 1 additional Clue. If you fail, mold and spores get into your lungs; gain an Internal Injury Condition.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you find a hidden tunnel that connects the temple to a cemetery; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "mold and spores get into your lungs; gain an Internal Injury Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "internal_injury"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_6",
+    "title": "Blood begins to drip from your ears, nose, and mouth.",
+    "terrain": "city",
+    "text": "Blood begins to drip from your ears, nose, and mouth. A witch is casting a hex against you, and you must resist it (Will)! If you pass, you are able to send the hex somewhere else; gain this Clue and 1 Monster of your choice loses 2 Health. If you fail, gain a Cursed Condition.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "will",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you are able to send the hex somewhere else; gain this Clue and 1 Monster of your choice loses 2 Health."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "gain a Cursed Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "cursed"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_7",
+    "title": "You identify an important member of the local...",
+    "terrain": "city",
+    "text": "You identify an important member of the local government as a worshiper of the Black Goat and try to pressure him into revealing the cult's secrets (Influence). If you pass, he answers your questions; gain this Clue and 1 additional Clue. If you fail, he frames you for a crime; gain a Detained Condition.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "he answers your questions; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "he frames you for a crime; gain a Detained Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "detained"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_city_8",
+    "title": "As he lie dying, the bleeding priest begs you to guard...",
+    "terrain": "city",
+    "text": "As he lie dying, the bleeding priest begs you to guard the sword. He tells you Brother Tristam and his Order will stop at nothing. If you make a solemn vow, he will give you his ancient blade. You may gain a Dark Pact Condition to gain this Clue and the Sword of Saint Jerome Artifact.",
+    "effects": [
+      {
+        "type": "claim_clue"
+      },
+      {
+        "type": "gain_condition",
+        "id": "dark_pact"
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_1",
+    "title": "The moon is full, and a satyr-like creature pulls...",
+    "terrain": "wilderness",
+    "text": "The moon is full, and a satyr-like creature pulls itself from an undulating mass of sludge. A Goat Spawn ambushes you! If you defeat it, gain this Clue and 1 additional Clue. If you fail, you wake up the next morning with no memory of how you survived; gain an Amnesia Condition.",
+    "effects": [
+      {
+        "type": "claim_clue"
+      },
+      {
+        "type": "clues",
+        "amount": 1
+      },
+      {
+        "type": "gain_condition",
+        "id": "amnesia"
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_2",
+    "title": "The cultists weave through the trees, making it hard...",
+    "terrain": "wilderness",
+    "text": "The cultists weave through the trees, making it hard to follow them (Observation-1). If you pass, you watch their ritual; gain this Clue. If you fail, you get lost in the forest; spawn a Dark Young Monster (or a random Monster if the Dark Young Monster is on the game board) on your space and encounter it.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you watch their ritual; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you get lost in the forest; spawn a Dark Young Monster (or a random Monster if the Dark Young Monster is on the game board) on your space and encounter it."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_3",
+    "title": "The faces of the robed figures are hidden behind...",
+    "terrain": "wilderness",
+    "text": "The faces of the robed figures are hidden behind wooden goat masks. Their chanting corrupts your thoughts. You may gain a Dark Pact to gain this Clue and improve Strength. If you do not gain the Condition, you find yourself alone, unsure if the cultist were really there; gain a Paranoia Condition.",
+    "effects": [
+      {
+        "type": "claim_clue"
+      },
+      {
+        "type": "gain_condition",
+        "id": "paranoia"
+      },
+      {
+        "type": "improve_skill",
+        "skill": "strength"
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_4",
+    "title": "This area has been prepared for a sacrifice.",
+    "terrain": "wilderness",
+    "text": "This area has been prepared for a sacrifice. You keep an eye out for the Cult to return (Observation-1). If you pass, you watch them sacrifice a goat to Shub-Niggurath; gain this Clue and 1 additional Clue. If you fail, they surprise you in the night; discard 1 Ally Asset and lose 2 Sanity.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you watch them sacrifice a goat to Shub-Niggurath; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "they surprise you in the night; discard 1 Ally Asset and lose 2 Sanity."
+          },
+          {
+            "type": "sanity",
+            "amount": -2
+          },
+          {
+            "type": "lose_asset",
+            "count": 1,
+            "kind": "ally"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_5",
+    "title": "The hooded figure hands you a chalice, but you are...",
+    "terrain": "wilderness",
+    "text": "The hooded figure hands you a chalice, but you are suspicious of its content (Observation-1). If you pass, you pour the foul substance on the ground and study the effect; gain this Clue and 1 additional Clue. If you fail, you drink the milk of Shub-Niggurath; a Dark Young Monster ambushes you!",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you pour the foul substance on the ground and study the effect; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you drink the milk of Shub-Niggurath; a Dark Young Monster ambushes you!"
+          },
+          {
+            "type": "ambush",
+            "id": "dark_young"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_6",
+    "title": "The Cult of the Black Goat has chosen you as the...",
+    "terrain": "wilderness",
+    "text": "The Cult of the Black Goat has chosen you as the target of their ritual hunt. You try to cover your tracks and evade all of their traps (Observation). If you pass, you escape with your knowledge of the Cult intact; gain this Clue. If you fail, they capture you and store you in a cage until their next ritual; gain a Detained Condition.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you escape with your knowledge of the Cult intact; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "they capture you and store you in a cage until their next ritual; gain a Detained Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "detained"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_7",
+    "title": "A group of cultists have been eviscerated by some...",
+    "terrain": "wilderness",
+    "text": "A group of cultists have been eviscerated by some creature they summoned but could not control. You think you know a way to send the abomination back where it belongs (Lore-1). If you pass, you banish the beast; gain this Clue and retreat Doom by 1. If you fail, it throws you into a rock wall; gain a Back Injury Condition.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you banish the beast; gain this Clue and retreat Doom by 1."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "retreat_doom",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "it throws you into a rock wall; gain a Back Injury Condition."
+          },
+          {
+            "type": "gain_condition",
+            "id": "back_injury"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_wilderness_8",
+    "title": "The locals in a small village are celebrating an...",
+    "terrain": "wilderness",
+    "text": "The locals in a small village are celebrating an ancient pagan holiday. Some of the songs and traditions seem to have occult significance (Lore-1). If you pass, you recognize the influence of The Black Goat and stay away from the festival; gain this Clue. If you fail, a Goat Spawn Monster ambushes you.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "lore",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you recognize the influence of The Black Goat and stay away from the festival; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "a Goat Spawn Monster ambushes you."
+          },
+          {
+            "type": "ambush",
+            "id": "goat_spawn"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_1",
+    "title": "You search the ship for a creature that's been...",
+    "terrain": "sea",
+    "text": "You search the ship for a creature that's been attacking the crew (Observation-1). If you pass, you find the beast asleep in the cargo hold and easily overpower it; gain this Clue and 1 additional Clue. If you fail, it finds you; a Monster ambushes you!",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you find the beast asleep in the cargo hold and easily overpower it; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "it finds you; a Monster ambushes you!"
+          },
+          {
+            "type": "ambush"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_2",
+    "title": "You negotiate with the crew to fight on your behalf...",
+    "terrain": "sea",
+    "text": "You negotiate with the crew to fight on your behalf (Influence-1). If you pass, they eagerly offer their help; gain this Clue and discard 1 Monster of your choice.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "they eagerly offer their help; gain this Clue and discard 1 Monster of your choice."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "discard_monster",
+            "where": "choose_space"
+          }
+        ],
+        "fail": []
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_3",
+    "title": "One of the crew secretly worships the Black Goat, and...",
+    "terrain": "sea",
+    "text": "One of the crew secretly worships the Black Goat, and he has set the ship on fire. You race to fight the flames (Strength-1). If you pass, you question the cultist; gain this Clue and 1 additional Clue. If you fail, you have to abandon ship; move to the nearest Wilderness space and you become Delayed.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you question the cultist; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you have to abandon ship; move to the nearest Wilderness space and you become Delayed."
+          },
+          {
+            "type": "delay"
+          },
+          {
+            "type": "nearest_terrain",
+            "terrain": "wilderness"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_4",
+    "title": "You stop to examine a ship that has run aground...",
+    "terrain": "sea",
+    "text": "You stop to examine a ship that has run aground (Observation-1). If you pass, the captain's journal describes a creature that was kept in the cargo hold; gain this Clue and 1 additional Clue. If you fail, you find nothing useful; move this Clue to the nearest Wilderness space.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "the captain's journal describes a creature that was kept in the cargo hold; gain this Clue and 1 additional Clue."
+          },
+          {
+            "type": "claim_clue"
+          },
+          {
+            "type": "clues",
+            "amount": 1
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you find nothing useful; move this Clue to the nearest Wilderness space."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_5",
+    "title": "Under the full moon, the sailor turns into a beast.",
+    "terrain": "sea",
+    "text": "Under the full moon, the sailor turns into a beast. You lock him in his cabin and brace the door (Strength-1). If you pass, he's normal again in the morning and tells you of his experience; gain this Clue. If you fail, he escapes and dives overboard; move this Clue to the nearest Wilderness space.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "strength",
+        "mod": -1,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "he's normal again in the morning and tells you of his experience; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "he escapes and dives overboard; move this Clue to the nearest Wilderness space."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_6",
+    "title": "One of the sailors tells you that you've been marked...",
+    "terrain": "sea",
+    "text": "One of the sailors tells you that you've been marked and must be purified by fire. He brands your skin. Lose 2 Health. You feel the pain break the dark influences that cling to you; gain this Clue and you may discard a Cursed or Dark Pact Condition.",
+    "effects": [
+      {
+        "type": "claim_clue"
+      },
+      {
+        "type": "health",
+        "amount": -2
+      },
+      {
+        "type": "gain_condition",
+        "id": "dark_pact"
+      },
+      {
+        "type": "gain_condition",
+        "id": "cursed"
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_7",
+    "title": "The crew is gone, and all of the navigational...",
+    "terrain": "sea",
+    "text": "The crew is gone, and all of the navigational equipment has been destroyed. You decided to search a nearby island (Observation). If you pass, you find evidence of cult activity when you arrive; gain this Clue. If you fail, you wait for a rescue; become Delayed.",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you find evidence of cult activity when you arrive; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "you wait for a rescue; become Delayed."
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "research_shub_niggurath_sea_8",
+    "title": "You can't shake the feeling that something is hunting you.",
+    "terrain": "sea",
+    "text": "You can't shake the feeling that something is hunting you. You stay awake all night to watch for the threat (Observation). If you pass, you find strange tracks on the deck of the ship; gain this Clue. If you fail, a Monster ambushes you!",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "observation",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "you find strange tracks on the deck of the ship; gain this Clue."
+          },
+          {
+            "type": "claim_clue"
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "a Monster ambushes you!"
+          },
+          {
+            "type": "ambush"
+          }
+        ]
+      }
+    ]
+  }
+]

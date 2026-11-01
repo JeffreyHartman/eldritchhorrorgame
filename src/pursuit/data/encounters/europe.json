@@ -1,0 +1,642 @@
+[
+  {
+    "id": "europe_1",
+    "title": "The Silver Twilight Lodge is locked up tight.",
+    "sections": [
+      {
+        "location": "london",
+        "text": "The Silver Twilight Lodge is locked up tight. You look over the old building for a possible entrance (Observation). If you pass, the Lodge members are delighted by your ingenuity and offer their favor; gain a Blessed Condition. If you fail, you waste fruitless hours searching and become Delayed.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the Lodge members are delighted by your ingenuity and offer their favor; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you waste fruitless hours searching and become Delayed."
+              },
+              {
+                "type": "delay"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "The Vatican Library is so vast! You ask a librarian for a recommendation (Influence). If you pass, he leads you to a codex that recounts how worshipers of Shub-Niggurath were driven out of Rome, and the story renews your confidence; improve Will.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he leads you to a codex that recounts how worshipers of Shub-Niggurath were driven out of Rome, and the story renews your confidence; improve Will."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "will"
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "Inside the loud hustle and bustle of the Grand Bazaar, you negotiate to find a skilled instructor to tutor you (Influence-1). If you pass, improve 1 skill of your choice. If you fail, the instructor teaches you nothing; gain a Debt Condition to pay for his lessons.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "improve 1 skill of your choice."
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the instructor teaches you nothing; gain a Debt Condition to pay for his lessons."
+              },
+              {
+                "type": "gain_condition",
+                "id": "debt"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_2",
+    "title": "Inside the Herefordshire Asylum, a patient asks you if...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "Inside the Herefordshire Asylum, a patient asks you if you've seen the Yellow Sign. You listen to his story of the King in Yellow (Observation). If you pass, spawn 2 Clues. If you fail, his gibberish imprints itself onto your subconscious; gain a Hallucinations Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "spawn 2 Clues."
+              },
+              {
+                "type": "spawn_clue",
+                "count": 2
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "his gibberish imprints itself onto your subconscious; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "You have an inspirational dream in which you are a proud Roman quaestor. Improve Will. Your reverie is interrupted by a band of small, primitive men running wild outside. You try to negotiate with this lost tribe of Miri Nigri (Influence). If you fail, lose 1 Health and 1 Sanity as they continue their pursuit of some ancient grudge.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "will"
+          },
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health and 1 Sanity as they continue their pursuit of some ancient grudge."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "People from every walk of life can be found enjoying the cleansing steam of the Turkish baths. Inside, you'll eventually find an expert in any given field. You may become Delayed to improve 1 skill of your choice.",
+        "effects": [
+          {
+            "type": "delay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_3",
+    "title": "You peruse The Scoop, a tabloid paper that specializes...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "You peruse The Scoop, a tabloid paper that specializes in strange and lurid stories (Observation-1). If you pass, gain 1 Clue as you find a vital bit of information.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "gain 1 Clue as you find a vital bit of information."
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ],
+            "fail": []
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "You speak to a number of Vatican authorities about your investigations. They carefully consider your story (Influence-1). If you pass, you are thanked for doing good work; gain a Blessed Condition. If you fail, you are demoralized by their rejection; lose 1 Sanity and discard a Blessed Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": -1,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you are thanked for doing good work; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are demoralized by their rejection; lose 1 Sanity and discard a Blessed Condition."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "Professor Azap at the Topkapi Museum is not easily impressed. Only serious scholars can earn his respect (Lore). If you pass, he offers you any help the institute can provide; improve Influence.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "he offers you any help the institute can provide; improve Influence."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "influence"
+              }
+            ],
+            "fail": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_4",
+    "title": "In exchange for a generous donation, the Penhew...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "In exchange for a generous donation, the Penhew Foundation will happily show the results of its global explorations. You may gain a Debt Condition to gain 2 Clues.",
+        "effects": [
+          {
+            "type": "clues",
+            "amount": 2
+          },
+          {
+            "type": "gain_condition",
+            "id": "debt"
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "You discover a hidden shrine to Cybele in an ancient catacomb. It will be a long process to excavate the find, but removing such a blight from Rome's foundations will grant you a higher reward. You may become Delayed to gain a Blessed Condition.",
+        "effects": [
+          {
+            "type": "gain_condition",
+            "id": "blessed"
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "You see a horrid apparition slowly ascending the stairs and have the immediate impulse to run away (Will). If you pass, you discover that it wants only to take revenge on the murderous cultists for all of their victims; improve Influence. If you fail, you are overcome by terror; gain a Madness Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you discover that it wants only to take revenge on the murderous cultists for all of their victims; improve Influence."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "influence"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are overcome by terror; gain a Madness Condition."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_5",
+    "title": "Impulsively, you look through the inspector's files...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "Impulsively, you look through the inspector's files while his back is turned. Spawn 1 Clue on a space of your choice. Unfortunately, he sees you, and you'll need to fight your way out of Scotland Yard (Strength). If you fail, gain a Detained Condition as there is no shortage of police to arrest you.",
+        "effects": [
+          {
+            "type": "spawn_clue",
+            "count": 1
+          },
+          {
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Detained Condition as there is no shortage of police to arrest you."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "Ever since arriving in Rome, you've had nightmares about being betrayed. You try to assure yourself that they are only dreams (Will). If you pass, the nightmare stops; improve Will. If you fail, the nightmares continue; lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the nightmare stops; improve Will."
+              },
+              {
+                "type": "improve_skill",
+                "skill": "will"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the nightmares continue; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "The British Ambassador, Sir Douglas Rutherford, begs for your help. His child has been abducted by the Brothers of the Skin. You may spend 1 Clue to find the cultists and recover the boy. If you do, improve Influence.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "influence"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_6",
+    "title": "You meet an eccentric painter in Soho who offers to...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "You meet an eccentric painter in Soho who offers to show you his work. Amid his bizarre, alien landscapes, you notice some familiar details (Observation). If you pass, spawn 1 Clue on a space of your choice. If you fail, you see nothing but horrors; lose 1 Sanity.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "spawn 1 Clue on a space of your choice."
+              },
+              {
+                "type": "spawn_clue",
+                "count": 1
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you see nothing but horrors; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "A group of Blackshirts are interrogating an old priest, and you try to intervene (Influence). If you pass, they let the priest go, and he is eternally grateful; gain a Blessed Condition. If you fail, you are shoved against a wall and arrested; gain a Detained Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "influence",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "they let the priest go, and he is eternally grateful; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you are shoved against a wall and arrested; gain a Detained Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "detained"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "Members of the Turkish parliament offer you help in exchange for clearing a group of cultists out of the Shunned Mosque. Improve Influence. Inside, you interrupt a ritual and must resist the effect of its magical energies (Will). If you fail, lose 2 Health as your skin writhes across your body.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "influence"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Health as your skin writhes across your body."
+              },
+              {
+                "type": "health",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_7",
+    "title": "At the lecture of a noted archaeologist, he reveals...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "At the lecture of a noted archaeologist, he reveals startling information! Spawn 2 Clues. During the presentation, a stranger tries to sneak a scarab into your pocket (Observation). It is inscribed with words, \"Cursed be he who moves my body. To him shall come fire, water, and pestilence.\" If you fail, gain an Internal Injury Condition.",
+        "effects": [
+          {
+            "type": "spawn_clue",
+            "count": 2
+          },
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain an Internal Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "internal_injury"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "A witch cult must have used this villa to conduct their rituals. They've left behind a number of small potions. You may drink one to improve 1 skill of your choice. If you improve a skill, you must resist the ill effects of the elixir (Will). If you fail, gain a Cursed Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Cursed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "cursed"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "A secret group of scholars has taken an interest in you. Improve Influence. They show you a shocking, ancient text written by Theodorus Philetas regarding his translation of the Necronomicon. His words deeply disturb you (Will). If you fail, lose 2 Sanity.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "influence"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 2 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "europe_8",
+    "title": "You are invited to journey down to Oxford to examine...",
+    "sections": [
+      {
+        "location": "london",
+        "text": "You are invited to journey down to Oxford to examine John Dee's translation of the Necronomicon. You may become Delayed to spawn 2 Clues.",
+        "effects": [
+          {
+            "type": "spawn_clue",
+            "count": 2
+          },
+          {
+            "type": "delay"
+          }
+        ]
+      },
+      {
+        "location": "rome",
+        "text": "You are invigorated by a visit to a magnificent cathedral. Improve Will. In the basement, you find a mosaic depicting robed men bowing before a great fire. To your horror, it is surrounded by scorch marks that resemble human silhouettes (Will-1). If you fail, gain a Paranoia Condition.",
+        "effects": [
+          {
+            "type": "improve_skill",
+            "skill": "will"
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": -1,
+            "needed": 1,
+            "pass": [],
+            "fail": [
+              {
+                "type": "text",
+                "text": "gain a Paranoia Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "location": "istanbul",
+        "text": "You suspect that you are being followed. You use a reflective window to watch the people walking behind you (Observation). If you pass, you spot someone stalking you and escape into a mosque, and the imam there prays for your safety; gain a Blessed Condition. If you fail, the assassin finds you first; gain a Back Injury Condition.",
+        "effects": [
+          {
+            "type": "test",
+            "skill": "observation",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you spot someone stalking you and escape into a mosque, and the imam there prays for your safety; gain a Blessed Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "blessed"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the assassin finds you first; gain a Back Injury Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "back_injury"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

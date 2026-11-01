@@ -1,0 +1,60 @@
+[
+  {
+    "id": "other_world_the_underworld_1",
+    "title": "You find yourself surrounded by ghouls.",
+    "text": "You find yourself surrounded by ghouls. However, they don't seem to be antagonistic toward you. In fact, you believe you could persuade them to help you (Influence).",
+    "effects": [
+      {
+        "type": "test",
+        "skill": "influence",
+        "mod": 0,
+        "needed": 1,
+        "pass": [
+          {
+            "type": "text",
+            "text": "The ghouls direct you into the Tower of Koth in the City of the Gugs. As you ascend the tower's stairs, an enormous gug chases after you. The sound of the monstrosity rattles your nerves (Will). If you pass, close this Gate. If you fail, you hide, waiting for it to go away; lost 1 Sanity."
+          },
+          {
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you hide, waiting for it to go away; lost 1 Sanity."
+              }
+            ]
+          }
+        ],
+        "fail": [
+          {
+            "type": "text",
+            "text": "Your well-reasoned arguments seem to have no impact, but bribery might. You may discard 1 Item possession to close this Gate. If you do not discard the possession, the ghouls attack you; lose 1 Health and gain an Injury Condition."
+          },
+          {
+            "type": "health",
+            "amount": -1
+          },
+          {
+            "type": "close_gate"
+          },
+          {
+            "type": "lose_asset",
+            "count": 1,
+            "kind": "item"
+          }
+        ]
+      }
+    ]
+  }
+]

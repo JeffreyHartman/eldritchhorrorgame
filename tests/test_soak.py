@@ -28,7 +28,7 @@ def play_checked(content: Content, config: GameConfig, ctl: Controller) -> str:
 CASES = [
     (old, players, seed)
     for seed, (old, players) in enumerate(
-        [(o, p) for o in ("king_in_yellow", "cthulhu", "yog_sothoth", "nyarlathotep") for p in (1, 2, 3, 4)]
+        [(o, p) for o in ("azathoth", "yog_sothoth", "shub_niggurath", "cthulhu") for p in (1, 2, 3, 4)]
     )
 ]
 
