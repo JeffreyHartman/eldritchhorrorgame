@@ -157,7 +157,30 @@
         "text": "People from every walk of life can be found enjoying the cleansing steam of the Turkish baths. Inside, you'll eventually find an expert in any given field. You may become Delayed to improve 1 skill of your choice.",
         "effects": [
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Stay at the Turkish baths?",
+            "options": [
+              {
+                "label": "Become Delayed: improve 1 skill",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "improve_skill",
+                    "skill": "choose"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       }
@@ -258,12 +281,30 @@
         "text": "In exchange for a generous donation, the Penhew Foundation will happily show the results of its global explorations. You may gain a Debt Condition to gain 2 Clues.",
         "effects": [
           {
-            "type": "clues",
-            "amount": 2
-          },
-          {
-            "type": "gain_condition",
-            "id": "debt"
+            "type": "choice",
+            "prompt": "Donate to the Penhew Foundation?",
+            "options": [
+              {
+                "label": "Gain a Debt: gain 2 Clues",
+                "requires": {
+                  "lacks_condition": "debt"
+                },
+                "effects": [
+                  {
+                    "type": "gain_condition",
+                    "id": "debt"
+                  },
+                  {
+                    "type": "clues",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },
@@ -272,11 +313,30 @@
         "text": "You discover a hidden shrine to Cybele in an ancient catacomb. It will be a long process to excavate the find, but removing such a blight from Rome's foundations will grant you a higher reward. You may become Delayed to gain a Blessed Condition.",
         "effects": [
           {
-            "type": "gain_condition",
-            "id": "blessed"
-          },
-          {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Excavate the shrine to Cybele?",
+            "options": [
+              {
+                "label": "Become Delayed: gain a Blessed Condition",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "gain_condition",
+                    "id": "blessed"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },
@@ -379,8 +439,17 @@
         "text": "The British Ambassador, Sir Douglas Rutherford, begs for your help. His child has been abducted by the Brothers of the Skin. You may spend 1 Clue to find the cultists and recover the boy. If you do, improve Influence.",
         "effects": [
           {
-            "type": "improve_skill",
-            "skill": "influence"
+            "type": "pay",
+            "prompt": "Find the cultists and improve Influence?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "improve_skill",
+                "skill": "influence"
+              }
+            ]
           }
         ]
       }
@@ -578,11 +647,30 @@
         "text": "You are invited to journey down to Oxford to examine John Dee's translation of the Necronomicon. You may become Delayed to spawn 2 Clues.",
         "effects": [
           {
-            "type": "spawn_clue",
-            "count": 2
-          },
-          {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Journey to Oxford?",
+            "options": [
+              {
+                "label": "Become Delayed: spawn 2 Clues",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "spawn_clue",
+                    "count": 2
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },

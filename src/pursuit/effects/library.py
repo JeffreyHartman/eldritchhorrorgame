@@ -237,6 +237,19 @@ class ClaimClue(Effect):
             rules.change_clues(ctx.game, inv, self.bonus)
 
 
+@register("discard_clue")
+@dataclass(frozen=True)
+class DiscardClue(Effect):
+    """Discard 1 Clue token from the investigator's space with no gain."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.discard_clue(ctx.game, ctx.need_inv(self.kind).location)
+
+
 @register("gain_ticket")
 @dataclass(frozen=True)
 class GainTicket(Effect):
@@ -981,7 +994,7 @@ class Choice(Effect):
         ]
         if not any(o.enabled for o in opts):
             return
-        pick = rules.choose(game, self.prompt, opts, kind="effect_choice", inv=inv)
+        pick = rules.choose(game, self.prompt, opts, kind="effect_choice", inv=inv, auto_single=True)
         run_effects(self.options[pick].effects, ctx)
 
     def children(self) -> Iterable[Sequence[Effect]]:
@@ -1271,6 +1284,29 @@ class CloseGate(Effect):
                 run_effects(game.asset_def(card).on_close_gate, replace(ctx, asset=card))
             if inv.def_id == "akachi_onyele":
                 _akachi_moves(game, inv)
+
+
+@register("discard_gate")
+@dataclass(frozen=True)
+class DiscardGate(Effect):
+    """Discard 1 open Gate of the player's choice from any space. This does not close it."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        gates = game.open_gates()
+        if not gates:
+            return
+        options = [Option(rules.loc_name(game, loc), loc) for loc in gates]
+        pick = rules.choose(game, "Discard which Gate?", options, kind="choose_space", inv=ctx.inv, auto_single=True)
+        rules.discard_gate(game, gates[pick])
+        rules.emit(game, "gate", f"The Gate at {options[pick].label} is discarded.", location=gates[pick])
+
+    def needs_investigator(self) -> bool:
+        return False
 
 
 @register("discard_matching_gates")

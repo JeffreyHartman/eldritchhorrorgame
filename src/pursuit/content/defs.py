@@ -179,6 +179,7 @@ class InvestigatorFilter:
     clues_at_most: int | None = None
     has_improvement: bool | None = None
     monster_at_gate: bool | None = None
+    delayed: bool | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> InvestigatorFilter:
@@ -199,6 +200,7 @@ class InvestigatorFilter:
             clues_at_most=r.get_int("clues_at_most", None),
             has_improvement=r.get_bool("has_improvement", None),
             monster_at_gate=r.get_bool("monster_at_gate", None),
+            delayed=r.get_bool("delayed", None),
         )
         r.done()
         return f
@@ -230,6 +232,8 @@ class InvestigatorFilter:
         if self.lacks_condition is not None and any(c.id == self.lacks_condition for c in conds):
             return False
         if self.clues_at_most is not None and inv.clues > self.clues_at_most:
+            return False
+        if self.delayed is not None and inv.delayed != self.delayed:
             return False
         if self.has_improvement is not None and any(v > 0 for v in inv.improvements.values()) != self.has_improvement:
             return False

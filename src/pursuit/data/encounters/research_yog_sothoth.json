@@ -20,8 +20,31 @@
             "type": "claim_clue"
           },
           {
-            "type": "gain_asset",
-            "id": "silver_key"
+            "type": "choice",
+            "prompt": "Examine the stolen treasure?",
+            "options": [
+              {
+                "label": "Discard 1 Spell: gain the Silver Key",
+                "requires": {
+                  "asset_kind": "spell"
+                },
+                "effects": [
+                  {
+                    "type": "lose_asset",
+                    "count": 1,
+                    "kind": "spell"
+                  },
+                  {
+                    "type": "gain_asset",
+                    "id": "silver_key"
+                  }
+                ]
+              },
+              {
+                "label": "Keep your Spells",
+                "effects": []
+              }
+            ]
           }
         ],
         "fail": [
@@ -45,11 +68,37 @@
     "text": "An old man approaches you and begs you to make a solemn vow to deliver a book to his grandson, Wilbur, in a town called Dunwich. You may gain a Dark Pact Condition to gain this Clue and the Necronomicon Artifact. If you do not gain the Condition, discard this Clue.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "dark_pact"
+        "type": "choice",
+        "prompt": "Make the solemn vow?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact: gain this Clue and the Necronomicon",
+            "requires": {
+              "lacks_condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "claim_clue"
+              },
+              {
+                "type": "gain_asset",
+                "id": "necronomicon"
+              }
+            ]
+          },
+          {
+            "label": "Refuse",
+            "effects": [
+              {
+                "type": "discard_clue"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -225,22 +274,43 @@
             "text": "you find the boy and try to free him from the debt; you may discard 1 Spell to gain this Clue and 1 additional Clue."
           },
           {
-            "type": "claim_clue"
-          },
-          {
-            "type": "clues",
-            "amount": 1
-          },
-          {
-            "type": "lose_asset",
-            "count": 1,
-            "kind": "spell"
+            "type": "choice",
+            "prompt": "Free the boy from the debt?",
+            "options": [
+              {
+                "label": "Discard 1 Spell: gain this Clue and 1 additional Clue",
+                "requires": {
+                  "asset_kind": "spell"
+                },
+                "effects": [
+                  {
+                    "type": "lose_asset",
+                    "count": 1,
+                    "kind": "spell"
+                  },
+                  {
+                    "type": "claim_clue"
+                  },
+                  {
+                    "type": "clues",
+                    "amount": 1
+                  }
+                ]
+              },
+              {
+                "label": "Keep your Spells",
+                "effects": []
+              }
+            ]
           }
         ],
         "fail": [
           {
             "type": "text",
             "text": "you suffer Yog-Sothoth's wrath; discard this Clue and gain a Cursed Condition."
+          },
+          {
+            "type": "discard_clue"
           },
           {
             "type": "gain_condition",
@@ -634,19 +704,38 @@
     "text": "Large, winged crustaceans land on your ship and command you to join Yog-Sothoth. You may gain a Dark Pact Condition. If you do, the mi-go share their plans with you; gain this Clue and 1 additional Clue. If you do not, spawn 1 Gate.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "clues",
-        "amount": 1
-      },
-      {
-        "type": "gain_condition",
-        "id": "dark_pact"
-      },
-      {
-        "type": "spawn_gate",
-        "count": 1
+        "type": "choice",
+        "prompt": "Join Yog-Sothoth?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact: gain this Clue and 1 additional Clue",
+            "requires": {
+              "lacks_condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "claim_clue"
+              },
+              {
+                "type": "clues",
+                "amount": 1
+              }
+            ]
+          },
+          {
+            "label": "Refuse",
+            "effects": [
+              {
+                "type": "spawn_gate",
+                "count": 1
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -705,9 +794,30 @@
             "type": "claim_clue"
           },
           {
-            "type": "lose_asset",
-            "count": 1,
-            "kind": "spell"
+            "type": "choice",
+            "prompt": "Patch the rift?",
+            "options": [
+              {
+                "label": "Discard 1 Spell: discard 1 Gate of your choice",
+                "requires": {
+                  "asset_kind": "spell"
+                },
+                "effects": [
+                  {
+                    "type": "lose_asset",
+                    "count": 1,
+                    "kind": "spell"
+                  },
+                  {
+                    "type": "discard_gate"
+                  }
+                ]
+              },
+              {
+                "label": "Keep your Spells",
+                "effects": []
+              }
+            ]
           }
         ],
         "fail": []

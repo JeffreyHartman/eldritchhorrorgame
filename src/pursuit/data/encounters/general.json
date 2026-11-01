@@ -405,9 +405,18 @@
         "text": "The ground slopes upward so uniformly that you suspect a structure exists underneath. You search for a buried entrance to claim the treasures found inside. You may spend 1 Clue to gain 1 Artifact.",
         "effects": [
           {
-            "type": "gain_asset",
-            "count": 1,
-            "kind": "artifact"
+            "type": "pay",
+            "prompt": "Search for the buried entrance and gain 1 Artifact?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "artifact"
+              }
+            ]
           }
         ]
       },
@@ -416,12 +425,31 @@
         "text": "The captain tells you that you are passing over the site of a famous shipwreck. You can use this ship's deep-sea diving equipment to explore the wreckage. You may become Delayed to gain 1 Artifact.",
         "effects": [
           {
-            "type": "delay"
-          },
-          {
-            "type": "gain_asset",
-            "count": 1,
-            "kind": "artifact"
+            "type": "choice",
+            "prompt": "Dive to the shipwreck?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 1 Artifact",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "gain_asset",
+                    "count": 1,
+                    "kind": "artifact"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       }
@@ -908,11 +936,77 @@
         "text": "According to your map, you can make a detour to visit a lake purported to have restorative powers. You may become Delayed to recover 3 Sanity or discard a Madness Condition.",
         "effects": [
           {
-            "type": "sanity",
-            "amount": 3
-          },
-          {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Detour to the lake?",
+            "options": [
+              {
+                "label": "Become Delayed: recover 3 Sanity or discard a Madness Condition",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "choice",
+                    "prompt": "What do the waters restore?",
+                    "options": [
+                      {
+                        "label": "Recover 3 Sanity",
+                        "effects": [
+                          {
+                            "type": "sanity",
+                            "amount": 3
+                          }
+                        ]
+                      },
+                      {
+                        "label": "Discard Amnesia",
+                        "requires": {
+                          "condition": "amnesia"
+                        },
+                        "effects": [
+                          {
+                            "type": "remove_condition",
+                            "id": "amnesia"
+                          }
+                        ]
+                      },
+                      {
+                        "label": "Discard Hallucinations",
+                        "requires": {
+                          "condition": "hallucinations"
+                        },
+                        "effects": [
+                          {
+                            "type": "remove_condition",
+                            "id": "hallucinations"
+                          }
+                        ]
+                      },
+                      {
+                        "label": "Discard Paranoia",
+                        "requires": {
+                          "condition": "paranoia"
+                        },
+                        "effects": [
+                          {
+                            "type": "remove_condition",
+                            "id": "paranoia"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },

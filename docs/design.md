@@ -398,7 +398,10 @@ Investigator effects apply to the current investigator. World effects need no in
 | `remove_self`        | none                                                      | Remove the condition that resolves now             |
 | `resolve_conditions` | `trait`                                                   | Make matching conditions come due now              |
 | `move`               | `to` (location id, `nearest_city`, `random_city`, `start`, `choose_adjacent`, `nearest_rift`, `choose_within`), `range` | Move the investigator |
-| `delay`              | none                                                      | The investigator loses the next Day turn           |
+| `delay`              | `chosen`                                                  | The investigator loses the next Day turn. `chosen` marks a voluntary Delay, which perks cannot stop |
+| `claim_clue`         | `bonus`                                                   | Gain the Clue token here, plus `bonus` Clues       |
+| `discard_clue`       | none                                                      | Discard the Clue token here with no gain           |
+| `discard_gate`       | none                                                      | Discard 1 open Gate of the player's choice         |
 | `choice`             | `prompt`, `options` (each with `label`, `requires`, `effects`) | The player picks one option                   |
 | `pay`                | `prompt`, `cost`, `then`, `else`                          | Offer to pay a cost                                |
 | `if`                 | `has` (an investigator filter), `then`, `else`            | Branch on what the investigator has                |
@@ -429,7 +432,7 @@ and `monsters`.
 
 An **investigator filter** has these optional fields: `condition`, `condition_trait`, `asset`,
 `asset_kind`, `asset_trait`, `funds_at_least`, `clues_at_least`, `trophies_at_least`,
-`sanity_at_most`, `health_at_most`, `at` (a location filter), and `alone`.
+`sanity_at_most`, `health_at_most`, `at` (a location filter), `alone`, and `delayed`.
 
 ### Add an Old One
 

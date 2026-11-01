@@ -538,15 +538,41 @@
     "text": "You wake up on a reef with no sign of your ship. An enormous star spawn rises from the sea and places its thought into your mind. You may gain a Dark Pact Condition to gain this Clue and a Mists of Releh Spell. If you do not, discard this Clue and a Star Spawn Monster ambushes you.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "dark_pact"
-      },
-      {
-        "type": "ambush",
-        "id": "star_spawn"
+        "type": "choice",
+        "prompt": "Accept the star spawn's thought?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact: gain this Clue and Mists of Releh",
+            "requires": {
+              "lacks_condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "claim_clue"
+              },
+              {
+                "type": "gain_asset",
+                "id": "mists_of_relah"
+              }
+            ]
+          },
+          {
+            "label": "Refuse",
+            "effects": [
+              {
+                "type": "discard_clue"
+              },
+              {
+                "type": "ambush",
+                "id": "star_spawn"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
