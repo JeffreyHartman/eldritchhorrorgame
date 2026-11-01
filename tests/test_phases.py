@@ -75,7 +75,7 @@ def test_general_encounter_uses_the_section_for_the_current_terrain(make_game: M
 def test_clue_offers_a_research_encounter(make_game: MakeGame, script: Script) -> None:
     game = make_game()
     inv = first(game)
-    game.locations[inv.location].clue = True
+    game.locations[inv.location].clues.append(inv.location)
     script.add("encounter", "Research Encounter")
     phases.encounter_turn(game, inv)
     assert next(e.data["deck"] for e in script.events if e.kind == "encounter") == "research_azathoth"

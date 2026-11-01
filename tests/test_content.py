@@ -69,7 +69,7 @@ def test_every_encounter_resolves_without_error(content: Content, seed: int) -> 
             loc = section_location or enc.location or "arkham"
             inv.location = loc
             game.locations[loc].gate = enc.deck.startswith("other_world")
-            game.locations[loc].clue = enc.deck.startswith("research_")
+            game.locations[loc].clues = [loc] if enc.deck.startswith("research_") else []
             run_effects(effects, Ctx(game, inv, f"encounter:{enc.id}"))
             game.outcome = None
 

@@ -180,8 +180,9 @@ def location_panel(game: Game, loc_id: str) -> Panel:
     if state.eldritch:
         flags.append(f" ELDRITCH x{state.eldritch} ", style="bold white on purple")
         flags.append(" ")
-    if state.clue:
-        flags.append(" CLUE ", style="bold black on cyan")
+    if state.clues:
+        count = f" x{len(state.clues)}" if len(state.clues) > 1 else ""
+        flags.append(f" CLUE{count} ", style="bold black on cyan")
         flags.append(" ")
     if game.active_expedition == loc_id:
         flags.append(" ACTIVE EXPEDITION ", style="bold black on yellow")
@@ -293,7 +294,7 @@ def map_view(game: Game) -> RenderableType:
             style = "bold white on red"
         elif state.monsters:
             style = "bold red"
-        elif state.clue:
+        elif state.clues:
             style = "bold black on cyan"
         else:
             style = "bold " + TERRAIN_STYLE[loc.terrain]
@@ -318,8 +319,8 @@ def map_view(game: Game) -> RenderableType:
         marks = []
         if state.gate:
             marks.append(("G", "bold red"))
-        if state.clue:
-            marks.append(("C", "bold cyan"))
+        if state.clues:
+            marks.append((f"C{len(state.clues)}" if len(state.clues) > 1 else "C", "bold cyan"))
         if state.monsters:
             marks.append((f"M{len(state.monsters)}", "red"))
         if game.active_expedition == loc.id:

@@ -213,7 +213,7 @@ def test_world_effects(make_game: MakeGame) -> None:
     game = make_game()
     run(game, None, [{"type": "spawn_gate", "count": 2}, {"type": "spawn_clue", "count": 2}])
     assert len(game.open_gates()) == 2
-    assert sum(s.clue for s in game.locations.values()) == 2
+    assert sum(len(s.clues) for s in game.locations.values()) == 2
     monsters = sum(len(s.monsters) for s in game.locations.values())
     run(game, None, [{"type": "spawn_monster", "at": "gates"}])
     assert sum(len(s.monsters) for s in game.locations.values()) == monsters + 2

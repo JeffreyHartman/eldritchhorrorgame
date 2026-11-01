@@ -108,7 +108,7 @@ class HeuristicBot:
         for loc in game.open_gates():
             goals.append((1, dist[loc], loc))
         for loc, state in game.locations.items():
-            if state.clue:
+            if state.clues:
                 goals.append((2, dist[loc], loc))
         if not goals:
             return None

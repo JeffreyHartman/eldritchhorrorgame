@@ -336,7 +336,7 @@ def test_research_mystery_takes_a_clue_gained_from_the_encounter(make_game: Make
     game = make_game()
     mys = set_mystery(game, "az_occult_research")
     inv = first(game)
-    game.locations[inv.location].clue = True
+    game.locations[inv.location].clues.append(inv.location)
     game.roll = lambda: 6
     script.add("encounter", "Research").add("mystery_spend", True)
     phases.encounter_turn(game, inv)
@@ -1237,3 +1237,36 @@ def test_every_ability_and_spell_action_resolves(content: Content, seed: int) ->
                 if option.enabled and option.value[0] in ("ability", "asset") and not game.outcome and not inv.defeated:
                     actions.perform(game, inv, option.value)
                     inv.actions_taken = []
+
+
+def test_clues_stack_when_a_mystery_moves_them(make_game: MakeGame) -> None:
+    game = make_game()
+    sea = sorted(loc.id for loc in game.content.locations.values() if loc.terrain == "sea")[0]
+    neighbors = [loc for loc in rules.distances(game, sea) if rules.distances(game, sea)[loc] == 1]
+    land = [loc for loc in neighbors if game.content.locations[loc].terrain != "sea"][:2]
+    for loc in land:
+        game.locations[loc].clues.append(loc)
+    library.MoveClues("sea").apply(Ctx(game, None, "test"))
+    assert sum(len(s.clues) for s in game.locations.values()) == 2
+    assert all(not game.locations[loc].clues for loc in land)
+    assert all(game.content.locations[k].terrain == "sea" for k, s in game.locations.items() if s.clues)
+
+
+def test_a_clue_token_leaves_the_pool_until_it_is_discarded(make_game: MakeGame) -> None:
+    game = make_game()
+    size = len(game.clue_deck)
+    token = rules.spawn_clue(game)
+    assert token is not None
+    assert len(game.clue_deck) == size - 1
+    assert game.locations[token].clues == [token]
+    assert rules.discard_clue(game, token)
+    assert game.clue_deck.discards[-1] == token
+    assert not rules.discard_clue(game, token)
+
+
+def test_discarding_a_clue_leaves_the_rest_of_the_stack(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = game.investigators[0]
+    game.locations[inv.location].clues = ["a", "b"]
+    assert rules.discard_clue(game, inv.location)
+    assert game.locations[inv.location].clues == ["a"]

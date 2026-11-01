@@ -115,7 +115,7 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
         options.append(Option(f"{ldef.name} ({region_label} Encounter)", ("deck", ldef.region), ldef.text))
     options.append(Option(f"General ({ldef.terrain.title()}) Encounter", ("deck", "general"), ldef.text))
 
-    if state.clue:
+    if state.clues:
         options.append(
             Option("Research Encounter (Clue token)", ("research",), "Draw a Research Encounter to claim this Clue.")
         )
@@ -188,14 +188,14 @@ def _offer_encounter_spells(game: Game, inv: Investigator) -> bool:
     for card in list(inv.assets):
         adef = game.asset_def(card)
         here = bool(game.locations[inv.location].monsters)
-        far = any(st.clue for loc, st in game.locations.items() if loc != inv.location)
+        far = any(st.clues for loc, st in game.locations.items() if loc != inv.location)
         wanted = (adef.encounter_when == "monsters" and here) or (adef.encounter_when == "clue" and far)
         if not wanted or game.ignore_monsters:
             continue
         if rules.confirm(game, adef.trigger_prompt, kind="cast_spell", inv=inv):
             rules.cast(game, inv, card, adef.on_encounter)
         loc_id, game.remote_clue = game.remote_clue, None
-        if loc_id is not None and game.locations[loc_id].clue and not inv.defeated:
+        if loc_id is not None and game.locations[loc_id].clues and not inv.defeated:
             home = inv.location
             inv.location = loc_id
             _research(game, inv)

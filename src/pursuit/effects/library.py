@@ -231,9 +231,7 @@ class ClaimClue(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
-        state = ctx.game.locations[inv.location]
-        if state.clue:
-            state.clue = False
+        if rules.discard_clue(ctx.game, inv.location):
             rules.change_clues(ctx.game, inv, 1 + self.bonus)
         elif self.bonus > 0:
             rules.change_clues(ctx.game, inv, self.bonus)
@@ -1243,7 +1241,7 @@ class SpawnGate(Effect):
 
 
 def _akachi_moves(game: Game, inv: Investigator) -> None:
-    places = [loc for loc, st in game.locations.items() if loc != inv.location and (st.gate or st.clue)]
+    places = [loc for loc, st in game.locations.items() if loc != inv.location and (st.gate or st.clues)]
     if places:
         options = [Option(rules.loc_name(game, t), t) for t in places] + [Option("Stay here", None)]
         dest = options[rules.choose(game, "Move to a space with a Gate or Clue?", options, kind="move", inv=inv)].value
@@ -1573,8 +1571,9 @@ class DiscardAllClues(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
-        for state in game.locations.values():
-            state.clue = False
+        for loc_id in game.locations:
+            while rules.discard_clue(game, loc_id):
+                pass
         for inv in game.active_investigators():
             inv.clues = 0
         rules.emit(game, "loss", "All Clues on the board and held by investigators are discarded!")
@@ -1853,10 +1852,10 @@ class TakeNearestClue(Effect):
         if loc_id is None:
             return
         dist = rules.distances(game, loc_id)
-        clues = [loc for loc, st in game.locations.items() if st.clue and loc in dist]
+        clues = [loc for loc, st in game.locations.items() if st.clues and loc in dist]
         if clues:
             dest = min(clues, key=lambda loc: (dist[loc], loc))
-            game.locations[dest].clue = False
+            rules.discard_clue(game, dest)
             rules.emit(game, "clue", f"The Clue at {rules.loc_name(game, dest)} is discarded.", location=dest)
             rules.move_monster(game, monster, dest)
 
@@ -2028,8 +2027,7 @@ class ClearEldritch(Effect):
 @register("move_clues")
 @dataclass(frozen=True)
 class MoveClues(Effect):
-    """Move each Clue to the nearest `terrain` space. A space holds 1 Clue token here, so
-    each Clue goes to the nearest such space that has no Clue yet."""
+    """Move each Clue to the nearest `terrain` space. Clues can stack on one space."""
 
     terrain: str
 
@@ -2040,13 +2038,15 @@ class MoveClues(Effect):
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         terrain_ids = [loc.id for loc in game.content.locations.values() if loc.terrain == self.terrain]
-        clues = [loc for loc in sorted(game.locations) if game.locations[loc].clue and loc not in terrain_ids]
-        for loc_id in clues:
-            dist = rules.distances(game, loc_id)
-            free = [t for t in terrain_ids if not game.locations[t].clue]
-            if free:
-                game.locations[loc_id].clue = False
-                game.locations[min(free, key=lambda t: (dist.get(t, 999), t))].clue = True
+        if not terrain_ids:
+            return
+        for loc_id in sorted(game.locations):
+            state = game.locations[loc_id]
+            if state.clues and loc_id not in terrain_ids:
+                dist = rules.distances(game, loc_id)
+                dest = min(terrain_ids, key=lambda t: (dist.get(t, 999), t))
+                game.locations[dest].clues.extend(state.clues)
+                state.clues.clear()
 
     def needs_investigator(self) -> bool:
         return False
@@ -2933,7 +2933,7 @@ class RemoteClue(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
-        places = [loc for loc, st in game.locations.items() if st.clue and loc != ctx.need_inv(self.kind).location]
+        places = [loc for loc, st in game.locations.items() if st.clues and loc != ctx.need_inv(self.kind).location]
         if not places:
             return
         options = [Option(rules.loc_name(game, loc), loc) for loc in places]
@@ -2952,7 +2952,7 @@ class DiscardRemoteClue(Effect):
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         if game.remote_clue is not None:
-            game.locations[game.remote_clue].clue = False
+            rules.discard_clue(game, game.remote_clue)
             game.remote_clue = None
 
 

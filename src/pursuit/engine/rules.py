@@ -850,17 +850,21 @@ def heal_monsters(game: Game, amount: int = 99) -> None:
 
 
 def spawn_clue(game: Game) -> str | None:
-    for _ in range(len(game.clue_deck)):
-        loc_id = game.clue_deck.draw(game.rng)
-        if loc_id is None:
-            return None
-        game.clue_deck.discard(loc_id)
-        state = game.locations[loc_id]
-        if not state.clue:
-            state.clue = True
-            emit(game, "clue", f"A Clue spawns at {loc_name(game, loc_id)}.", location=loc_id)
-            return loc_id
-    return None
+    token = game.clue_deck.draw(game.rng)
+    if token is None:
+        return None
+    game.locations[token].clues.append(token)
+    emit(game, "clue", f"A Clue spawns at {loc_name(game, token)}.", location=token)
+    return token
+
+
+def discard_clue(game: Game, loc_id: str) -> bool:
+    """Discard 1 Clue token from a space. Returns False if the space has no Clue."""
+    clues = game.locations[loc_id].clues
+    if not clues:
+        return False
+    game.clue_deck.discard(clues.pop())
+    return True
 
 
 def update_expedition(game: Game) -> None:

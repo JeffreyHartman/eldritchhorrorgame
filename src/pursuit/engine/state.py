@@ -66,7 +66,7 @@ class ActiveMythos:
 @dataclass
 class LocationState:
     id: str
-    clue: bool = False
+    clues: list[str] = field(default_factory=list)
     eldritch: int = 0
     gate: bool = False
     monsters: list[MonsterInst] = field(default_factory=list)

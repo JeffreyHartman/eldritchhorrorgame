@@ -64,11 +64,8 @@ discount applies only to a Clue cost.
 
 ### Simplifications
 
-- A space holds 1 Clue token. When a Mystery moves Clues, each Clue goes to the nearest
-  matching space that has no Clue.
 - The Dunwich Horror Prelude text has no effect, because the game has no Preludes.
 - The Rest roll for an Injury or Madness Condition always occurs, because it has no downside.
-- A space holds 1 Gate.
 - A Rumor Epic Monster stays on the board if its Rumor ends with no Eldritch tokens.
 
 ## Wiki sync

@@ -131,7 +131,7 @@ def clear_board(game: Game) -> None:
     for state in game.locations.values():
         state.gate = False
         state.other_world = None
-        state.clue = False
+        state.clues.clear()
         for monster in state.monsters:
             mdef = game.content.monsters[monster.def_id]
             if not mdef.epic:

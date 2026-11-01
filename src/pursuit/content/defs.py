@@ -127,7 +127,7 @@ class LocationFilter:
             not self.terrain or ldef.terrain in self.terrain,
             not self.region or ldef.region in self.region,
             self.gate is None or state.gate == self.gate,
-            self.clue is None or state.clue == self.clue,
+            self.clue is None or bool(state.clues) == self.clue,
             self.monsters is None or bool(state.monsters) == self.monsters,
             self.expedition is None or (game.active_expedition == loc_id) == self.expedition,
             self.eldritch is None or (state.eldritch > 0) == self.eldritch,
