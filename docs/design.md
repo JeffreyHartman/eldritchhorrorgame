@@ -419,7 +419,7 @@ Investigator effects apply to the current investigator. World effects need no in
 | `discard_gate`       | none                                                      | Discard 1 open Gate of the player's choice         |
 | `text`               | `text`                                                    | Show text                                          |
 | `advance_doom`, `retreat_doom` | `amount`                                        | Move Doom                                          |
-| `random`             | `outcomes` (each with `weight`, `effects`)                | Pick one outcome by weight                         |
+| `random`             | `outcomes` (each with `weight`, `text`, `effects`)        | Pick one outcome by weight                         |
 | `each_investigator`  | `where` (an investigator filter), `here`, `effects`       | Run effects for each matching investigator         |
 | `one_investigator`   | `pick` (`lowest_sanity`, `lowest_health`, `most_clues`, `most_funds`, `random`, `choose`), `effects` | Run effects for one investigator |
 | `open_rift`          | `count`                                                   | Open rifts from the rift deck                      |

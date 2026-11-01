@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pursuit.content.defs import LOCATION_DECKS, EncounterDef, EncounterSection, MythosDef
 from pursuit.controller import Option
-from pursuit.effects.base import Ctx, run_effects
+from pursuit.effects.base import Ctx, run_effects, sourced
 from pursuit.engine import actions, combat, dice, rules
 from pursuit.engine.state import ActiveMythos, FallenInvestigator, Game, Investigator, MysteryState, Phase
 
@@ -192,7 +192,7 @@ def _offer_encounter_spells(game: Game, inv: Investigator) -> bool:
         wanted = (adef.encounter_when == "monsters" and here) or (adef.encounter_when == "clue" and far)
         if not wanted or game.ignore_monsters:
             continue
-        if rules.confirm(game, adef.trigger_prompt, kind="cast_spell", inv=inv):
+        if rules.confirm(game, sourced(adef.name, adef.trigger_prompt), kind="cast_spell", inv=inv):
             rules.cast(game, inv, card, adef.on_encounter)
         loc_id, game.remote_clue = game.remote_clue, None
         if loc_id is not None and game.locations[loc_id].clues and not inv.defeated:
@@ -422,6 +422,7 @@ def resolve_mythos(game: Game, mdef: MythosDef) -> None:
     if active_card is not None:
         game.active_mythos.append(active_card)
     if mdef.effects and not game.outcome:
+        rules.emit(game, "mythos", sourced(mdef.name, mdef.text), mythos=mdef.id)
         run_effects(mdef.effects, Ctx(game, None, f"mythos:{mdef.id}", mythos=active_card))
         rules.process_defeats(game)
 

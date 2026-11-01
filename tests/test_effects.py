@@ -127,8 +127,8 @@ def test_random_is_deterministic_for_a_seed(make_game: MakeGame) -> None:
         {
             "type": "random",
             "outcomes": [
-                {"weight": 1, "effects": [{"type": "clues", "amount": 1}]},
-                {"weight": 1, "effects": [{"type": "gain_ticket", "kind": "train"}]},
+                {"weight": 1, "text": "Clue.", "effects": [{"type": "clues", "amount": 1}]},
+                {"weight": 1, "text": "Ticket.", "effects": [{"type": "gain_ticket", "kind": "train"}]},
             ],
         }
     ]

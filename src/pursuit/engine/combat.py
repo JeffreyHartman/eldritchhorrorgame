@@ -10,7 +10,7 @@ from dataclasses import replace
 
 from pursuit.content.defs import MonsterDef
 from pursuit.controller import Option
-from pursuit.effects.base import Ctx, run_effects
+from pursuit.effects.base import Ctx, run_effects, source_name, sourced
 from pursuit.engine import rules
 from pursuit.engine.dice import run_test
 from pursuit.engine.state import Game, Investigator, MonsterInst
@@ -30,6 +30,7 @@ def resolve_monsters(game: Game, inv: Investigator, *, encounter_phase: bool = F
     fought: set[int] = set()
     blocked = False
     replacement = None
+    replacement_source = ""
     while True:
         if inv.defeated or game.outcome:
             return False
@@ -53,7 +54,8 @@ def resolve_monsters(game: Game, inv: Investigator, *, encounter_phase: bool = F
         mdef = game.monster_def(monster.def_id)
         if combat(game, inv, monster) == DEFEATED:
             blocked = blocked or mdef.blocks_encounter
-            replacement = replacement or mdef.replace_encounter
+            if replacement is None and mdef.replace_encounter is not None:
+                replacement, replacement_source = mdef.replace_encounter, f"monster:{mdef.id}"
     if state.monsters or inv.defeated:
         return False
     if encounter_phase and blocked:
@@ -62,10 +64,15 @@ def resolve_monsters(game: Game, inv: Investigator, *, encounter_phase: bool = F
         encounter_phase
         and replacement is not None
         and rules.can_pay(game, inv, replacement.cost)
-        and rules.confirm(game, replacement.text, kind="replace_encounter", inv=inv)
+        and rules.confirm(
+            game,
+            sourced(source_name(game, replacement_source), replacement.text),
+            kind="replace_encounter",
+            inv=inv,
+        )
     ):
         rules.pay_cost(game, inv, replacement.cost)
-        run_effects(replacement.effects, Ctx(game, inv, "replace_encounter"))
+        run_effects(replacement.effects, Ctx(game, inv, replacement_source))
         return False
     return True
 
@@ -93,7 +100,9 @@ def _clear_combat_bonuses(game: Game) -> None:
 def _offer_combat_spells(game: Game, inv: Investigator) -> None:
     for card in list(inv.assets):
         adef = game.asset_def(card)
-        if adef.on_combat and rules.confirm(game, adef.trigger_prompt, kind="cast_spell", inv=inv):
+        if adef.on_combat and rules.confirm(
+            game, sourced(adef.name, adef.trigger_prompt), kind="cast_spell", inv=inv
+        ):
             rules.cast(game, inv, card, adef.on_combat)
 
 
@@ -103,7 +112,7 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
     rules.emit(
         game,
         "combat",
-        f"{inv.name} encounters the {mdef.name}. {mdef.text}",
+        f"{inv.name} encounters {mdef.the_name}. {mdef.text}",
         monster=mdef.id,
         start=True,
         wounds=monster.wounds,
@@ -147,12 +156,12 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
         mdef.fight_mod,
         contexts=("combat", "fight"),
         needed=max(1, full - monster.wounds, mdef.damage),
-        label=f"Strength test against the {mdef.name}",
+        label=f"Strength test against {mdef.the_name}",
         allow_clues=not mdef.no_clue_rerolls,
     )
     reduction = sum(game.asset_def(c).damage_reduction for c in inv.assets)
     health_loss = max(0, _reduced(mdef.damage, reduction) - result.successes)
-    if health_loss > 0 and result.successes == 0 and mdef.ally_shield and _spend_ally(game, inv):
+    if health_loss > 0 and result.successes == 0 and mdef.ally_shield and _spend_ally(game, inv, mdef.name):
         health_loss = 0
     if health_loss > 0:
         rules.change_health(game, inv, -health_loss)
@@ -164,7 +173,7 @@ def _combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool
             run_effects(mdef.after_hit, replace(ctx, inv=None))
         if not ambush:
             left = full - monster.wounds
-            rules.emit(game, "combat", f"The {mdef.name} remains ({left}/{full} Health).", monster=mdef.id)
+            rules.emit(game, "combat", f"{mdef.sentence_name} remains ({left}/{full} Health).", monster=mdef.id)
     return finish()
 
 
@@ -178,7 +187,7 @@ def _will_test(game: Game, inv: Investigator, mdef: MonsterDef, ctx: Ctx) -> boo
         mdef.horror_mod,
         contexts=("combat", "horror"),
         needed=max(1, horror),
-        label=f"Will test against the {mdef.name}",
+        label=f"Will test against {mdef.the_name}",
         allow_clues=not mdef.no_clue_rerolls,
     )
     reduction = sum(game.asset_def(c).sanity_reduction for c in inv.assets)
@@ -193,14 +202,15 @@ def _will_test(game: Game, inv: Investigator, mdef: MonsterDef, ctx: Ctx) -> boo
     return failed
 
 
-def _spend_ally(game: Game, inv: Investigator) -> bool:
+def _spend_ally(game: Game, inv: Investigator, monster_name: str) -> bool:
     allies = [c for c in inv.assets if game.asset_def(c).kind == "ally"]
-    prompt = "Discard 1 Ally Asset instead of losing Health?"
+    prompt = sourced(monster_name, "Discard 1 Ally Asset instead of losing Health?")
     if not allies or not rules.confirm(game, prompt, kind="ally_shield", inv=inv):
         return False
     options = [Option(game.asset_def(c).name, c.uid) for c in allies]
-    pick = rules.choose(game, "Discard which Ally?", options, kind="lose_asset", inv=inv, auto_single=True)
-    rules.discard_asset(game, inv, allies[pick])
+    prompt = sourced(monster_name, "Discard which Ally?")
+    pick = rules.choose(game, prompt, options, kind="lose_asset", inv=inv, auto_single=True)
+    rules.discard_asset(game, inv, allies[pick], source_name=monster_name)
     return True
 
 

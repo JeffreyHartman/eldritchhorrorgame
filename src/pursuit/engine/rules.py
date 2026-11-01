@@ -8,7 +8,7 @@ from typing import Any
 
 from pursuit.content.defs import ACTIVE_EXPEDITION, OMEN_TRACK, RESERVE_KINDS, CardBack, Cost, Prevent
 from pursuit.controller import Event, Option
-from pursuit.effects.base import Ctx, run_effects
+from pursuit.effects.base import Ctx, run_effects, sourced
 from pursuit.engine.state import (
     ActiveMythos,
     AssetCard,
@@ -20,6 +20,8 @@ from pursuit.engine.state import (
     MonsterInst,
     MysteryState,
 )
+
+CANCELS = {"blessed": "cursed", "cursed": "blessed"}
 
 # --- events and decisions -------------------------------------------------------------
 
@@ -53,6 +55,13 @@ def choose(
 
 def confirm(game: Game, prompt: str, *, kind: str, inv: Investigator | None = None) -> bool:
     return bool(game.ctl.confirm(game, prompt, kind=kind, inv=inv))
+
+
+def roll_die(game: Game, source_name: str) -> int:
+    """Roll 1 die that is not a test and show the result with its source."""
+    die = game.roll_die()
+    emit(game, "info", sourced(source_name, f"the die shows {die}."))
+    return die
 
 
 # --- map helpers ----------------------------------------------------------------------
@@ -192,7 +201,9 @@ def cast(game: Game, inv: Investigator, card: AssetCard, effects: Any, **ctx: An
     game.casting = outer
 
 
-def change_health(game: Game, inv: Investigator, amount: int, *, preventable: bool = True) -> None:
+def change_health(
+    game: Game, inv: Investigator, amount: int, *, preventable: bool = True, source_name: str = ""
+) -> None:
     """Spent Health passes `preventable=False`, because prevention cannot apply to a cost."""
     if amount == 0 or inv.defeated:
         return
@@ -200,18 +211,20 @@ def change_health(game: Game, inv: Investigator, amount: int, *, preventable: bo
         gained = min(inv.max_health, inv.health + amount) - inv.health
         inv.health += gained
         if gained:
-            emit(game, "gain", f"{inv.name} recovers {gained} Health.", stat="health")
+            emit(game, "gain", sourced(source_name, f"{inv.name} recovers {gained} Health."), stat="health")
         return
     amount = -_after_prevention(game, inv, "health", -amount) if preventable else amount
     if amount == 0:
         return
     inv.health = max(0, inv.health + amount)
-    emit(game, "loss", f"{inv.name} loses {-amount} Health.", stat="health")
+    emit(game, "loss", sourced(source_name, f"{inv.name} loses {-amount} Health."), stat="health")
     if inv.health == 0:
         mark_defeated(game, inv, "wounds")
 
 
-def change_sanity(game: Game, inv: Investigator, amount: int, *, preventable: bool = True) -> None:
+def change_sanity(
+    game: Game, inv: Investigator, amount: int, *, preventable: bool = True, source_name: str = ""
+) -> None:
     """Spent Sanity passes `preventable=False`, because prevention cannot apply to a cost."""
     if amount == 0 or inv.defeated:
         return
@@ -219,56 +232,58 @@ def change_sanity(game: Game, inv: Investigator, amount: int, *, preventable: bo
         gained = min(inv.max_sanity, inv.sanity + amount) - inv.sanity
         inv.sanity += gained
         if gained:
-            emit(game, "gain", f"{inv.name} recovers {gained} Sanity.", stat="sanity")
+            emit(game, "gain", sourced(source_name, f"{inv.name} recovers {gained} Sanity."), stat="sanity")
         return
     amount = -_after_prevention(game, inv, "sanity", -amount) if preventable else amount
     if amount == 0:
         return
     inv.sanity = max(0, inv.sanity + amount)
-    emit(game, "loss", f"{inv.name} loses {-amount} Sanity.", stat="sanity")
+    emit(game, "loss", sourced(source_name, f"{inv.name} loses {-amount} Sanity."), stat="sanity")
     if inv.sanity == 0:
         mark_defeated(game, inv, "madness")
 
 
-def change_clues(game: Game, inv: Investigator, amount: int) -> None:
+def change_clues(game: Game, inv: Investigator, amount: int, *, source_name: str = "") -> None:
     before = inv.clues
     inv.clues = max(0, inv.clues + amount)
     delta = inv.clues - before
     if delta > 0:
-        emit(game, "gain", f"{inv.name} gains {delta} Clue{'s' if delta > 1 else ''}.", stat="clues")
+        text = f"{inv.name} gains {delta} Clue{'s' if delta > 1 else ''}."
+        emit(game, "gain", sourced(source_name, text), stat="clues")
         game.bump("clues_gained", delta)
     elif delta < 0:
-        emit(game, "loss", f"{inv.name} discards {-delta} Clue{'s' if delta < -1 else ''}.", stat="clues")
+        text = f"{inv.name} discards {-delta} Clue{'s' if delta < -1 else ''}."
+        emit(game, "loss", sourced(source_name, text), stat="clues")
 
 
-def gain_ticket(game: Game, inv: Investigator, kind: str) -> None:
+def gain_ticket(game: Game, inv: Investigator, kind: str, *, source_name: str = "") -> None:
     inv.tickets.append(kind)
-    emit(game, "gain", f"{inv.name} gains a {kind.title()} Ticket.", stat="tickets")
-    enforce_ticket_limit(game, inv)
+    emit(game, "gain", sourced(source_name, f"{inv.name} gains a {kind.title()} Ticket."), stat="tickets")
+    enforce_ticket_limit(game, inv, source_name=source_name)
 
 
-def enforce_ticket_limit(game: Game, inv: Investigator) -> None:
+def enforce_ticket_limit(game: Game, inv: Investigator, *, source_name: str = "") -> None:
     limit = game.content.rules.max_tickets
     while len(inv.tickets) > limit:
         options = [Option(f"Discard {t.title()} Ticket", i) for i, t in enumerate(inv.tickets)]
         pick = choose(
             game,
-            f"You may hold at most {limit} travel tickets. Discard which one?",
+            sourced(source_name, f"You may hold at most {limit} travel tickets. Discard which one?"),
             options,
             kind="discard_ticket",
             inv=inv,
             auto_single=len(set(inv.tickets)) == 1,
         )
         dropped = inv.tickets.pop(pick)
-        emit(game, "loss", f"{inv.name} discards a {dropped.title()} Ticket.")
+        emit(game, "loss", sourced(source_name, f"{inv.name} discards a {dropped.title()} Ticket."))
 
 
-def delay(game: Game, inv: Investigator, *, chosen: bool = False) -> None:
+def delay(game: Game, inv: Investigator, *, chosen: bool = False, source_name: str = "") -> None:
     if not chosen and perk(game, inv, "no_delay") > 0:
-        emit(game, "info", f"{inv.name} does not become Delayed.")
+        emit(game, "info", sourced(source_name, f"{inv.name} does not become Delayed."))
         return
     inv.delayed = True
-    emit(game, "loss", f"{inv.name} becomes Delayed.")
+    emit(game, "loss", sourced(source_name, f"{inv.name} becomes Delayed."))
 
 
 def mark_defeated(game: Game, inv: Investigator, cause: str) -> None:
@@ -435,11 +450,12 @@ def rewind_omen(game: Game) -> None:
         advance_doom(game, len(gates), f"{len(gates)} {color} Gate(s) match the Omen")
 
 
-def retreat_doom(game: Game, amount: int) -> None:
+def retreat_doom(game: Game, amount: int, reason: str = "") -> None:
     if amount <= 0 or game.outcome or game.awakened:
         return
     game.doom = min(20, game.doom + amount)
-    emit(game, "doom", f"Doom retreats by {amount}. Doom: {game.doom}.", value=game.doom)
+    why = f" ({reason})" if reason else ""
+    emit(game, "doom", f"Doom retreats by {amount}{why}. Doom: {game.doom}.", value=game.doom)
 
 
 def awaken(game: Game) -> None:
@@ -701,7 +717,7 @@ def wound_monster(game: Game, inv: Investigator | None, monster: MonsterInst, am
     if loc_id is None or amount <= 0:
         return False
     if mdef.needs_mysteries and len(game.solved_mysteries) < game.old_one.mysteries_needed:
-        emit(game, "combat", f"The {mdef.name} cannot lose Health until enough Mysteries are solved.")
+        emit(game, "combat", f"{mdef.sentence_name} cannot lose Health until enough Mysteries are solved.")
         return False
     monster.wounds += amount
     if monster.wounds < toughness(game, monster.def_id):
@@ -721,7 +737,7 @@ def defeat_monster(game: Game, inv: Investigator | None, loc_id: str, monster: M
         game.monster_cup.append(monster.def_id)
     game.bump("monsters_defeated")
     who = f"{inv.name} defeats" if inv else "Defeated"
-    emit(game, "combat", f"{who} the {mdef.name}!", monster=mdef.id, defeated=True)
+    emit(game, "combat", f"{who} {mdef.the_name}!", monster=mdef.id, defeated=True)
     if inv is not None and mdef.on_defeat:
         run_effects(mdef.on_defeat, Ctx(game, inv, f"monster:{mdef.id}"))
     for mys in game.active_mysteries():
@@ -768,7 +784,7 @@ def discard_monster(game: Game, loc_id: str, monster: MonsterInst) -> None:
         state.monsters.remove(monster)
     game.monster_cup.append(monster.def_id)
     game.bump("monsters_discarded")
-    emit(game, "monster", f"The {mdef.name} is discarded.", monster=mdef.id, location=loc_id)
+    emit(game, "monster", f"{mdef.sentence_name} is discarded.", monster=mdef.id, location=loc_id)
 
 
 def move_monsters(game: Game, monster_id: str | None = None, toward: str = "investigator") -> None:
@@ -803,8 +819,8 @@ def move_monsters(game: Game, monster_id: str | None = None, toward: str = "inve
         if monster in game.locations[src].monsters:
             game.locations[src].monsters.remove(monster)
             game.locations[dst].monsters.append(monster)
-            name = game.content.monsters[monster.def_id].name
-            emit(game, "monster", f"The {name} moves from {loc_name(game, src)} to {loc_name(game, dst)}.")
+            name = game.content.monsters[monster.def_id].sentence_name
+            emit(game, "monster", f"{name} moves from {loc_name(game, src)} to {loc_name(game, dst)}.")
 
 
 def move_monster(game: Game, monster: MonsterInst, dest: str) -> None:
@@ -814,7 +830,7 @@ def move_monster(game: Game, monster: MonsterInst, dest: str) -> None:
         return
     game.locations[src].monsters.remove(monster)
     game.locations[dest].monsters.append(monster)
-    emit(game, "monster", f"The {mdef.name} moves from {loc_name(game, src)} to {loc_name(game, dest)}.")
+    emit(game, "monster", f"{mdef.sentence_name} moves from {loc_name(game, src)} to {loc_name(game, dest)}.")
 
 
 def step_toward(game: Game, src: str, goal: str, spaces: int = 1) -> str:
@@ -923,19 +939,19 @@ def take_starting_card(game: Game, def_id: str) -> AssetCard | None:
     return deck_for(game, adef.kind).draw_where(game.rng, lambda c: c.def_id == def_id)
 
 
-def gain_card(game: Game, inv: Investigator, card: AssetCard) -> None:
+def gain_card(game: Game, inv: Investigator, card: AssetCard, *, source_name: str = "") -> None:
     adef = game.asset_def(card)
     if adef.kind == "service" and adef.on_gain and adef.action is None:
-        emit(game, "gain", f"{inv.name} uses the service: {adef.name}.", asset=adef.id)
+        emit(game, "gain", sourced(source_name, f"{inv.name} uses the service: {adef.name}."), asset=adef.id)
         run_effects(adef.on_gain, Ctx(game, inv, f"asset:{adef.id}"))
         deck_for(game, adef.kind).discard(card)
         return
     if adef.kind == "spell" and any(c.def_id == adef.id for c in inv.assets):
-        emit(game, "info", f"{inv.name} already has {adef.name}.")
+        emit(game, "info", sourced(source_name, f"{inv.name} already has {adef.name}."))
         deck_for(game, adef.kind).discard(card)
         return
     inv.assets.append(card)
-    emit(game, "gain", f"{inv.name} gains {adef.name}.", asset=adef.id)
+    emit(game, "gain", sourced(source_name, f"{inv.name} gains {adef.name}."), asset=adef.id)
     run_effects(adef.on_gain, Ctx(game, inv, f"asset:{adef.id}"))
 
 
@@ -978,13 +994,13 @@ def refill_reserve(game: Game) -> None:
         game.reserve.append(card)
 
 
-def discard_asset(game: Game, inv: Investigator, card: AssetCard) -> None:
+def discard_asset(game: Game, inv: Investigator, card: AssetCard, *, source_name: str = "") -> None:
     if card in inv.assets:
         inv.assets.remove(card)
     card.exhausted = False
     adef = game.asset_def(card)
     deck_for(game, adef.kind).discard(card)
-    emit(game, "loss", f"{inv.name} discards {adef.name}.", asset=adef.id)
+    emit(game, "loss", sourced(source_name, f"{inv.name} discards {adef.name}."), asset=adef.id)
 
 
 def is_reserve_kind(kind: str) -> bool:
@@ -1051,31 +1067,36 @@ def has_condition(inv: Investigator, cond_id: str) -> bool:
     return any(c.def_id == cond_id for c in inv.conditions)
 
 
-def gain_condition(game: Game, inv: Investigator, cond_id: str, *, chosen: bool = False) -> bool:
+def _cancel_condition(game: Game, inv: Investigator, new_id: str, old_id: str, source_name: str) -> None:
+    """A new Blessed or Cursed Condition discards the opposite one and is not gained."""
+    conditions = game.content.conditions
+    text = f"{conditions[new_id].name} cancels {conditions[old_id].name} on {inv.name}."
+    emit(game, "condition", sourced(source_name, text), condition=new_id)
+    for inst in list(inv.conditions):
+        if inst.def_id == old_id:
+            remove_condition(game, inv, inst, source_name=source_name)
+
+
+def gain_condition(game: Game, inv: Investigator, cond_id: str, *, chosen: bool = False, source_name: str = "") -> bool:
     if cond_id == "detained" and not chosen and perk(game, inv, "no_detained") > 0:
-        emit(game, "info", f"{inv.name} does not gain a Detained Condition.")
+        emit(game, "info", sourced(source_name, f"{inv.name} does not gain a Detained Condition."))
         return False
-    if cond_id in ("blessed", "cursed") and has_condition(inv, cond_id):
-        flip_condition(game, inv, next(i for i in inv.conditions if i.def_id == cond_id))
+    if cond_id in CANCELS and has_condition(inv, cond_id):
+        flip_condition(game, inv, next(i for i in inv.conditions if i.def_id == cond_id), source_name=source_name)
         return False
-    if cond_id == "blessed" and has_condition(inv, "cursed"):
-        for inst in list(inv.conditions):
-            if inst.def_id == "cursed":
-                remove_condition(game, inv, inst)
-        return False
-    if cond_id == "cursed" and has_condition(inv, "blessed"):
-        for inst in list(inv.conditions):
-            if inst.def_id == "blessed":
-                remove_condition(game, inv, inst)
+    opposite = CANCELS.get(cond_id)
+    if opposite is not None and has_condition(inv, opposite):
+        _cancel_condition(game, inv, cond_id, opposite, source_name)
         return False
     cdef = game.content.conditions[cond_id]
     if has_condition(inv, cond_id):
-        emit(game, "condition", f"{inv.name} already has {cdef.name}.")
+        emit(game, "condition", sourced(source_name, f"{inv.name} already has {cdef.name}."))
         return False
     pick = game.rng.choices(range(len(cdef.backs)), weights=[b.weight for b in cdef.backs])[0]
     inst = ConditionInst(game.uid(), cond_id, pick)
     inv.conditions.append(inst)
-    emit(game, "condition", f"{inv.name} gains {cdef.name} ({', '.join(cdef.traits)}): {cdef.text}", condition=cond_id)
+    text = f"{inv.name} gains {cdef.name} ({', '.join(cdef.traits)}): {cdef.text}"
+    emit(game, "condition", sourced(source_name, text), condition=cond_id)
     _watch_condition(game, inv, inst)
     return True
 
@@ -1102,30 +1123,33 @@ def _watch_condition(game: Game, inv: Investigator, inst: ConditionInst) -> None
             change_clues(game, seer, 1)
 
 
-def gain_condition_trait(game: Game, inv: Investigator, trait: str) -> bool:
+def gain_condition_trait(game: Game, inv: Investigator, trait: str, *, source_name: str = "") -> bool:
     """Gain a random Condition with `trait` that the investigator does not already have."""
     pool = sorted(
         c.id for c in game.content.conditions.values() if trait in c.traits and not has_condition(inv, c.id)
     )
-    return gain_condition(game, inv, game.rng.choice(pool)) if pool else False
+    return gain_condition(game, inv, game.rng.choice(pool), source_name=source_name) if pool else False
 
 
-def remove_condition(game: Game, inv: Investigator, inst: ConditionInst) -> None:
+def remove_condition(game: Game, inv: Investigator, inst: ConditionInst, *, source_name: str = "") -> None:
     if inst in inv.conditions:
         inv.conditions.remove(inst)
         cdef = game.content.conditions[inst.def_id]
-        emit(game, "condition", f"{inv.name} discards {cdef.name}.", condition=cdef.id, removed=True)
+        text = f"{inv.name} discards {cdef.name}."
+        emit(game, "condition", sourced(source_name, text), condition=cdef.id, removed=True)
 
 
-def flip_condition(game: Game, inv: Investigator, inst: ConditionInst, successes: int | None = None) -> None:
+def flip_condition(
+    game: Game, inv: Investigator, inst: ConditionInst, successes: int | None = None, *, source_name: str = ""
+) -> None:
     cdef = game.content.conditions[inst.def_id]
     if not cdef.backs or inst not in inv.conditions:
         return
     back = cdef.backs[inst.back] if inst.back is not None else _pick_back(game, cdef.backs, successes)
-    emit(game, "condition", f"{inv.name} flips {cdef.name}: {back.text}", condition=cdef.id)
+    emit(game, "condition", sourced(source_name, f"{inv.name} flips {cdef.name}: {back.text}"), condition=cdef.id)
     run_effects(back.effects, Ctx(game, inv, f"condition:{cdef.id}", condition=inst))
     if inst in inv.conditions and not back.keep:
-        remove_condition(game, inv, inst)
+        remove_condition(game, inv, inst, source_name=source_name)
 
 
 def blocked(game: Game, inv: Investigator, action: str, *, exempt: str | None = None) -> str | None:

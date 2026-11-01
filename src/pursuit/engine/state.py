@@ -223,6 +223,7 @@ class Game:
     force_ones: bool = field(default=False, repr=False, compare=False)
     boosts: list[tuple[str, Modifier]] = field(default_factory=list, repr=False, compare=False)
     free_rerolls: int = field(default=0, repr=False, compare=False)
+    free_reroll_source: str = field(default="", repr=False, compare=False)
     prevented: int = field(default=0, repr=False, compare=False)
     ignore_monsters: bool = field(default=False, repr=False, compare=False)
     remote_clue: str | None = field(default=None, repr=False, compare=False)
