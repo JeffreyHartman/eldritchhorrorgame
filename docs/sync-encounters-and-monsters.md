@@ -2,8 +2,8 @@
 
 Status: implemented. Monster stats and test flags come from the wiki templates, the
 encounter decks hold one card per physical card, Location and General cards use sections,
-and each Gate is paired with one of the nine Other Worlds. Special encounters remain
-outside this plan.
+and each Gate is paired with one of the nine Other Worlds. The Core Special Encounters are in
+`special_cthulhu.json` and `special_yog_sothoth.json`.
 
 ## Monster stats
 
