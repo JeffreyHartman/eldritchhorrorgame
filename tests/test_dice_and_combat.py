@@ -150,7 +150,7 @@ def test_defeating_all_monsters_allows_location_encounter(make_game: MakeGame) -
     assert not game.locations[inv.location].monsters
 
 
-def test_defeating_an_epic_monster_solves_its_mystery(make_game: MakeGame) -> None:
+def test_defeating_an_epic_monster_solves_its_mystery_at_the_end_of_the_mythos_phase(make_game: MakeGame) -> None:
     game = make_game(old_one="cthulhu", seed=1)
     from pursuit.engine.state import MysteryState
 
@@ -161,5 +161,7 @@ def test_defeating_an_epic_monster_solves_its_mystery(make_game: MakeGame) -> No
     # Will (3-1=2 dice): 6, 6; Strength (8-1=7 dice): 6, 1, 1, 1, 1, 1, 1
     set_dice(game, 6, 6, 6, 1, 1, 1, 1, 1, 1)
     combat.combat(game, inv, priest)
+    assert "cth_watching_the_stars" not in game.solved_mysteries
+    rules.solve_ready_mystery(game)
     assert "cth_watching_the_stars" in game.solved_mysteries
 

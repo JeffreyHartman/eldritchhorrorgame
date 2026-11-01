@@ -20,8 +20,8 @@ from pursuit.content.defs import (
 )
 from pursuit.content.reader import ContentError, Reader
 from pursuit.controller import Option
-from pursuit.effects.base import Ctx, Effect, read_effects, register, run_effects
-from pursuit.engine import combat, rules
+from pursuit.effects.base import Ctx, Effect, read_effects, register, run_effects, walk
+from pursuit.engine import actions, combat, rules
 from pursuit.engine.dice import run_test
 
 
@@ -83,7 +83,10 @@ class Test(Effect):
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
-        result = run_test(ctx.game, inv, self.skill, self.mod, contexts=(self.context,), needed=self.needed)
+        counts_successes = any(e.kind == "flip_self" for lst in self.children() for e in walk(lst))
+        result = run_test(
+            ctx.game, inv, self.skill, self.mod, contexts=(self.context,), needed=self.needed, open_ended=counts_successes
+        )
         sub_ctx = replace(ctx, test_successes=result.successes)
         run_effects(self.passed if result.passed else self.failed, sub_ctx)
         if self.after:
@@ -232,15 +235,19 @@ class ImproveSkill(Effect):
 @register("extra_action")
 @dataclass(frozen=True)
 class ExtraAction(Effect):
+    immediate: bool
+
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls()
+        return cls(r.get_bool("immediate", False))
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
-        if inv.actions_taken:
-            inv.actions_taken.pop(0)
         rules.emit(ctx.game, "gain", f"{inv.name} may perform 1 additional action.")
+        if self.immediate:
+            actions.additional_action(ctx.game, inv)
+        else:
+            inv.bonus_actions += 1
 
 
 # --- assets and conditions ------------------------------------------------------------

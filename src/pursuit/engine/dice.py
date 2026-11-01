@@ -137,7 +137,10 @@ def run_test(
     contexts: tuple[str, ...] = ("encounter",),
     needed: int = 1,
     label: str = "",
+    open_ended: bool = False,
+    allow_clues: bool = True,
 ) -> TestResult:
+    """Roll a test. Set `open_ended` when successes past `needed` still count."""
     success_on = game.content.rules.success_on
     blessed = rules.has_condition(inv, "blessed")
     cursed = rules.has_condition(inv, "cursed")
@@ -166,9 +169,12 @@ def run_test(
         rolls = _offer_card_rerolls(game, inv, skill, contexts, rolls, success_on, needed)
         successes = sum(r >= success_on for r in rolls)
 
-    while inv.clues > 0 and any(r < success_on for r in rolls) and successes < needed:
+    while allow_clues and inv.clues > 0 and any(r < success_on for r in rolls):
+        short = successes < needed
+        if not short and not open_ended:
+            break
         prompt = f"{successes}/{needed} successes. Spend 1 Clue to reroll 1 failed die?"
-        if not rules.confirm(game, prompt, kind="reroll", inv=inv):
+        if not rules.confirm(game, prompt, kind="reroll" if short else "reroll_extra", inv=inv):
             break
         inv.clues -= 1
         game.bump("clues_spent_rerolls")

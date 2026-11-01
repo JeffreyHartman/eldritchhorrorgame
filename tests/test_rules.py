@@ -129,6 +129,8 @@ def test_solving_three_mysteries_wins_before_awakening(make_game: MakeGame) -> N
     game.solved_mysteries = ["m1", "m2"]
     game.active_mystery = MysteryState("az_omen_of_devastation", 1)
     rules.add_mystery_progress(game, game.active_mystery, 1)
+    assert game.outcome is None
+    rules.solve_ready_mystery(game)
     assert game.outcome == "win"
 
 

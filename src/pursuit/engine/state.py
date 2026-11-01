@@ -87,7 +87,9 @@ class Investigator:
     conditions: list[ConditionInst] = field(default_factory=list)
     delayed: bool = False
     actions_taken: list[str] = field(default_factory=list)
+    bonus_actions: int = 0
     defeated: bool = False
+    defeated_awake: bool = False
     devoured: bool = False
     eliminated: bool = False
 
@@ -136,10 +138,15 @@ class MysteryState:
     required: int
     progress: int = 0
     final: bool = False
+    solved: bool = False
+
+    @property
+    def ready(self) -> bool:
+        return self.progress >= self.required
 
     @property
     def done(self) -> bool:
-        return self.progress >= self.required
+        return self.solved
 
 
 class NullController:

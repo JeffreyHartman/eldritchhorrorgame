@@ -81,11 +81,9 @@ def combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool 
             needed=horror,
             label=f"Will test against the {mdef.name}",
         )
-        sanity_loss = max(0, horror - result.successes)
+        s_red = sum(game.asset_def(c).sanity_reduction for c in inv.assets)
+        sanity_loss = max(0, _reduced(horror, s_red) - result.successes)
         if sanity_loss > 0:
-            s_red = sum(game.asset_def(c).sanity_reduction for c in inv.assets)
-            if s_red:
-                sanity_loss = max(1, sanity_loss - s_red)
             rules.change_sanity(game, inv, -sanity_loss)
         if inv.defeated:
             if ambush:
@@ -117,11 +115,9 @@ def combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool 
         needed=max(1, remaining_hp, damage),
         label=f"Strength test against the {mdef.name}",
     )
-    health_loss = max(0, damage - result.successes)
+    d_red = sum(game.asset_def(c).damage_reduction for c in inv.assets)
+    health_loss = max(0, _reduced(damage, d_red) - result.successes)
     if health_loss > 0:
-        d_red = sum(game.asset_def(c).damage_reduction for c in inv.assets)
-        if d_red:
-            health_loss = max(1, health_loss - d_red)
         rules.change_health(game, inv, -health_loss)
 
     monster.wounds += result.successes
@@ -139,6 +135,10 @@ def combat(game: Game, inv: Investigator, monster: MonsterInst, *, ambush: bool 
             monster=mdef.id,
         )
     return FELL if inv.defeated else SURVIVED
+
+
+def _reduced(value: int, reduction: int) -> int:
+    return max(1, value - reduction) if value > 0 and reduction else value
 
 
 def _return_ambush_monster(game: Game, loc_id: str, monster: MonsterInst) -> None:

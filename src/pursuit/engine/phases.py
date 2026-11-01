@@ -57,7 +57,7 @@ def action_turn(game: Game, inv: Investigator) -> None:
         inv.actions_taken = ["delayed"] * game.content.rules.actions_per_turn
         rules.emit(game, "info", f"{inv.name} stands up from being Delayed and cannot perform actions this turn.")
         return
-    while not game.outcome and not inv.defeated:
+    while not game.outcome and not inv.defeated and not inv.delayed:
         options = actions.action_options(game, inv)
         pick = rules.choose(game, f"{inv.name}, choose an action.", options, kind="action", inv=inv)
         value = options[pick].value
@@ -94,7 +94,7 @@ def encounter_turn(game: Game, inv: Investigator) -> None:
     ldef = content.locations[inv.location]
 
     options: list[Option] = []
-    if ldef.region in LOCATION_DECKS and not ldef.id.startswith("space_"):
+    if ldef.region in LOCATION_DECKS and ldef.terrain == "city" and not ldef.id.startswith("space_"):
         region_label = ldef.region.replace("_", "/").title()
         options.append(Option(f"{ldef.name} ({region_label} Encounter)", ("deck", ldef.region), ldef.text))
     options.append(Option(f"General ({ldef.terrain.title()}) Encounter", ("deck", "general"), ldef.text))
@@ -176,7 +176,11 @@ def _encounter_section(game: Game, inv: Investigator, edef: EncounterDef) -> Enc
 def _draw_and_run_encounter(game: Game, inv: Investigator, deck_name: str) -> None:
     content = game.content
     deck = game.encounter_decks[deck_name]
-    enc_id = deck.draw(game.rng)
+    if deck_name.startswith("research_"):
+        terrain = content.locations[inv.location].terrain
+        enc_id = deck.draw_where(game.rng, lambda card: content.encounters[card].terrain == terrain)
+    else:
+        enc_id = deck.draw(game.rng)
     if enc_id is None:
         return
     edef = content.encounters[enc_id]
@@ -274,7 +278,6 @@ def mythos_phase(game: Game) -> None:
     active_card: ActiveMythos | None = None
     if "ongoing" in mdef.traits or "rumor" in mdef.traits:
         active_card = ActiveMythos(def_id=mdef.id, eldritch=0, rumor_space=mdef.rumor_space)
-        game.active_mythos.append(active_card)
 
     # Resolve the 7 Mythos elements in rulebook order:
     # 1. Advance Omen
@@ -315,7 +318,9 @@ def mythos_phase(game: Game) -> None:
         active_card.eldritch = mdef.eldritch
         rules.emit(game, "mythos", f"{mdef.eldritch} Eldritch token(s) are placed on '{mdef.name}'.")
 
-    # Resolve Effect
+    # Resolve Effect: an Ongoing card enters play here, after the Reckoning step.
+    if active_card is not None:
+        game.active_mythos.append(active_card)
     if mdef.effects and not game.outcome:
         run_effects(mdef.effects, Ctx(game, None, f"mythos:{mdef.id}", mythos=active_card))
         rules.process_defeats(game)
@@ -326,7 +331,10 @@ def mythos_phase(game: Game) -> None:
     if game.outcome:
         return
 
-    # End of Mythos Phase: replace defeated investigators, check mysteries, pass Lead Investigator
+    rules.solve_ready_mystery(game)
+    if game.outcome:
+        return
+
     rules.replace_defeated_investigators(game)
     if game.outcome:
         return
@@ -355,6 +363,7 @@ def start_round(game: Game) -> None:
     game.turn_index = 0
     for inv in game.investigators:
         inv.actions_taken = []
+        inv.bonus_actions = 0
         for card in inv.assets:
             card.exhausted = False
 

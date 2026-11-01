@@ -178,6 +178,7 @@ def mark_defeated(game: Game, inv: Investigator, cause: str) -> None:
     if inv.defeated:
         return
     inv.defeated = True
+    inv.defeated_awake = game.awakened
     emit(game, "defeat", f"{inv.name} is defeated ({cause})!", investigator=inv.name, cause=cause)
 
 
@@ -185,6 +186,7 @@ def devour_investigator(game: Game, inv: Investigator) -> None:
     if inv.defeated:
         return
     inv.defeated = True
+    inv.defeated_awake = game.awakened
     inv.devoured = True
     emit(game, "defeat", f"{inv.name} is devoured!", investigator=inv.name, cause="devoured")
 
@@ -192,8 +194,8 @@ def devour_investigator(game: Game, inv: Investigator) -> None:
 def process_defeats(game: Game) -> None:
     """Resolve steps 1-4 of Defeated Investigators immediately.
 
-    In Eldritch Horror, replacement investigators are chosen at the end of the Mythos
-    Phase (before the awakening), or immediately if all active investigators have fallen.
+    Replacements are chosen at the end of the Mythos Phase. An investigator defeated after
+    the awakening is eliminated, and one whose defeat causes the awakening is not.
     """
     for inv in game.investigators:
         if not inv.defeated or inv.eliminated or game.outcome:
@@ -255,7 +257,7 @@ def process_defeats(game: Game) -> None:
                 )
                 game.lead_seat = others[pick].seat
 
-        if game.awakened or not game.unused_investigators:
+        if inv.defeated_awake or not game.unused_investigators:
             inv.eliminated = True
             emit(game, "defeat", f"{inv.name} is eliminated from the game.")
             if not game.active_investigators():
@@ -270,7 +272,7 @@ def replace_defeated_investigators(game: Game) -> None:
     for idx, inv in enumerate(game.investigators):
         if not inv.defeated or inv.eliminated or game.outcome:
             continue
-        if game.awakened or not game.unused_investigators:
+        if inv.defeated_awake or not game.unused_investigators:
             inv.eliminated = True
             if not game.active_investigators():
                 lose(game, "Every investigator has been eliminated. Humanity is doomed.")
@@ -336,12 +338,6 @@ def awaken(game: Game) -> None:
     old = game.old_one
     game.awakened = True
     emit(game, "awaken", old.awakening.text, old_one=old.id)
-    for inv in game.investigators:
-        if inv.defeated and not inv.eliminated:
-            inv.eliminated = True
-    if not game.active_investigators():
-        lose(game, "Every investigator has been eliminated.")
-        return
     if old.awakening.lose_immediately:
         lose(game, old.awakening.text)
         return
@@ -389,16 +385,28 @@ def add_mystery_progress(game: Game, mys: MysteryState, amount: int) -> None:
         return
     mys.progress = min(mys.required, mys.progress + amount)
     mdef = game.mystery_def(mys)
-    if mys.done:
-        if not mys.final:
-            game.solved_mysteries.append(mys.def_id)
-            game.bump("mysteries_solved")
-        emit(game, "mystery", f"The Mystery '{mdef.name}' is solved!", mystery=mdef.id, done=True)
-        check_mysteries(game)
-        if not game.outcome and not mys.final and len(game.solved_mysteries) < game.old_one.mysteries_needed:
-            draw_mystery(game)
-    else:
-        emit(game, "mystery", f"'{mdef.name}': {mys.progress}/{mys.required}.", mystery=mdef.id, done=False)
+    emit(game, "mystery", f"'{mdef.name}': {mys.progress}/{mys.required}.", mystery=mdef.id, done=False)
+    if mys.final and mys.ready:
+        solve_mystery(game, mys)
+
+
+def solve_mystery(game: Game, mys: MysteryState) -> None:
+    mys.solved = True
+    mdef = game.mystery_def(mys)
+    if not mys.final:
+        game.solved_mysteries.append(mys.def_id)
+        game.bump("mysteries_solved")
+    emit(game, "mystery", f"The Mystery '{mdef.name}' is solved!", mystery=mdef.id, done=True)
+    check_mysteries(game)
+    if not game.outcome and not mys.final and len(game.solved_mysteries) < game.old_one.mysteries_needed:
+        draw_mystery(game)
+
+
+def solve_ready_mystery(game: Game) -> None:
+    """Every Core Game Mystery card solves at the end of the Mythos Phase."""
+    mys = game.active_mystery
+    if mys is not None and not mys.done and mys.ready:
+        solve_mystery(game, mys)
 
 
 def check_mysteries(game: Game) -> None:

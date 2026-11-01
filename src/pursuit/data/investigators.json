@@ -69,7 +69,8 @@
       "target": "any_investigator",
       "effects": [
         {
-          "type": "extra_action"
+          "type": "extra_action",
+          "immediate": true
         }
       ]
     },

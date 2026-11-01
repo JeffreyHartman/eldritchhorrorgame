@@ -68,7 +68,7 @@ class HeuristicBot:
     def confirm(self, game: Game, prompt: str, *, kind: str, inv: Investigator | None = None) -> bool:
         if kind == "bank_loan" and inv is not None:
             return not rules.has_condition(inv, "debt") and self.rng.random() < 0.3
-        return True
+        return kind != "reroll_extra"
 
     def notify(self, game: Game, event: Event) -> None:
         pass

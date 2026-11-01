@@ -19,7 +19,7 @@ FREE_ACTIONS = ("end",)
 
 
 def actions_left(game: Game, inv: Investigator) -> int:
-    return max(0, game.content.rules.actions_per_turn - len(inv.actions_taken))
+    return max(0, game.content.rules.actions_per_turn + inv.bonus_actions - len(inv.actions_taken))
 
 
 def _ability_ok(game: Game, inv: Investigator, ability: ActionAbility) -> bool:
@@ -153,6 +153,19 @@ def action_options(game: Game, inv: Investigator) -> list[Option]:
 day_options = action_options
 
 
+def additional_action(game: Game, inv: Investigator) -> None:
+    """Let `inv` perform 1 action now, outside their own turn."""
+    if inv.delayed or inv.defeated:
+        return
+    inv.bonus_actions += 1
+    options = action_options(game, inv)
+    value = options[rules.choose(game, f"{inv.name}, perform 1 additional action.", options, kind="action", inv=inv)].value
+    if value[0] == "end":
+        inv.bonus_actions -= 1
+    else:
+        perform(game, inv, value)
+
+
 def perform(game: Game, inv: Investigator, value: tuple) -> None:
     key = value[0]
     handlers = {
@@ -252,7 +265,7 @@ def _prepare(game: Game, inv: Investigator) -> bool:
 
 
 def _acquire(game: Game, inv: Investigator) -> bool:
-    result = run_test(game, inv, "influence", contexts=("acquire",), needed=1, label="Acquire Assets")
+    result = run_test(game, inv, "influence", contexts=("acquire",), label="Acquire Assets", open_ended=True)
     budget = result.successes + rules.perk(game, inv, "acquire_bonus")
     bought_any = False
 
