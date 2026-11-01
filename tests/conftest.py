@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import shutil
 from collections import deque
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from typing import Any
 
 import pytest
 
-from pursuit.content.loader import Content, load_content
+from pursuit.content.loader import DEFAULT_DATA_DIR, Content, load_content
 from pursuit.controller import Event, Option
+from pursuit.effects.base import Ctx, Effect, run_effects
 from pursuit.engine.setup import GameConfig, new_game
 from pursuit.engine.state import Game, Investigator
 
@@ -109,6 +112,17 @@ def script() -> Script:
 
 
 @pytest.fixture
+def data_copy(tmp_path: Path) -> Path:
+    target = tmp_path / "data"
+    shutil.copytree(DEFAULT_DATA_DIR, target)
+    return target
+
+
+def load_from(path: Path) -> Content:
+    return load_content.__wrapped__(str(path))
+
+
+@pytest.fixture
 def make_game(content: Content, script: Script) -> MakeGame:
     def make(
         old_one: str = "azathoth",
@@ -172,6 +186,27 @@ def check_invariants(game: Game) -> None:
         assert 0 <= game.active_mystery.progress <= game.active_mystery.required
     assert game.doom >= 0
     assert 0 <= game.omen_index < 4
+
+
+def card_effects(content: Content, card_id: str, location: str | None) -> tuple[Effect, ...]:
+    edef = content.encounters[card_id]
+    if location is None:
+        return edef.effects
+    return next(s for s in edef.sections if location in (s.location, s.terrain)).effects
+
+
+def resolve(game: Game, inv: Investigator, card_id: str, location: str | None = None) -> None:
+    """Resolve the section of an encounter card that matches `location`, or the whole card."""
+    tag = "other_world" if card_id.startswith("other_world") else None
+    run_effects(card_effects(game.content, card_id, location), Ctx(game, inv, f"encounter:{card_id}", tag=tag))
+
+
+def clue_here(game: Game, inv: Investigator) -> None:
+    game.locations[inv.location].clues = [inv.location]
+
+
+def holds(inv: Investigator, asset_id: str) -> bool:
+    return any(card.def_id == asset_id for card in inv.assets)
 
 
 def kinds(options: list[Any]) -> list[str]:

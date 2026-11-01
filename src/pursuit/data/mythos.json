@@ -34,7 +34,10 @@
                   {
                     "type": "solve_rumor_in_play"
                   }
-                ]
+                ],
+                "requires": {
+                  "lacks_condition": "dark_pact"
+                }
               },
               {
                 "label": "Refuse the bargain",
@@ -208,7 +211,13 @@
     "effects": [
       {
         "type": "group_spend",
-        "then": [],
+        "then": [
+          {
+            "type": "reckon_twice",
+            "what": "mythos",
+            "doom_check_only": true
+          }
+        ],
         "else": [
           {
             "type": "reckon_twice",
@@ -787,7 +796,10 @@
                     "type": "gain_condition",
                     "id": "dark_pact"
                   }
-                ]
+                ],
+                "requires": {
+                  "lacks_condition": "dark_pact"
+                }
               },
               {
                 "label": "Let Doom advance by 2",
@@ -842,7 +854,10 @@
                     "type": "gain_condition",
                     "id": "debt"
                   }
-                ]
+                ],
+                "requires": {
+                  "lacks_condition": "debt"
+                }
               }
             ]
           }
@@ -1011,7 +1026,10 @@
                     "type": "delay",
                     "chosen": true
                   }
-                ]
+                ],
+                "requires": {
+                  "delayed": false
+                }
               }
             ]
           }
@@ -1162,6 +1180,10 @@
                     "kind": "spell"
                   }
                 ]
+              },
+              {
+                "label": "Do nothing",
+                "effects": []
               }
             ]
           }

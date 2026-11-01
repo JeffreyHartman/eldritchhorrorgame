@@ -124,7 +124,10 @@
                     "type": "gain_condition",
                     "id": "dark_pact"
                   }
-                ]
+                ],
+                "requires": {
+                  "lacks_condition": "dark_pact"
+                }
               }
             ]
           }
@@ -135,7 +138,7 @@
         "effects": [
           {
             "type": "test",
-            "skill": "will",
+            "skill": "lore",
             "mod": 0,
             "fail": [
               {
@@ -574,7 +577,10 @@
                   {
                     "type": "remove_self"
                   }
-                ]
+                ],
+                "requires": {
+                  "delayed": false
+                }
               }
             ]
           }
@@ -604,7 +610,10 @@
                     "type": "delay",
                     "chosen": true
                   }
-                ]
+                ],
+                "requires": {
+                  "delayed": false
+                }
               }
             ]
           }

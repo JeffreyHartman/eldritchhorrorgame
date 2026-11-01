@@ -298,6 +298,8 @@ and the dice. The ASCII art is in `ui/art/*.txt`.
 | `test_actions.py`          | Each Day action and its limits.                                     |
 | `test_effects.py`          | Each effect type, and bad effect data.                              |
 | `test_encounter_choices.py` | Optional costs on encounter cards: accept, refuse, and cannot pay. |
+| `test_card_effects.py`     | Real cards resolved through `run_effects`.           |
+| `test_card_text.py`        | Card text against card effects: "you may" wording, named gains, and game phrases. |
 | `test_rules.py`            | Doom, Dread, rifts, rites, defeats, and the awakening.              |
 | `test_phases.py`           | The round loop and full games to a win and to a loss.               |
 | `test_save.py`             | A save and a load give the same game, and bad saves fail clearly.   |
@@ -391,21 +393,23 @@ Investigator effects apply to the current investigator. World effects need no in
 | -------------------- | --------------------------------------------------------- | -------------------------------------------------- |
 | `health`, `sanity`, `funds`, `clues`, `trophies` | `amount` (not 0)              | Change the value                                   |
 | `improve_skill`      | `skill` (or `choose`), `amount`                           | Improve a skill, up to the cap                     |
-| `test`               | `skill`, `mod`, `context`, `pass`, `fail`                 | Run a skill test, then one branch                  |
+| `test`               | `skill`, `mod`, `context`, `plus_per`, `pass`, `fail`     | Run a skill test, then one branch. `plus_per: "clue"` adds 1 die for each Clue held |
 | `gain_asset`         | `id`, `kind`, or `trait`; `source` (`deck` or `market`); `count` | Gain assets                                  |
 | `lose_asset`         | `id`, `kind`, `trait`, or `all`; `count`                  | Discard assets                                     |
 | `gain_condition`     | `id`                                                      | Gain a condition                                   |
 | `remove_condition`   | `id` or `trait`                                           | Remove conditions                                  |
 | `remove_self`        | none                                                      | Remove the condition that resolves now             |
 | `resolve_conditions` | `trait`                                                   | Make matching conditions come due now              |
-| `move`               | `to` (location id, `nearest_city`, `random_city`, `start`, `choose_adjacent`, `nearest_rift`, `choose_within`), `range` | Move the investigator |
+| `move`               | `to` (location id, `nearest_city`, `random_city`, `start`, `choose_adjacent`, `nearest_rift`, `choose_within`, `toward_gate`), `range` | Move the investigator. `toward_gate` moves 1 space toward the nearest Gate |
 | `delay`              | `chosen`                                                  | The investigator loses the next Day turn. `chosen` marks a voluntary Delay, which perks cannot stop |
 | `claim_clue`         | `bonus`                                                   | Gain the Clue token here, plus `bonus` Clues       |
 | `discard_clue`       | none                                                      | Discard 1 Clue token here with no gain             |
+| `move_clue`          | `terrain`                                                 | Move 1 Clue token from here to the nearest space of that terrain |
 | `choice`             | `prompt`, `options` (each with `label`, `requires`, `effects`) | The player picks one option. With one enabled option, it resolves with no prompt |
 | `pay`                | `prompt`, `cost`, `then`, `else`                          | Offer to pay a cost                                |
 | `if`                 | `has` (an investigator filter), `then`, `else`            | Branch on what the investigator has                |
-| `ambush`             | `id`                                                      | Spawn a monster here and fight it now              |
+| `ambush`             | `id`, `defeated`, `survived`, `spawn`, `or_random`        | Fight a Monster here, then run the branch for the result. `spawn` keeps the Monster on the board. `or_random` draws from the cup when `id` is unavailable |
+| `move_monster_here`  | `id`, `else`                                              | Move a non-Epic Monster here and fight it. `else` runs if `id` is not on the board |
 | `close_rift`         | none                                                      | Close the rift here                                |
 
 #### World effects
@@ -420,7 +424,11 @@ Investigator effects apply to the current investigator. World effects need no in
 | `one_investigator`   | `pick` (`lowest_sanity`, `lowest_health`, `most_clues`, `most_funds`, `random`, `choose`), `effects` | Run effects for one investigator |
 | `open_rift`          | `count`                                                   | Open rifts from the rift deck                      |
 | `spawn_monster`      | `count`, `id`, `at` (`here`, `rifts`, `random_rift_site`, or a location id) | Spawn monsters          |
-| `spawn_clue`         | `count`                                                   | Place Clues                                        |
+| `spawn_clue`         | `count`, `choose`                                         | Place Clues. `choose` places each on a space of the player's choice |
+| `discard_this`       | none                                                      | Discard the Monster of this ambush or combat       |
+| `move_any_monster`   | none                                                      | Move 1 non-Epic Monster of the player's choice to any other space |
+| `shuffle_back_mystery` | `random`                                                | Shuffle a solved Mystery into the deck, chosen by the player or at random |
+| `reckon_twice`       | `what`, `doom_check_only`                                            | Resolve each Reckoning twice, or advance Doom if there is none. `doom_check_only` keeps only the Doom check |
 | `monsters_move`      | none                                                      | Each roaming monster moves 1 step toward the nearest investigator |
 | `monsters_heal`      | none                                                      | Remove all wounds from monsters                    |
 | `refresh_market`     | none                                                      | Replace the market cards                           |

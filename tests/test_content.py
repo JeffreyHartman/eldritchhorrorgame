@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
-import shutil
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from conftest import Script, clear_board
+from conftest import Script, clear_board, load_from
 from pursuit.bots import RandomBot
 from pursuit.content.defs import EXPANSIONS, SKILLS
 from pursuit.content.loader import DEFAULT_DATA_DIR, Content, load_content
@@ -127,21 +126,10 @@ def test_every_ability_and_back_resolves_without_error(content: Content) -> None
 # --- broken data ----------------------------------------------------------------------
 
 
-@pytest.fixture
-def data_copy(tmp_path: Path) -> Path:
-    target = tmp_path / "data"
-    shutil.copytree(DEFAULT_DATA_DIR, target)
-    return target
-
-
 def edit_json(path: Path, change: Callable[[Any], object]) -> None:
     data = json.loads(path.read_text())
     change(data)
     path.write_text(json.dumps(data))
-
-
-def load_from(path: Path) -> Content:
-    return load_content.__wrapped__(str(path))
 
 
 def test_every_content_record_names_an_expansion(content: Content) -> None:

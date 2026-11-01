@@ -77,6 +77,7 @@ class Test(Effect):
     clue_bonus: bool
     sanity_dice: bool
     minus_per: str | None
+    plus_per: str | None = None
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
@@ -91,12 +92,15 @@ class Test(Effect):
             clue_bonus=r.get_bool("clue_bonus", False),
             sanity_dice=r.get_bool("sanity_dice", False),
             minus_per=r.get_enum("minus_per", ("spell", "cultist"), None),
+            plus_per=r.get_enum("plus_per", ("clue",), None),
         )
 
     def apply(self, ctx: Ctx) -> None:
         inv = ctx.need_inv(self.kind)
         counts_successes = any(e.kind in OPEN_ENDED for lst in self.children() for e in walk(lst))
         mod = self.mod - self._penalty(ctx, inv) + self._buy_dice(ctx, inv)
+        if self.plus_per == "clue":
+            mod += inv.clues
         result = run_test(
             ctx.game,
             inv,
@@ -618,6 +622,7 @@ MOVE_KEYWORDS = (
     "nearest_gate",
     "choose_within",
     "ship_path",
+    "toward_gate",
 )
 
 
@@ -646,9 +651,10 @@ class Move(Effect):
         elif self.to == "nearest_city":
             dest = rules.nearest_city(game, inv.location)
         elif self.to == "nearest_gate":
-            dist = rules.distances(game, inv.location)
-            gates = [loc for loc in game.open_gates() if loc in dist]
-            dest = min(gates, key=lambda loc: (dist[loc], loc)) if gates else None
+            dest = rules.nearest_gate(game, inv.location)
+        elif self.to == "toward_gate":
+            gate = rules.nearest_gate(game, inv.location)
+            dest = rules.step_toward(game, inv.location, gate) if gate and gate != inv.location else None
         elif self.to == "choose_adjacent":
             near = rules.neighbors(game, inv.location)
             options = [Option(rules.loc_name(game, loc), loc, k) for loc, k in near]
@@ -1430,15 +1436,43 @@ class SpawnMonster(Effect):
 @register("ambush")
 @dataclass(frozen=True)
 class Ambush(Effect):
+    """Encounter a Monster on the investigator's space, then run the branch for the result.
+
+    `spawn` keeps the Monster on the board and resolves its spawn effects, for "spawn a Monster
+    and encounter it" text. `or_random` draws from the cup when the named Monster is unavailable.
+    With no Monster to encounter, neither branch runs.
+    """
+
     monster: str | None
+    defeated: tuple[Effect, ...] = ()
+    survived: tuple[Effect, ...] = ()
+    spawn: bool = False
+    or_random: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(r.get_str("id", None))
+        return cls(
+            r.get_str("id", None),
+            read_effects(r, "defeated"),
+            read_effects(r, "survived"),
+            r.get_bool("spawn", False),
+            r.get_bool("or_random", False),
+        )
 
     def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
         inv = ctx.need_inv(self.kind)
-        combat.ambush(ctx.game, inv, self.monster)
+        monster = rules.spawn_monster(game, inv.location, self.monster, trigger=self.spawn)
+        if monster is None and self.monster and self.or_random:
+            monster = rules.spawn_monster(game, inv.location, trigger=self.spawn)
+        if monster is None:
+            return
+        result = combat.combat(game, inv, monster, ambush=not self.spawn)
+        branch = {combat.DEFEATED: self.defeated, combat.SURVIVED: self.survived}.get(result, ())
+        run_effects(branch, replace(ctx, monster=monster))
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.defeated, self.survived)
 
     def refs(self) -> Iterable[tuple[str, str]]:
         return [("monster", self.monster)] if self.monster else []
@@ -1505,9 +1539,15 @@ class DiscardMonster(Effect):
 @register("move_monster_here")
 @dataclass(frozen=True)
 class MoveMonsterHere(Effect):
+    """Move a non-Epic Monster to this space and encounter it. `id` names the Monster, and
+    `else` runs when no such Monster is on the board."""
+
+    monster: str | None = None
+    otherwise: tuple[Effect, ...] = ()
+
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls()
+        return cls(r.get_str("id", None), read_effects(r, "else"))
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
@@ -1515,9 +1555,11 @@ class MoveMonsterHere(Effect):
         candidates = [
             (loc, monster)
             for loc, monster in game.all_monsters()
-            if not game.content.monsters[monster.def_id].epic and loc != inv.location
+            if not game.content.monsters[monster.def_id].epic
+            and (monster.def_id == self.monster if self.monster else loc != inv.location)
         ]
         if not candidates:
+            run_effects(self.otherwise, ctx)
             return
         options = [
             Option(f"{game.content.monsters[m.def_id].name} at {rules.loc_name(game, loc)}", i)
@@ -1526,17 +1568,47 @@ class MoveMonsterHere(Effect):
         pick = rules.choose(
             game, "Move which Monster here?", options, kind="move_monster", inv=inv, auto_single=True
         )
-        source, monster = candidates[pick]
-        game.locations[source].monsters.remove(monster)
-        game.locations[inv.location].monsters.append(monster)
-        rules.emit(
-            game,
-            "monster",
-            f"The {game.content.monsters[monster.def_id].name} moves to {rules.loc_name(game, inv.location)}.",
-            monster=monster.def_id,
-            location=inv.location,
-        )
+        _source, monster = candidates[pick]
+        rules.move_monster(game, monster, inv.location)
         combat.combat(game, inv, monster)
+
+    def children(self) -> Iterable[Sequence[Effect]]:
+        return (self.otherwise,)
+
+    def refs(self) -> Iterable[tuple[str, str]]:
+        return [("monster", self.monster)] if self.monster else []
+
+
+@register("move_any_monster")
+@dataclass(frozen=True)
+class MoveAnyMonster(Effect):
+    """Move 1 non-Epic Monster of the player's choice to another space of their choice."""
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
+        found = [(loc, m) for loc, m in game.all_monsters() if not game.monster_def(m.def_id).epic]
+        if not found:
+            return
+        options = [
+            Option(f"{game.monster_def(m.def_id).name} at {rules.loc_name(game, loc)}", m.uid) for loc, m in found
+        ]
+        source, monster = found[
+            rules.choose(game, "Move which Monster?", options, kind="pick_monster", inv=ctx.inv, auto_single=True)
+        ]
+        places = sorted(
+            (loc for loc in game.content.locations if loc != source), key=lambda loc: rules.loc_name(game, loc)
+        )
+        spaces = [Option(rules.loc_name(game, loc), loc) for loc in places]
+        rules.move_monster(
+            game, monster, places[rules.choose(game, "Move it where?", spaces, kind="move", inv=ctx.inv)]
+        )
+
+    def needs_investigator(self) -> bool:
+        return False
 
 
 @register("damage_monsters")
@@ -1587,14 +1659,21 @@ class DamageMonsters(Effect):
 @dataclass(frozen=True)
 class SpawnClue(Effect):
     count: int
+    choose: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(_positive(r, "count"))
+        return cls(_positive(r, "count"), r.get_bool("choose", False))
 
     def apply(self, ctx: Ctx) -> None:
+        game = ctx.game
         for _ in range(self.count):
-            rules.spawn_clue(ctx.game)
+            dest = None
+            if self.choose:
+                places = sorted(game.content.locations, key=lambda loc: rules.loc_name(game, loc))
+                options = [Option(rules.loc_name(game, loc), loc) for loc in places]
+                dest = places[rules.choose(game, "Spawn the Clue where?", options, kind="choose_space", inv=ctx.inv)]
+            rules.spawn_clue(game, dest)
 
     def needs_investigator(self) -> bool:
         return False
@@ -1729,6 +1808,23 @@ class DefeatThis(Effect):
         loc_id = rules.monster_location(ctx.game, monster)
         if loc_id is not None:
             rules.defeat_monster(ctx.game, ctx.inv, loc_id, monster)
+
+    def needs_investigator(self) -> bool:
+        return False
+
+
+@register("discard_this")
+@dataclass(frozen=True)
+class DiscardThis(Effect):
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls()
+
+    def apply(self, ctx: Ctx) -> None:
+        monster = ctx.need_monster(self.kind)
+        loc_id = rules.monster_location(ctx.game, monster)
+        if loc_id is not None:
+            rules.discard_monster(ctx.game, loc_id, monster)
 
     def needs_investigator(self) -> bool:
         return False
@@ -2090,6 +2186,21 @@ class MoveClues(Effect):
         return False
 
 
+@register("move_clue")
+@dataclass(frozen=True)
+class MoveClue(Effect):
+    """Move 1 Clue from the investigator's space to the nearest `terrain` space."""
+
+    terrain: str
+
+    @classmethod
+    def parse(cls, r: Reader) -> Effect:
+        return cls(r.get_enum("terrain", TERRAINS))
+
+    def apply(self, ctx: Ctx) -> None:
+        rules.move_clue(ctx.game, ctx.need_inv(self.kind).location, self.terrain)
+
+
 @register("sheet_gate")
 @dataclass(frozen=True)
 class SheetGate(Effect):
@@ -2333,13 +2444,18 @@ class GroupSpend(Effect):
 @register("reckon_twice")
 @dataclass(frozen=True)
 class ReckonTwice(Effect):
-    """Resolve the Reckoning of each Monster or Mythos card twice, or else advance Doom by 1."""
+    """Resolve the Reckoning of each Monster or Mythos card twice, or else advance Doom by 1.
+
+    `doom_check_only` resolves no Reckoning, for a group that paid to stop it. From Beyond still
+    advances Doom when no card has a Reckoning, because that sentence has no "unless".
+    """
 
     what: str
+    doom_check_only: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(r.get_enum("what", ("monsters", "mythos")))
+        return cls(r.get_enum("what", ("monsters", "mythos")), r.get_bool("doom_check_only", False))
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
@@ -2352,8 +2468,9 @@ class ReckonTwice(Effect):
         if not found:
             rules.advance_doom(game, 1, f"no {self.what} have a Reckoning effect")
             return
-        reckon(game)
-        reckon(game)
+        if not self.doom_check_only:
+            reckon(game)
+            reckon(game)
 
     def needs_investigator(self) -> bool:
         return False
@@ -2503,13 +2620,20 @@ class RewindOmen(Effect):
 @register("shuffle_back_mystery")
 @dataclass(frozen=True)
 class ShuffleBackMystery(Effect):
+    at_random: bool = False
+
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls()
+        return cls(r.get_bool("random", False))
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
         solved = list(game.solved_mysteries)
+        if not solved:
+            return
+        if self.at_random:
+            rules.unsolve_mystery(game, game.rng.choice(solved))
+            return
         options = [Option(next(m.name for m in game.old_one.mysteries if m.id == s), s) for s in solved]
         pick = rules.choose(game, "Shuffle back which Mystery?", options, kind="pick_mystery", auto_single=True)
         rules.unsolve_mystery(game, solved[pick])

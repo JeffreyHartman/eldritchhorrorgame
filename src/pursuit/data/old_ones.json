@@ -643,7 +643,7 @@
         "name": "The Deep Ones Attack!",
         "expansion": "CORE",
         "flavor": "Terrible storms have battered fishing villages across the globe, but it's merely the prelude to an invading army of deep ones!",
-        "text": "When this card enters play, each investigator places 1 Eldritch token on the nearest Sea space that does not contain an Eldritch token. As an encounter, an investigator on a space containing an Eldritch token may attempt to fend off the deep one invasion; a Deep One Monster ambushes him! If he defeats it, he may spend 1 Clue to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to investigators, solve this Mystery.",
+        "text": "When this card enters play, each investigator places 1 Eldritch token on the nearest Sea space that does not contain an Eldritch token. As an encounter, an investigator on a space containing an Eldritch token may attempt to fend off the deep one invasion; a Deep One Monster ambushes him! If he defeats it, he may spend 1 Clue to place that Eldritch token on this card. At the end of the Mythos Phase, if there are Eldritch tokens on this card equal to investigators, solve this Mystery. Do not discard the Eldritch tokens from the game board.",
         "kind": "ambush",
         "monster": "deep_one",
         "where": {

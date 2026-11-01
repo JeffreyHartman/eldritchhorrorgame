@@ -20,9 +20,8 @@
               },
               {
                 "type": "gain_asset",
-                "count": 1,
                 "kind": "item",
-                "source": "reserve"
+                "source": "choice"
               }
             ],
             "fail": [
@@ -139,12 +138,28 @@
                 "text": "you find a charred corpse clutching a journal; gain 1 Clue or improve Lore."
               },
               {
-                "type": "clues",
-                "amount": 1
-              },
-              {
-                "type": "improve_skill",
-                "skill": "lore"
+                "type": "choice",
+                "prompt": "What do you take from the journal?",
+                "options": [
+                  {
+                    "label": "Gain 1 Clue",
+                    "effects": [
+                      {
+                        "type": "clues",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Improve Lore",
+                    "effects": [
+                      {
+                        "type": "improve_skill",
+                        "skill": "lore"
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "fail": [
@@ -164,6 +179,10 @@
         "terrain": "sea",
         "text": "Your ship becomes lost in a dense fog bank, terrifying the superstitious crew. When the mist finally clears, you've somehow traveled hundreds of miles. Move 1 space and lose 1 Sanity.",
         "effects": [
+          {
+            "type": "move",
+            "to": "choose_adjacent"
+          },
           {
             "type": "sanity",
             "amount": -1
@@ -193,9 +212,8 @@
               },
               {
                 "type": "gain_asset",
-                "count": 1,
                 "kind": "item",
-                "source": "reserve"
+                "source": "choice"
               }
             ],
             "fail": [
@@ -231,8 +249,28 @@
                 "text": "gain 1 Clue or 1 Spell."
               },
               {
-                "type": "clues",
-                "amount": 1
+                "type": "choice",
+                "prompt": "What do you learn from the carvings?",
+                "options": [
+                  {
+                    "label": "Gain 1 Clue",
+                    "effects": [
+                      {
+                        "type": "clues",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Gain 1 Spell",
+                    "effects": [
+                      {
+                        "type": "gain_asset",
+                        "kind": "spell"
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "fail": []
@@ -254,12 +292,16 @@
                 "text": "you recognize it as the story of Isis, and sailor teaches you the song; gain a Blessed Condition and recover 1 Health and 1 Sanity."
               },
               {
+                "type": "gain_condition",
+                "id": "blessed"
+              },
+              {
                 "type": "health",
                 "amount": 1
               },
               {
-                "type": "gain_condition",
-                "id": "blessed"
+                "type": "sanity",
+                "amount": 1
               }
             ],
             "fail": []
@@ -309,6 +351,10 @@
               {
                 "type": "text",
                 "text": "you discover a path; move 1 space."
+              },
+              {
+                "type": "move",
+                "to": "choose_adjacent"
               }
             ],
             "fail": [
@@ -345,6 +391,10 @@
               {
                 "type": "clues",
                 "amount": 1
+              },
+              {
+                "type": "gain_asset",
+                "kind": "ally"
               }
             ],
             "fail": [
@@ -383,8 +433,7 @@
               },
               {
                 "type": "gain_asset",
-                "count": 1,
-                "kind": "item"
+                "trait": "weapon"
               }
             ],
             "fail": [
@@ -473,6 +522,11 @@
               {
                 "type": "text",
                 "text": "you're able to track down a hidden gem; gain 1 Tome Artifact."
+              },
+              {
+                "type": "gain_asset",
+                "kind": "artifact",
+                "trait": "tome"
               }
             ],
             "fail": []
@@ -492,6 +546,11 @@
               {
                 "type": "text",
                 "text": "you find the eccentric, old man, and he gives you a gift for helping his niece; gain 1 Tome Artifact from the deck."
+              },
+              {
+                "type": "gain_asset",
+                "kind": "artifact",
+                "trait": "tome"
               }
             ],
             "fail": []
@@ -513,12 +572,28 @@
                 "text": "the spectral captain grants you aid; gain 1 Clue or improve Will."
               },
               {
-                "type": "clues",
-                "amount": 1
-              },
-              {
-                "type": "improve_skill",
-                "skill": "will"
+                "type": "choice",
+                "prompt": "What does the spectral captain grant?",
+                "options": [
+                  {
+                    "label": "Gain 1 Clue",
+                    "effects": [
+                      {
+                        "type": "clues",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Improve Will",
+                    "effects": [
+                      {
+                        "type": "improve_skill",
+                        "skill": "will"
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "fail": [
@@ -587,6 +662,10 @@
               {
                 "type": "text",
                 "text": "you confidently progress on your journey; move 1 space."
+              },
+              {
+                "type": "move",
+                "to": "choose_adjacent"
               }
             ],
             "fail": [
@@ -596,6 +675,10 @@
               },
               {
                 "type": "delay"
+              },
+              {
+                "type": "gain_condition",
+                "trait": "madness"
               }
             ]
           }
@@ -665,12 +748,28 @@
                 "text": "the next morning you find evidence of cult activity that you can use to identify the cult members; gain 1 Clue or improve Influence."
               },
               {
-                "type": "clues",
-                "amount": 1
-              },
-              {
-                "type": "improve_skill",
-                "skill": "influence"
+                "type": "choice",
+                "prompt": "What do you do with what you found?",
+                "options": [
+                  {
+                    "label": "Gain 1 Clue",
+                    "effects": [
+                      {
+                        "type": "clues",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Improve Influence",
+                    "effects": [
+                      {
+                        "type": "improve_skill",
+                        "skill": "influence"
+                      }
+                    ]
+                  }
+                ]
               }
             ],
             "fail": [
@@ -1066,9 +1165,8 @@
               },
               {
                 "type": "gain_asset",
-                "count": 1,
                 "kind": "service",
-                "source": "reserve"
+                "source": "choice"
               }
             ],
             "fail": []

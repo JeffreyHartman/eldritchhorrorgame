@@ -159,6 +159,10 @@
           {
             "type": "text",
             "text": "you don't see the shan, and it overpowers your mind; shuffle a solved Mystery at random into the deck."
+          },
+          {
+            "type": "shuffle_back_mystery",
+            "random": true
           }
         ]
       }
@@ -189,6 +193,10 @@
           {
             "type": "text",
             "text": "he feigns innocence, but later reports the questions to the Cult of the Skull; advance the Omen by 1."
+          },
+          {
+            "type": "advance_omen",
+            "amount": 1
           }
         ]
       }
@@ -284,6 +292,9 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "choose_omen"
           }
         ],
         "fail": [
@@ -345,6 +356,9 @@
     "text": "An eerie mist surrounds you, and you find yourself in the court of Azathoth! Gain this Clue. Your mind can barely endure what you are seeing (Will). If you pass, you return to Earth with your mind intact; discard 1 Eldritch token from the Omen track. If you fail, lose 6 Sanity.",
     "effects": [
       {
+        "type": "claim_clue"
+      },
+      {
         "type": "test",
         "skill": "will",
         "mod": 0,
@@ -353,6 +367,10 @@
           {
             "type": "text",
             "text": "you return to Earth with your mind intact; discard 1 Eldritch token from the Omen track."
+          },
+          {
+            "type": "green_omen_eldritch",
+            "amount": -1
           }
         ],
         "fail": [
@@ -405,6 +423,9 @@
     "text": "You discover a twenty-foot tall, gray metallic cone! Gain this Clue. You try to make sense of the alien technology inside (Lore-1). If you pass, you manage to operate the shan technology; discard 1 Eldritch token from the Omen track.",
     "effects": [
       {
+        "type": "claim_clue"
+      },
+      {
         "type": "test",
         "skill": "lore",
         "mod": -1,
@@ -413,6 +434,10 @@
           {
             "type": "text",
             "text": "you manage to operate the shan technology; discard 1 Eldritch token from the Omen track."
+          },
+          {
+            "type": "green_omen_eldritch",
+            "amount": -1
           }
         ],
         "fail": []
@@ -444,6 +469,10 @@
           {
             "type": "text",
             "text": "your torch eventually goes out, and you begin to hear the sound of a flute; advance the Omen by 1."
+          },
+          {
+            "type": "advance_omen",
+            "amount": 1
           }
         ]
       }
@@ -570,6 +599,9 @@
     "text": "Your ship is destroyed by a glowing rock that fell from the sky! Gain this Clue. You struggle to reach wreckage that can keep you afloat (Strength). If you fail, the undertow pulls you underwater; lose 2 Health.",
     "effects": [
       {
+        "type": "claim_clue"
+      },
+      {
         "type": "test",
         "skill": "strength",
         "mod": 0,
@@ -607,6 +639,9 @@
           },
           {
             "type": "claim_clue"
+          },
+          {
+            "type": "choose_omen"
           }
         ],
         "fail": []
@@ -620,6 +655,9 @@
     "terrain": "sea",
     "text": "The Nemesis Moon, Ghroth, looms in the sky. You don't know why it's here, but you know that it is the harbinger of doom. Gain this Clue and place 1 Eldritch token on the green space of the Omen track.",
     "effects": [
+      {
+        "type": "claim_clue"
+      },
       {
         "type": "green_omen_eldritch",
         "amount": 1
@@ -693,6 +731,10 @@
           {
             "type": "text",
             "text": "advance the Omen by 1."
+          },
+          {
+            "type": "advance_omen",
+            "amount": 1
           }
         ]
       }
@@ -744,6 +786,9 @@
     "text": "A pale, blubbery-looking sailor tells you of a dream he's been having about a green stone at the bottom of the ocean. Gain this Clue. You try to use his description to determine the actual location (Observation). If you pass, move the Omen token to any space of the track without advancing Doom.",
     "effects": [
       {
+        "type": "claim_clue"
+      },
+      {
         "type": "test",
         "skill": "observation",
         "mod": 0,
@@ -752,6 +797,9 @@
           {
             "type": "text",
             "text": "move the Omen token to any space of the track without advancing Doom."
+          },
+          {
+            "type": "choose_omen"
           }
         ],
         "fail": []

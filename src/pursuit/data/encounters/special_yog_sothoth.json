@@ -226,7 +226,10 @@
                         "type": "mystery_progress",
                         "amount": 1
                       }
-                    ]
+                    ],
+                    "requires": {
+                      "lacks_condition": "amnesia"
+                    }
                   },
                   {
                     "label": "Lose 3 Sanity",
@@ -305,11 +308,11 @@
           },
           {
             "type": "gain_condition",
-            "id": "paranoia"
+            "trait": "madness"
           },
           {
             "type": "gain_condition",
-            "id": "back_injury"
+            "trait": "injury"
           }
         ]
       }

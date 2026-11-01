@@ -849,13 +849,32 @@ def heal_monsters(game: Game, amount: int = 99) -> None:
         emit(game, "monster", "Monsters recover Health.")
 
 
-def spawn_clue(game: Game) -> str | None:
+def spawn_clue(game: Game, loc_id: str | None = None) -> str | None:
+    """Draw a Clue token and place it on its own space, or on `loc_id` if given."""
     token = game.clue_deck.draw(game.rng)
     if token is None:
         return None
-    game.locations[token].clues.append(token)
-    emit(game, "clue", f"A Clue spawns at {loc_name(game, token)}.", location=token)
+    place = loc_id or token
+    game.locations[place].clues.append(token)
+    emit(game, "clue", f"A Clue spawns at {loc_name(game, place)}.", location=place)
     return token
+
+
+def nearest_gate(game: Game, loc_id: str) -> str | None:
+    dist = distances(game, loc_id)
+    gates = [loc for loc in game.open_gates() if loc in dist]
+    return min(gates, key=lambda loc: (dist[loc], loc)) if gates else None
+
+
+def move_clue(game: Game, src: str, terrain: str) -> None:
+    """Move 1 Clue token from `src` to the nearest other space of `terrain`."""
+    if not game.locations[src].clues:
+        return
+    dist = distances(game, src)
+    spaces = [loc.id for loc in game.content.locations.values() if loc.terrain == terrain and loc.id != src]
+    dest = min(spaces, key=lambda loc: (dist.get(loc, 999), loc))
+    game.locations[dest].clues.append(game.locations[src].clues.pop())
+    emit(game, "clue", f"The Clue moves to {loc_name(game, dest)}.", location=dest)
 
 
 def discard_clue(game: Game, loc_id: str) -> bool:
