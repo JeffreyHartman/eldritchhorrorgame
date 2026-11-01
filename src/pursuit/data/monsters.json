@@ -69,7 +69,10 @@
                 "type": "discard_monster",
                 "where": "choose_space"
               }
-            ]
+            ],
+            "requires": {
+              "lacks_condition": "dark_pact"
+            }
           },
           {
             "label": "Decline",

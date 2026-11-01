@@ -651,16 +651,10 @@ class Move(Effect):
         elif self.to == "nearest_city":
             dest = rules.nearest_city(game, inv.location)
         elif self.to == "nearest_gate":
-            dist = rules.distances(game, inv.location)
-            gates = [loc for loc in game.open_gates() if loc in dist]
-            dest = min(gates, key=lambda loc: (dist[loc], loc)) if gates else None
+            dest = rules.nearest_gate(game, inv.location)
         elif self.to == "toward_gate":
-            dist = rules.distances(game, inv.location)
-            gates = [loc for loc in game.open_gates() if loc in dist]
-            nearest = min(gates, key=lambda loc: (dist[loc], loc)) if gates else inv.location
-            dest = rules.step_toward(game, inv.location, nearest)
-            if dest == inv.location:
-                return
+            gate = rules.nearest_gate(game, inv.location)
+            dest = rules.step_toward(game, inv.location, gate) if gate and gate != inv.location else None
         elif self.to == "choose_adjacent":
             near = rules.neighbors(game, inv.location)
             options = [Option(rules.loc_name(game, loc), loc, k) for loc, k in near]
@@ -2204,15 +2198,7 @@ class MoveClue(Effect):
         return cls(r.get_enum("terrain", TERRAINS))
 
     def apply(self, ctx: Ctx) -> None:
-        game = ctx.game
-        here = ctx.need_inv(self.kind).location
-        if not game.locations[here].clues:
-            return
-        dist = rules.distances(game, here)
-        spaces = [loc.id for loc in game.content.locations.values() if loc.terrain == self.terrain and loc.id != here]
-        dest = min(spaces, key=lambda loc: (dist.get(loc, 999), loc))
-        game.locations[dest].clues.append(game.locations[here].clues.pop())
-        rules.emit(game, "clue", f"The Clue moves to {rules.loc_name(game, dest)}.", location=dest)
+        rules.move_clue(ctx.game, ctx.need_inv(self.kind).location, self.terrain)
 
 
 @register("sheet_gate")
@@ -2460,16 +2446,16 @@ class GroupSpend(Effect):
 class ReckonTwice(Effect):
     """Resolve the Reckoning of each Monster or Mythos card twice, or else advance Doom by 1.
 
-    `skip` resolves no Reckoning, for a group that paid to stop it. From Beyond still advances
-    Doom when no card has a Reckoning, because that sentence has no "unless".
+    `doom_check_only` resolves no Reckoning, for a group that paid to stop it. From Beyond still
+    advances Doom when no card has a Reckoning, because that sentence has no "unless".
     """
 
     what: str
-    skip: bool = False
+    doom_check_only: bool = False
 
     @classmethod
     def parse(cls, r: Reader) -> Effect:
-        return cls(r.get_enum("what", ("monsters", "mythos")), r.get_bool("skip", False))
+        return cls(r.get_enum("what", ("monsters", "mythos")), r.get_bool("doom_check_only", False))
 
     def apply(self, ctx: Ctx) -> None:
         game = ctx.game
@@ -2482,7 +2468,7 @@ class ReckonTwice(Effect):
         if not found:
             rules.advance_doom(game, 1, f"no {self.what} have a Reckoning effect")
             return
-        if not self.skip:
+        if not self.doom_check_only:
             reckon(game)
             reckon(game)
 

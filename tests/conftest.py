@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import shutil
 from collections import deque
 from collections.abc import Callable, Iterable
+from pathlib import Path
 from typing import Any
 
 import pytest
 
-from pursuit.content.loader import Content, load_content
+from pursuit.content.loader import DEFAULT_DATA_DIR, Content, load_content
 from pursuit.controller import Event, Option
 from pursuit.effects.base import Ctx, Effect, run_effects
 from pursuit.engine.setup import GameConfig, new_game
@@ -107,6 +109,17 @@ def content() -> Content:
 @pytest.fixture
 def script() -> Script:
     return Script()
+
+
+@pytest.fixture
+def data_copy(tmp_path: Path) -> Path:
+    target = tmp_path / "data"
+    shutil.copytree(DEFAULT_DATA_DIR, target)
+    return target
+
+
+def load_from(path: Path) -> Content:
+    return load_content.__wrapped__(str(path))
 
 
 @pytest.fixture

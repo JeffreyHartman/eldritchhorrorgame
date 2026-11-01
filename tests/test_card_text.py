@@ -1,24 +1,20 @@
-"""Tests that compare card text with card effects, for encounters and other cards with text.
+"""Tests for `missing_decisions`, `missing_components`, and `missing_phrases`, which compare card text with effects.
 
-Each check reads a phrase in the text and looks for the matching effect in the same section
-or card. A check sees only the shipped text, so it cannot find a difference the text is silent
-about. Issue 2 records the hand audit that these checks keep in place.
+These checks read only the shipped text, so they cannot find a difference the text is silent about.
 """
 
 from __future__ import annotations
 
 import json
 import re
-import shutil
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import pytest
-
+from conftest import load_from
 from pursuit.content.defs import MonsterDef
-from pursuit.content.loader import DEFAULT_DATA_DIR, Content, load_content
+from pursuit.content.loader import Content, _Checker
 from pursuit.effects.base import Effect, walk
 from pursuit.effects.library import (
     AdvanceDoom,
@@ -57,6 +53,17 @@ NO_DECISION_NEEDED = {
 # Each entry is a `missing_components` result and why no `gain_condition` or `gain_asset` appears.
 GIVEN_BY_CODE = {
     "paranoia: Kleptomania: Gain 1 : Detained": "`Kleptomania.apply` gives Detained after the value check.",
+}
+
+# Each entry is an `unguarded_condition_costs` result and why it is not a cost a holder could dodge.
+NOT_A_COST = {
+    "asset 'blessing_of_isis' back 4: Gain Blessed": "The `where` filter already excludes holders.",
+    "conditions.json 'debt' back 3: Gain a Detained Condition": "This is the penalty for refusing the Ally cost.",
+    "encounters 'europe_4' section 1: Become Delayed: gain a Blessed Condition": "This is the reward, not the cost.",
+    "encounters 'other_world_city_of_the_great_race_4': Gain a Paranoia Condition and lose 1 Sanity": (
+        "This is the penalty for refusing Delay."
+    ),
+    "encounters 'research_shub_niggurath_wilderness_3': Refuse": "This is the penalty for refusing the Dark Pact.",
 }
 
 # Asset and Condition names the card text uses, where they differ from the `name` field.
@@ -158,13 +165,13 @@ def missing_components(content: Content) -> list[str]:
     wanted: list[tuple[re.Pattern[str], Callable[[Effect], bool], str]] = []
     for adef in content.assets.values():
         for name in (adef.name, *ASSET_ALIASES.get(adef.id, ())):
-            pattern = re.compile(GAINS + re.escape(name.removeprefix("The ")) + r"\b")
+            pattern = re.compile(GAINS + re.escape(name.removeprefix("The ")) + r"\b", re.IGNORECASE)
             wanted.append((pattern, _gives_asset(adef.id), adef.name))
     for cdef in content.conditions.values():
-        pattern = re.compile(GAINS + re.escape(cdef.name) + r" Condition")
+        pattern = re.compile(GAINS + re.escape(cdef.name) + r" Condition", re.IGNORECASE)
         wanted.append((pattern, _gives_condition(cdef.id), cdef.name))
-    wanted.append((re.compile(GAINS + r"Madness Condition"), _gives_trait("madness"), "Madness"))
-    wanted.append((re.compile(GAINS + INJURY), _gives_trait("injury"), "Injury"))
+    wanted.append((re.compile(GAINS + r"Madness Condition", re.IGNORECASE), _gives_trait("madness"), "Madness"))
+    wanted.append((re.compile(GAINS + INJURY, re.IGNORECASE), _gives_trait("injury"), "Injury"))
     problems = []
     for scope in card_scopes(content):
         tree = scope.tree()
@@ -261,12 +268,30 @@ def missing_phrases(content: Content) -> list[str]:
     return sorted(set(problems))
 
 
+def unguarded_condition_costs(content: Content) -> list[str]:
+    """`Choice` options that gain a Condition without requiring that the investigator lacks it."""
+    problems = []
+    for where, effects, _world in _Checker(content).effect_lists():
+        for choice in (e for e in walk(effects) if isinstance(e, Choice)):
+            for option in choice.options:
+                for effect in option.effects:
+                    if not isinstance(effect, GainCondition) or effect.condition is None:
+                        continue
+                    if option.requires is None or option.requires.lacks_condition != effect.condition:
+                        problems.append(f"{where}: {option.label}")
+    return sorted(set(problems))
+
+
 def test_every_optional_encounter_offers_a_decision(content: Content) -> None:
     assert missing_decisions(content, NO_DECISION_NEEDED) == []
 
 
 def test_every_named_gain_is_given(content: Content) -> None:
     assert [item for item in missing_components(content) if item not in GIVEN_BY_CODE] == []
+
+
+def test_a_condition_cost_needs_an_investigator_without_that_condition(content: Content) -> None:
+    assert [item for item in unguarded_condition_costs(content) if item not in NOT_A_COST] == []
 
 
 def test_every_game_phrase_has_an_effect(content: Content) -> None:
@@ -276,20 +301,13 @@ def test_every_game_phrase_has_an_effect(content: Content) -> None:
 # --- the checks catch broken data -------------------------------------------------------
 
 
-@pytest.fixture
-def data_copy(tmp_path: Path) -> Path:
-    target = tmp_path / "data"
-    shutil.copytree(DEFAULT_DATA_DIR, target)
-    return target
-
-
 def load_card_edit(path: Path, deck: str, card_id: str, effects: list[dict[str, Any]]) -> Content:
     """Replace one card's effects in a copy of the data and load it."""
     file = path / "encounters" / f"{deck}.json"
     cards = json.loads(file.read_text(encoding="utf-8"))
     next(card for card in cards if card["id"] == card_id)["effects"] = effects
     file.write_text(json.dumps(cards), encoding="utf-8")
-    return load_content.__wrapped__(str(path))
+    return load_from(path)
 
 
 def test_a_lost_decision_fails_the_check(data_copy: Path) -> None:
@@ -301,6 +319,12 @@ def test_a_lost_named_gain_fails_the_check(data_copy: Path) -> None:
     edited = [{"type": "choice", "options": [{"label": "A", "effects": []}, {"label": "B", "effects": []}]}]
     broken = load_card_edit(data_copy, "research_yog_sothoth", "research_yog_sothoth_city_2", edited)
     assert "research_yog_sothoth_city_2: Necronomicon" in missing_components(broken)
+
+
+def test_a_lost_sentence_start_gain_fails_the_check(data_copy: Path) -> None:
+    edited = [{"type": "text", "text": "Gain a Leg Injury Condition."}]
+    broken = load_card_edit(data_copy, "research_azathoth", "research_azathoth_sea_1", edited)
+    assert "research_azathoth_sea_1: Leg Injury" in missing_components(broken)
 
 
 def test_a_lost_phrase_fails_the_check(data_copy: Path) -> None:

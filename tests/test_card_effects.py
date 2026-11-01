@@ -1,4 +1,4 @@
-"""Tests that resolve real cards through `run_effects`, one for each kind of fix from the issue 2 audit."""
+"""Tests that resolve real encounter, Mythos, Monster, and Condition cards through `run_effects`."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def test_failing_to_defeat_the_cultist_moves_the_clue_and_gives_amnesia(make_gam
     assert [game.content.locations[loc].terrain for loc in spaces] == ["sea"]
 
 
-def test_the_ruby_comes_only_from_defeating_the_deep_one(make_game: MakeGame) -> None:
+def test_the_ruby_is_not_gained_without_defeating_the_deep_one(make_game: MakeGame) -> None:
     game = make_game("azathoth")
     inv = first(game)
     clue_here(game, inv)
@@ -54,7 +54,16 @@ def test_the_ruby_comes_only_from_defeating_the_deep_one(make_game: MakeGame) ->
     assert not holds(inv, "ruby_of_rlyeh")
 
 
-def test_star_spawn_retreats_doom_only_when_defeated(make_game: MakeGame) -> None:
+def test_the_ruby_is_gained_by_defeating_the_deep_one(make_game: MakeGame) -> None:
+    game = make_game("azathoth")
+    inv = first(game)
+    only_monster(game, "deep_one")
+    set_dice(game, *[6] * 20)
+    resolve(game, inv, "research_cthulhu_sea_8")
+    assert holds(inv, "ruby_of_rlyeh")
+
+
+def test_star_spawn_does_not_retreat_doom_when_it_survives(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
     only_monster(game, "star_spawn")
@@ -62,6 +71,18 @@ def test_star_spawn_retreats_doom_only_when_defeated(make_game: MakeGame) -> Non
     set_dice(game, *[1] * 30)
     resolve(game, inv, "research_cthulhu_sea_5")
     assert game.doom == doom
+
+
+def test_defeating_the_star_spawn_retreats_doom(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    only_monster(game, "star_spawn")
+    inv.skills["strength"] = 10
+    game.doom -= 2
+    doom = game.doom
+    set_dice(game, *[1] * inv.skill("observation"), *[6] * 30)
+    resolve(game, inv, "research_cthulhu_sea_5")
+    assert game.doom == doom + 1
 
 
 def test_passing_the_deep_one_hybrids_test_costs_nothing(make_game: MakeGame) -> None:
@@ -243,8 +264,8 @@ def test_himalayas_ambush_leaves_the_monster_unless_you_escape(make_game: MakeGa
     inv.location = "the_himalayas"
     only_monster(game, "ghoul")
     doom = game.doom
-    dice = [1] * 8
-    set_dice(game, *dice, *[6] * 8)
+    # Mark Harrigan fails the 4 Will and 4 Strength dice, then passes the Observation test.
+    set_dice(game, *[1] * 8, *[6] * 8)
     resolve(game, inv, "expedition_the_himalayas_1")
     assert game.doom == doom + 1
     assert not game.locations["the_himalayas"].monsters
@@ -279,7 +300,7 @@ def test_failing_rome_discards_blessed(make_game: MakeGame) -> None:
     assert not rules.has_condition(inv, "blessed")
 
 
-def test_unwilling_servant_tests_lore(make_game: MakeGame, script: Script) -> None:
+def test_unwilling_servant_tests_lore(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
     back = next(b for b in game.content.conditions["debt"].backs if b.text.startswith("Unwilling"))
@@ -305,3 +326,12 @@ def test_the_wraith_lets_the_investigator_keep_cursed(make_game: MakeGame, scrip
     script.add("effect_choice", "Keep it")
     run_effects(game.content.monsters["wraith"].on_defeat, Ctx(game, inv, "monster"))
     assert rules.has_condition(inv, "cursed")
+
+
+def test_a_holder_cannot_pay_the_key_and_the_gate_with_amnesia(make_game: MakeGame) -> None:
+    game = make_game("yog_sothoth")
+    inv = first(game)
+    rules.gain_condition(game, inv, "amnesia")
+    set_dice(game, *[6] * 12)
+    resolve(game, inv, "special_key_4")
+    assert inv.sanity == inv.max_sanity - 3

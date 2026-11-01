@@ -215,7 +215,7 @@
           {
             "type": "reckon_twice",
             "what": "mythos",
-            "skip": true
+            "doom_check_only": true
           }
         ],
         "else": [

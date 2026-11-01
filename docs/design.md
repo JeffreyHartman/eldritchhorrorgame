@@ -298,7 +298,7 @@ and the dice. The ASCII art is in `ui/art/*.txt`.
 | `test_actions.py`          | Each Day action and its limits.                                     |
 | `test_effects.py`          | Each effect type, and bad effect data.                              |
 | `test_encounter_choices.py` | Optional costs on encounter cards: accept, refuse, and cannot pay. |
-| `test_card_effects.py`     | Real cards, one for each kind of fix from the card audit.           |
+| `test_card_effects.py`     | Real cards resolved through `run_effects`.           |
 | `test_card_text.py`        | Card text against card effects: "you may" wording, named gains, and game phrases. |
 | `test_rules.py`            | Doom, Dread, rifts, rites, defeats, and the awakening.              |
 | `test_phases.py`           | The round loop and full games to a win and to a loss.               |
@@ -410,7 +410,6 @@ Investigator effects apply to the current investigator. World effects need no in
 | `if`                 | `has` (an investigator filter), `then`, `else`            | Branch on what the investigator has                |
 | `ambush`             | `id`, `defeated`, `survived`, `spawn`, `or_random`        | Fight a Monster here, then run the branch for the result. `spawn` keeps the Monster on the board. `or_random` draws from the cup when `id` is unavailable |
 | `move_monster_here`  | `id`, `else`                                              | Move a non-Epic Monster here and fight it. `else` runs if `id` is not on the board |
-| `discard_this`       | none                                                      | Discard the Monster of this ambush or combat       |
 | `close_rift`         | none                                                      | Close the rift here                                |
 
 #### World effects
@@ -426,9 +425,10 @@ Investigator effects apply to the current investigator. World effects need no in
 | `open_rift`          | `count`                                                   | Open rifts from the rift deck                      |
 | `spawn_monster`      | `count`, `id`, `at` (`here`, `rifts`, `random_rift_site`, or a location id) | Spawn monsters          |
 | `spawn_clue`         | `count`, `choose`                                         | Place Clues. `choose` places each on a space of the player's choice |
+| `discard_this`       | none                                                      | Discard the Monster of this ambush or combat       |
 | `move_any_monster`   | none                                                      | Move 1 non-Epic Monster of the player's choice to any other space |
 | `shuffle_back_mystery` | `random`                                                | Shuffle a solved Mystery into the deck, chosen by the player or at random |
-| `reckon_twice`       | `what`, `skip`                                            | Resolve each Reckoning twice, or advance Doom if there is none. `skip` keeps only the Doom check |
+| `reckon_twice`       | `what`, `doom_check_only`                                            | Resolve each Reckoning twice, or advance Doom if there is none. `doom_check_only` keeps only the Doom check |
 | `monsters_move`      | none                                                      | Each roaming monster moves 1 step toward the nearest investigator |
 | `monsters_heal`      | none                                                      | Remove all wounds from monsters                    |
 | `refresh_market`     | none                                                      | Replace the market cards                           |

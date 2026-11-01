@@ -364,20 +364,22 @@ def test_choice_with_one_enabled_option_resolves_with_no_prompt(make_game: MakeG
     assert inv.sanity == sanity + 1
 
 
+GHOUL_AMBUSH: list[dict[str, Any]] = [
+    {
+        "type": "ambush",
+        "id": "ghoul",
+        "defeated": [{"type": "clues", "amount": 2}],
+        "survived": [{"type": "gain_condition", "id": "amnesia"}],
+    }
+]
+
+
 def test_ambush_runs_the_defeated_branch(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
     game.monster_cup[:] = ["ghoul"]
     set_dice(game, *[6] * 20)
-    effect = [
-        {
-            "type": "ambush",
-            "id": "ghoul",
-            "defeated": [{"type": "clues", "amount": 2}],
-            "survived": [{"type": "gain_condition", "id": "amnesia"}],
-        }
-    ]
-    run(game, inv, effect)
+    run(game, inv, GHOUL_AMBUSH)
     assert inv.clues == 2
     assert not rules.has_condition(inv, "amnesia")
 
@@ -388,15 +390,7 @@ def test_ambush_runs_the_survived_branch(make_game: MakeGame) -> None:
     inv.health = inv.max_health
     game.monster_cup[:] = ["ghoul"]
     set_dice(game, *[1] * 20)
-    effect = [
-        {
-            "type": "ambush",
-            "id": "ghoul",
-            "defeated": [{"type": "clues", "amount": 2}],
-            "survived": [{"type": "gain_condition", "id": "amnesia"}],
-        }
-    ]
-    run(game, inv, effect)
+    run(game, inv, GHOUL_AMBUSH)
     assert inv.clues == 0
     assert rules.has_condition(inv, "amnesia")
     assert not game.locations[inv.location].monsters
@@ -425,16 +419,9 @@ def test_ambush_with_no_monster_runs_neither_branch(make_game: MakeGame) -> None
     inv = first(game)
     game.monster_cup.clear()
     game.set_aside.clear()
-    effect = [
-        {
-            "type": "ambush",
-            "id": "ghoul",
-            "defeated": [{"type": "clues", "amount": 2}],
-            "survived": [{"type": "sanity", "amount": -1}],
-        }
-    ]
-    run(game, inv, effect)
-    assert inv.clues == 0 and inv.sanity == inv.max_sanity
+    run(game, inv, GHOUL_AMBUSH)
+    assert inv.clues == 0
+    assert not rules.has_condition(inv, "amnesia")
 
 
 def test_discard_this_discards_the_ambushing_monster(make_game: MakeGame) -> None:
@@ -554,18 +541,18 @@ def test_shuffle_back_with_no_solved_mystery_does_nothing(make_game: MakeGame) -
     assert not game.solved_mysteries
 
 
-def test_skipped_reckon_twice_advances_doom_when_no_card_has_a_reckoning(make_game: MakeGame) -> None:
+def test_doom_check_only_reckon_twice_advances_doom_when_no_card_has_a_reckoning(make_game: MakeGame) -> None:
     game = make_game()
     doom = game.doom
     game.active_mythos.clear()
-    run(game, None, [{"type": "reckon_twice", "what": "mythos", "skip": True}])
+    run(game, None, [{"type": "reckon_twice", "what": "mythos", "doom_check_only": True}])
     assert game.doom == doom - 1
 
 
-def test_skipped_reckon_twice_resolves_no_reckoning(make_game: MakeGame) -> None:
+def test_doom_check_only_reckon_twice_resolves_no_reckoning(make_game: MakeGame) -> None:
     game = make_game()
     doom = game.doom
     game.active_mythos.append(ActiveMythos("stars_aligned"))
     omen = game.omen_index
-    run(game, None, [{"type": "reckon_twice", "what": "mythos", "skip": True}])
+    run(game, None, [{"type": "reckon_twice", "what": "mythos", "doom_check_only": True}])
     assert game.doom == doom and game.omen_index == omen
