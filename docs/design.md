@@ -432,8 +432,9 @@ A **location filter** has these optional fields: `id`, `terrain`, `region`, `hub
 and `monsters`.
 
 An **investigator filter** has these optional fields: `condition`, `condition_trait`, `asset`,
-`asset_kind`, `asset_trait`, `funds_at_least`, `clues_at_least`, `trophies_at_least`,
-`sanity_at_most`, `health_at_most`, `at` (a location filter), `alone`, and `delayed`.
+`asset_kind`, `asset_trait`, `clues_at_least`, `clues_at_most`, `tickets_at_least`,
+`sanity_at_most`, `health_at_most`, `at` (a location filter), `alone`, `lead`, `lacks_condition`,
+`has_improvement`, `monster_at_gate`, and `delayed`.
 
 ### Add an Old One
 
