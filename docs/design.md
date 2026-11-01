@@ -303,6 +303,7 @@ encounter id must keep the shape of its deck. Tests check that each code is uniq
 | `test_actions.py`          | Each Day action and its limits.                                     |
 | `test_effects.py`          | Each effect type, and bad effect data.                              |
 | `test_encounter_choices.py` | Optional costs on encounter cards: accept, refuse, and cannot pay. |
+| `test_encounter_codes.py`  | Card codes from encounter ids, and the code on the encounter panel. |
 | `test_card_effects.py`     | Real cards resolved through `run_effects`.           |
 | `test_card_text.py`        | Card text against card effects: "you may" wording, named gains, and game phrases. |
 | `test_rules.py`            | Doom, Dread, rifts, rites, defeats, and the awakening.              |

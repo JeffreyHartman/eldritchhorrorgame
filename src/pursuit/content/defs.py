@@ -693,7 +693,7 @@ def _abbreviate(name: str) -> str:
 
 
 def encounter_code(encounter_id: str) -> str:
-    """Return the short code that players use to look up an encounter card.
+    """Return the short code shown on an encounter card's panel.
 
     `research_yog_sothoth_city_2` gives `YOG-C2`, `americas_3` gives `AME-3`, and
     `expedition_the_amazon_1` gives `EXP-AMA1`.
@@ -702,9 +702,9 @@ def encounter_code(encounter_id: str) -> str:
     if stem.startswith("research_"):
         old_one, _, terrain = stem.removeprefix("research_").rpartition("_")
         return f"{_abbreviate(old_one)}-{terrain[0].upper()}{number}"
-    for deck in ("expedition", "other_world", "special"):
-        if stem.startswith(f"{deck}_"):
-            return f"{_abbreviate(deck)}-{_abbreviate(stem.removeprefix(f'{deck}_'))}{number}"
+    for prefix in ("expedition", "other_world", "special"):
+        if stem.startswith(f"{prefix}_"):
+            return f"{_abbreviate(prefix)}-{_abbreviate(stem.removeprefix(f'{prefix}_'))}{number}"
     return f"{_abbreviate(stem)}-{number}"
 
 

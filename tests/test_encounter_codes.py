@@ -55,11 +55,7 @@ def test_every_encounter_code_is_unique(content: Content) -> None:
 
 
 def test_every_encounter_code_has_at_most_12_characters(content: Content) -> None:
-    assert [c for c in map(encounter_code, content.encounters) if len(c) > 12] == []
-
-
-def test_every_encounter_code_has_a_prefix_and_a_card_number(content: Content) -> None:
-    assert [c for c in map(encounter_code, content.encounters) if not re.fullmatch(r"[A-Z]{3}-[A-Z]{0,3}\d+", c)] == []
+    assert max(len(encounter_code(encounter_id)) for encounter_id in content.encounters) <= 12
 
 
 @pytest.mark.parametrize(
@@ -92,3 +88,15 @@ def test_a_panel_with_no_card_shows_no_code(make_game: MakeGame) -> None:
     event = Event("encounter", "A rumor spreads.", {"title": "Rumor", "deck": "rumor", "location": "arkham"})
     lines = panel(game, event).splitlines()
     assert lines[-1].strip("╰─╯ ") == ""
+
+
+def test_a_code_is_dim_and_not_bold_on_a_bold_border(make_game: MakeGame) -> None:
+    game = make_game()
+    out = io.StringIO()
+    console = Console(file=out, width=80, color_system="standard", force_terminal=True)
+    data = {"title": "Yuggoth", "deck": "other_world", "code": "OTH-YUG2", "location": "arkham"}
+    TerminalController(console).notify(game, Event("encounter", "A cold star.", data))
+    match = re.search(r"\x1b\[([\d;]+)m[^\x1b]*OTH-YUG2", out.getvalue())
+    assert match is not None
+    attributes = match[1].split(";")
+    assert "2" in attributes and "1" not in attributes

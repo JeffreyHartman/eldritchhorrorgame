@@ -269,11 +269,12 @@ class TerminalController:
         style = "bold red" if is_other_world else render.TERRAIN_STYLE[terrain]
         body = Group(render.art_text(terrain, style), Text(event.text, style="italic"))
         code = event.data.get("code")
+        # Panel merges the border style into the subtitle, so a bold border would make the code bold.
         self.console.print(
             Panel(
                 body,
                 title=f"[bold]{event.data.get('title', 'Encounter')}[/]",
-                subtitle=Text(code, style="dim") if code else None,
+                subtitle=Text(code, style="not bold dim") if code else None,
                 subtitle_align="right",
                 border_style=style,
             )
