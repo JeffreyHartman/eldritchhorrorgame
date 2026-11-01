@@ -1,4 +1,4 @@
-"""Tests for optional costs on encounter cards: accepting, refusing, and being unable to pay."""
+"""Tests for the `Choice` and `Pay` effects on encounter cards: accepting, refusing, and being unable to pay."""
 
 from __future__ import annotations
 
@@ -6,12 +6,13 @@ import pytest
 
 from conftest import MakeGame, Script, first, set_dice
 from pursuit.content.loader import Content
-from pursuit.effects.base import Ctx, run_effects, walk
+from pursuit.effects.base import Ctx, Effect, run_effects, walk
 from pursuit.effects.library import Choice, Pay
 from pursuit.engine import rules
 from pursuit.engine.state import Game, Investigator
 
-LISTED_SECTIONS = [
+# The sections that issue 1 lists, as (card id, location or terrain). None marks a card with no sections.
+ISSUE_1_SECTIONS = [
     ("americas_1", "san_francisco"),
     ("americas_4", "arkham"),
     ("americas_4", "buenos_aires"),
@@ -47,21 +48,24 @@ LISTED_SECTIONS = [
 ]
 
 
+def card_effects(content: Content, card_id: str, location: str | None) -> tuple[Effect, ...]:
+    edef = content.encounters[card_id]
+    if location is None:
+        return edef.effects
+    return next(s for s in edef.sections if location in (s.location, s.terrain)).effects
+
+
 def resolve(game: Game, inv: Investigator, card_id: str, location: str | None = None) -> None:
     """Resolve the section of an encounter card that matches `location`, or the whole card."""
-    edef = game.content.encounters[card_id]
-    effects = edef.effects
-    if location is not None:
-        effects = next(s for s in edef.sections if location in (s.location, s.terrain)).effects
     tag = "other_world" if card_id.startswith("other_world") else None
-    run_effects(effects, Ctx(game, inv, f"encounter:{card_id}", tag=tag))
+    run_effects(card_effects(game.content, card_id, location), Ctx(game, inv, f"encounter:{card_id}", tag=tag))
 
 
 def clue_here(game: Game, inv: Investigator) -> None:
     game.locations[inv.location].clues = [inv.location]
 
 
-def holds(game: Game, inv: Investigator, asset_id: str) -> bool:
+def holds(inv: Investigator, asset_id: str) -> bool:
     return any(card.def_id == asset_id for card in inv.assets)
 
 
@@ -74,7 +78,7 @@ def test_accepting_the_necronomicon_gives_the_clue_the_pact_and_the_book(make_ga
     resolve(game, inv, "research_yog_sothoth_city_2")
     assert inv.clues == clues + 1
     assert rules.has_condition(inv, "dark_pact")
-    assert holds(game, inv, "necronomicon")
+    assert holds(inv, "necronomicon")
     assert not game.locations[inv.location].clues
 
 
@@ -87,17 +91,13 @@ def test_refusing_the_necronomicon_discards_the_clue(make_game: MakeGame, script
     resolve(game, inv, "research_yog_sothoth_city_2")
     assert inv.clues == clues
     assert not rules.has_condition(inv, "dark_pact")
-    assert not holds(game, inv, "necronomicon")
+    assert not holds(inv, "necronomicon")
     assert not game.locations[inv.location].clues
 
 
-@pytest.mark.parametrize(("card_id", "location"), LISTED_SECTIONS)
+@pytest.mark.parametrize(("card_id", "location"), ISSUE_1_SECTIONS)
 def test_listed_section_offers_a_decision(content: Content, card_id: str, location: str | None) -> None:
-    edef = content.encounters[card_id]
-    effects = edef.effects
-    if location is not None:
-        effects = next(s for s in edef.sections if location in (s.location, s.terrain)).effects
-    assert any(isinstance(e, Choice | Pay) for e in walk(effects))
+    assert any(isinstance(e, Choice | Pay) for e in walk(card_effects(content, card_id, location)))
 
 
 def test_a_clue_cost_is_not_offered_without_a_clue(make_game: MakeGame, script: Script) -> None:
@@ -141,7 +141,7 @@ def test_a_dark_pact_cost_is_not_offered_to_a_holder(make_game: MakeGame, script
     resolve(game, inv, "research_yog_sothoth_city_2")
     assert not script.asked
     assert inv.clues == clues
-    assert not holds(game, inv, "necronomicon")
+    assert not holds(inv, "necronomicon")
     assert not game.locations[inv.location].clues
 
 
@@ -174,7 +174,7 @@ def test_refusing_the_star_spawn_discards_the_clue_and_ambushes(make_game: MakeG
     script.add("effect_choice", "Refuse")
     resolve(game, inv, "research_cthulhu_sea_1")
     assert not game.locations[inv.location].clues
-    assert not holds(game, inv, "mists_of_relah")
+    assert not holds(inv, "mists_of_relah")
     assert any("Star Spawn" in text for text in script.texts())
 
 
@@ -236,7 +236,7 @@ def test_the_silver_key_costs_a_spell_after_a_passed_test(make_game: MakeGame, s
     script.add("effect_choice", "Discard 1 Spell")
     resolve(game, inv, "research_yog_sothoth_city_1")
     assert spell not in inv.assets
-    assert holds(game, inv, "silver_key")
+    assert holds(inv, "silver_key")
 
 
 def test_no_spell_means_no_silver_key_and_no_prompt(make_game: MakeGame, script: Script) -> None:
@@ -248,11 +248,11 @@ def test_no_spell_means_no_silver_key_and_no_prompt(make_game: MakeGame, script:
     set_dice(game, *[6] * 12)
     resolve(game, inv, "research_yog_sothoth_city_1")
     assert inv.clues == clues + 1
-    assert not holds(game, inv, "silver_key")
+    assert not holds(inv, "silver_key")
     assert not any(kind == "effect_choice" for kind, _ in script.asked)
 
 
-def test_failing_the_lurker_test_discards_the_clue_and_curses(make_game: MakeGame, script: Script) -> None:
+def test_failing_the_lurker_test_discards_the_clue_and_curses(make_game: MakeGame) -> None:
     game = make_game()
     inv = first(game)
     clue_here(game, inv)
@@ -320,3 +320,32 @@ def test_the_constable_gives_a_weapon(make_game: MakeGame, script: Script) -> No
     script.add("effect_choice", "Become Delayed")
     resolve(game, inv, "asia_australia_8", "sydney")
     assert ["weapon" in game.asset_def(card).traits for card in inv.assets] == [True]
+
+
+@pytest.mark.parametrize(
+    ("card_id", "location"),
+    [pair for pair in ISSUE_1_SECTIONS if pair[0] in ("americas_5", "americas_7", "europe_2", "europe_8", "general_5")],
+)
+def test_refusing_a_delay_cost_gives_nothing(
+    make_game: MakeGame, script: Script, card_id: str, location: str | None
+) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.clues = 0
+    assets = list(inv.assets)
+    improvements = dict(inv.improvements)
+    script.add("*", "Refuse")
+    resolve(game, inv, card_id, location)
+    assert not inv.delayed
+    assert inv.assets == assets
+    assert inv.improvements == improvements
+    assert not game.locations[inv.location].clues
+
+
+def test_a_forced_refusal_tells_the_player_why(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    rules.gain_condition(game, inv, "dark_pact")
+    clue_here(game, inv)
+    resolve(game, inv, "research_yog_sothoth_city_2")
+    assert any("Refuse" in text for text in script.texts("info"))

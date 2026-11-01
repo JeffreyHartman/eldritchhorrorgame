@@ -116,7 +116,7 @@
     "effects": [
       {
         "type": "pay",
-        "prompt": "Resolve the pass effect?",
+        "prompt": "Resolve the pass effect instead of the fail effect?",
         "cost": {
           "clues": 1
         },
@@ -1368,7 +1368,7 @@
     "effects": [
       {
         "type": "pay",
-        "prompt": "Resolve the pass effect?",
+        "prompt": "Resolve the pass effect instead of the fail effect?",
         "cost": {
           "clues": 1
         },

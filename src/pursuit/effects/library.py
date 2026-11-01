@@ -995,6 +995,8 @@ class Choice(Effect):
         if not any(o.enabled for o in opts):
             return
         pick = rules.choose(game, self.prompt, opts, kind="effect_choice", inv=inv, auto_single=True)
+        if sum(o.enabled for o in opts) == 1 and len(opts) > 1:
+            rules.emit(game, "info", f"The only available option is: {opts[pick].label}.")
         run_effects(self.options[pick].effects, ctx)
 
     def children(self) -> Iterable[Sequence[Effect]]:

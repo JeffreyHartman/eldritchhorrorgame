@@ -328,3 +328,37 @@ def test_targeted_spell_flips_and_discards_the_casters_copy(make_game: MakeGame)
     health = caster.health
     actions.perform(game, caster, ("asset", owned.uid))
     assert caster.health == health - 1 and not rules.has_condition(target, "blessed")
+
+
+def test_discard_clue_removes_one_token_with_no_gain(make_game: MakeGame) -> None:
+    game = make_game()
+    inv = first(game)
+    game.locations[inv.location].clues = [inv.location, inv.location]
+    clues = inv.clues
+    run(game, inv, [{"type": "discard_clue"}])
+    assert game.locations[inv.location].clues == [inv.location]
+    assert inv.clues == clues
+
+
+def test_discard_gate_removes_the_chosen_gate_without_closing_it(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    game.locations["arkham"].gate = True
+    game.locations["tokyo"].gate = True
+    script.add("choose_space", "Tokyo")
+    run(game, None, [{"type": "discard_gate"}])
+    assert game.open_gates() == ["arkham"]
+    assert game.stats.get("gates_closed", 0) == 0
+
+
+def test_choice_with_one_enabled_option_resolves_with_no_prompt(make_game: MakeGame, script: Script) -> None:
+    game = make_game()
+    inv = first(game)
+    inv.delayed = True
+    sanity = inv.sanity = 1
+    options = [
+        {"label": "a", "requires": {"delayed": False}, "effects": []},
+        {"label": "b", "effects": [{"type": "sanity", "amount": 1}]},
+    ]
+    run(game, inv, [{"type": "choice", "options": options}])
+    assert not script.asked
+    assert inv.sanity == sanity + 1

@@ -297,6 +297,7 @@ and the dice. The ASCII art is in `ui/art/*.txt`.
 | `test_dice_and_combat.py`  | Dice pools, boosts, rerolls, horror, fight, and evade.              |
 | `test_actions.py`          | Each Day action and its limits.                                     |
 | `test_effects.py`          | Each effect type, and bad effect data.                              |
+| `test_encounter_choices.py` | Optional costs on encounter cards: accept, refuse, and cannot pay. |
 | `test_rules.py`            | Doom, Dread, rifts, rites, defeats, and the awakening.              |
 | `test_phases.py`           | The round loop and full games to a win and to a loss.               |
 | `test_save.py`             | A save and a load give the same game, and bad saves fail clearly.   |
@@ -400,9 +401,8 @@ Investigator effects apply to the current investigator. World effects need no in
 | `move`               | `to` (location id, `nearest_city`, `random_city`, `start`, `choose_adjacent`, `nearest_rift`, `choose_within`), `range` | Move the investigator |
 | `delay`              | `chosen`                                                  | The investigator loses the next Day turn. `chosen` marks a voluntary Delay, which perks cannot stop |
 | `claim_clue`         | `bonus`                                                   | Gain the Clue token here, plus `bonus` Clues       |
-| `discard_clue`       | none                                                      | Discard the Clue token here with no gain           |
-| `discard_gate`       | none                                                      | Discard 1 open Gate of the player's choice         |
-| `choice`             | `prompt`, `options` (each with `label`, `requires`, `effects`) | The player picks one option                   |
+| `discard_clue`       | none                                                      | Discard 1 Clue token here with no gain             |
+| `choice`             | `prompt`, `options` (each with `label`, `requires`, `effects`) | The player picks one option. With one enabled option, it resolves with no prompt |
 | `pay`                | `prompt`, `cost`, `then`, `else`                          | Offer to pay a cost                                |
 | `if`                 | `has` (an investigator filter), `then`, `else`            | Branch on what the investigator has                |
 | `ambush`             | `id`                                                      | Spawn a monster here and fight it now              |
@@ -412,6 +412,7 @@ Investigator effects apply to the current investigator. World effects need no in
 
 | Type                 | Fields                                                    | Result                                             |
 | -------------------- | --------------------------------------------------------- | -------------------------------------------------- |
+| `discard_gate`       | none                                                      | Discard 1 open Gate of the player's choice         |
 | `text`               | `text`                                                    | Show text                                          |
 | `advance_doom`, `retreat_doom` | `amount`                                        | Move Doom                                          |
 | `random`             | `outcomes` (each with `weight`, `effects`)                | Pick one outcome by weight                         |
