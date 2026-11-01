@@ -136,7 +136,32 @@
         "text": "You may become Delayed to explore some submerged pyramids off the coast of Okinawa. If you do, you discover ancient writing that claims to \"harm one's enemies;\" 1 Monster of your choice on any space loses 3 Health.",
         "effects": [
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Explore the submerged pyramids?",
+            "options": [
+              {
+                "label": "Become Delayed: 1 Monster loses 3 Health",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "damage_monsters",
+                    "amount": 3,
+                    "where": "choose_space",
+                    "one": true
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },
@@ -335,8 +360,17 @@
         "text": "The decadent crime lord, Lin Tang-Yu, offers, you access to his library of occult treasures in exchange for information. You may spend 1 Clue to improve Lore.",
         "effects": [
           {
-            "type": "improve_skill",
-            "skill": "lore"
+            "type": "pay",
+            "prompt": "Trade information with Lin Tang-Yu and improve Lore?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "improve_skill",
+                "skill": "lore"
+              }
+            ]
           }
         ]
       },
@@ -373,8 +407,17 @@
         "text": "The Theosophical Society is excited to hear what knowledge you have gained during your travels. You may spend 1 Clue. If you do, they gratefully provide you with an exercise and diet regimen that fortifies your vitality; improve Strength.",
         "effects": [
           {
-            "type": "improve_skill",
-            "skill": "strength"
+            "type": "pay",
+            "prompt": "Share your knowledge and improve Strength?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "improve_skill",
+                "skill": "strength"
+              }
+            ]
           }
         ]
       }
@@ -488,7 +531,30 @@
         "text": "The old man offers to make tea for you. You see him mix in a strange, green powder that he calls \"tyuk\". You may become Delayed to wait for it to brew. If you become Delayed, the tyuk seems to heighten all of your senses; improve 1 skill of your choice.",
         "effects": [
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Wait for the tyuk to brew?",
+            "options": [
+              {
+                "label": "Become Delayed: improve 1 skill",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "improve_skill",
+                    "skill": "choose"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },
@@ -497,8 +563,17 @@
         "text": "A strange man dressed in the charred robes of a monk offers you help in exchange for knowledge. You may spend 1 Clue to convince the Black Monk to assist you and discard 1 Monster of your choice from any space.",
         "effects": [
           {
-            "type": "discard_monster",
-            "where": "choose_space"
+            "type": "pay",
+            "prompt": "Convince the Black Monk to discard 1 Monster?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "discard_monster",
+                "where": "choose_space"
+              }
+            ]
           }
         ]
       },
@@ -597,12 +672,32 @@
         "text": "The constable sees you admire the abandoned weapon. \"Give it a bit to see if anyone claims it,\" he says. \"If not, you can help yourself.\" You may become Delayed to gain 1 random Weapon Asset from the deck.",
         "effects": [
           {
-            "type": "delay"
-          },
-          {
-            "type": "gain_asset",
-            "count": 1,
-            "kind": "item"
+            "type": "choice",
+            "prompt": "Wait to see if anyone claims the weapon?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 1 random Weapon",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "gain_asset",
+                    "count": 1,
+                    "kind": "item",
+                    "trait": "weapon"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       }

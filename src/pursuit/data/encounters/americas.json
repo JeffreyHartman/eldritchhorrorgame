@@ -32,8 +32,17 @@
         "text": "Inspector Jack Manion is looking for information about the Tongs in Chinatown. If you can help him, he'll teach you the basics of police work in exchange. You may spend 1 Clue to improve Observation.",
         "effects": [
           {
-            "type": "improve_skill",
-            "skill": "observation"
+            "type": "pay",
+            "prompt": "Help Inspector Manion and improve Observation?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "improve_skill",
+                "skill": "observation"
+              }
+            ]
           }
         ]
       },
@@ -261,7 +270,23 @@
       {
         "location": "arkham",
         "text": "An anonymous patient in the asylum pleads with you to share what you've learned. You may spend 1 Clue to share what you know. If you spend the Clue, the man begins chanting in a long-dead language; gain 1 Incantation Spell.",
-        "effects": []
+        "effects": [
+          {
+            "type": "pay",
+            "prompt": "Share what you know and gain 1 Incantation Spell?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "spell",
+                "trait": "incantation"
+              }
+            ]
+          }
+        ]
       },
       {
         "location": "san_francisco",
@@ -298,7 +323,23 @@
       {
         "location": "buenos_aires",
         "text": "A student has been studying the university's copy of the Necronomicon and is eager to share what he's learned in exchange for hearing what you know. You may spend 1 Clue to share what you know and gain 1 Ritual Spell.",
-        "effects": []
+        "effects": [
+          {
+            "type": "pay",
+            "prompt": "Share what you know and gain 1 Ritual Spell?",
+            "cost": {
+              "clues": 1
+            },
+            "then": [
+              {
+                "type": "gain_asset",
+                "count": 1,
+                "kind": "spell",
+                "trait": "ritual"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -340,7 +381,30 @@
         "text": "You are invited to the Hearst Castle and find yourself surrounded by the best and brightest. You may become Delayed to stay for a few days. If you become Delayed, you pick up some amazing talents; improve 1 skill of your choice.",
         "effects": [
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Stay at Hearst Castle for a few days?",
+            "options": [
+              {
+                "label": "Become Delayed: improve 1 skill",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "improve_skill",
+                    "skill": "choose"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },
@@ -464,7 +528,31 @@
         "text": "The administrators of Arkham's Historical Society take great pains to show you their extensive collection of historical documents. You may become Delayed to gain 2 Spells.",
         "effects": [
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Study the Historical Society's collection?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 2 Spells",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "gain_asset",
+                    "count": 2,
+                    "kind": "spell"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       },
@@ -500,7 +588,31 @@
         "text": "At the hospital you find a bald, old man with leathery skin and a flat face. He speaks very slowly, but his story is fascinating. You may become Delayed to gain 2 Spells as he recounts all the details of his time worshiping the Father of Serpents.",
         "effects": [
           {
-            "type": "delay"
+            "type": "choice",
+            "prompt": "Hear the old man's story?",
+            "options": [
+              {
+                "label": "Become Delayed: gain 2 Spells",
+                "requires": {
+                  "delayed": false
+                },
+                "effects": [
+                  {
+                    "type": "delay",
+                    "chosen": true
+                  },
+                  {
+                    "type": "gain_asset",
+                    "count": 2,
+                    "kind": "spell"
+                  }
+                ]
+              },
+              {
+                "label": "Refuse",
+                "effects": []
+              }
+            ]
           }
         ]
       }

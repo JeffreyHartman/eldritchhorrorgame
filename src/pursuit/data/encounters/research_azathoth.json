@@ -634,11 +634,33 @@
     "text": "You wake up to find a large, winged creature in your cabin. It offers you an object to use in your fight against Azathoth. You may gain a Dark Pact Condition to gain this Clue and the T'tka Halot Artifact.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "dark_pact"
+        "type": "choice",
+        "prompt": "Accept the creature's offer?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact: gain this Clue and the T'tka Halot",
+            "requires": {
+              "lacks_condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "claim_clue"
+              },
+              {
+                "type": "gain_asset",
+                "id": "t_tka_halot"
+              }
+            ]
+          },
+          {
+            "label": "Refuse",
+            "effects": []
+          }
+        ]
       }
     ]
   },

@@ -115,52 +115,67 @@
     "text": "You hear the sound of a terrible gust of wind and listen carefully to determine the origin of the sound. You may spend 1 Clue to resolve the pass effect. If you do not spend the Clue, resolve the fail effect.",
     "effects": [
       {
-        "type": "test",
-        "skill": "will",
-        "mod": 0,
-        "needed": 1,
-        "pass": [
+        "type": "pay",
+        "prompt": "Resolve the pass effect instead of the fail effect?",
+        "cost": {
+          "clues": 1
+        },
+        "then": [
           {
-            "type": "text",
-            "text": "you resolve to fend off the terrible beast and, with the help of the Yithians, you close this Gate."
-          },
-          {
-            "type": "close_gate"
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you resolve to fend off the terrible beast and, with the help of the Yithians, you close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you flee in terror from approaching threat; lose 1 Sanity."
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
           }
         ],
-        "fail": [
+        "else": [
           {
-            "type": "text",
-            "text": "you flee in terror from approaching threat; lose 1 Sanity."
-          },
-          {
-            "type": "sanity",
-            "amount": -1
-          }
-        ]
-      },
-      {
-        "type": "test",
-        "skill": "strength",
-        "mod": 0,
-        "needed": 1,
-        "pass": [
-          {
-            "type": "text",
-            "text": "the grateful Yithians help you; close this Gate."
-          },
-          {
-            "type": "close_gate"
-          }
-        ],
-        "fail": [
-          {
-            "type": "text",
-            "text": "the encounter leaves you bruised and shaken; lose 1 Health and 1 Sanity."
-          },
-          {
-            "type": "health",
-            "amount": -1
+            "type": "test",
+            "skill": "strength",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "the grateful Yithians help you; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "the encounter leaves you bruised and shaken; lose 1 Health and 1 Sanity."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              },
+              {
+                "type": "sanity",
+                "amount": -1
+              }
+            ]
           }
         ]
       }
@@ -1352,52 +1367,63 @@
     "text": "You discover a fetid creature with wings and webbed feet. The beast is strange, like something from your wildest dreams. You may spend 1 Clue to resolve the pass effect. If you do not spend the Clue, resolve the fail effect.",
     "effects": [
       {
-        "type": "test",
-        "skill": "lore",
-        "mod": 0,
-        "needed": 1,
-        "pass": [
+        "type": "pay",
+        "prompt": "Resolve the pass effect instead of the fail effect?",
+        "cost": {
+          "clues": 1
+        },
+        "then": [
           {
-            "type": "text",
-            "text": "you remember that by drinking space-mead you can safely use this byakhee to return home; close this Gate."
-          },
-          {
-            "type": "close_gate"
+            "type": "test",
+            "skill": "lore",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you remember that by drinking space-mead you can safely use this byakhee to return home; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "you drink something you shouldn't have; gain a Hallucinations Condition."
+              },
+              {
+                "type": "gain_condition",
+                "id": "hallucinations"
+              }
+            ]
           }
         ],
-        "fail": [
+        "else": [
           {
-            "type": "text",
-            "text": "you drink something you shouldn't have; gain a Hallucinations Condition."
-          },
-          {
-            "type": "gain_condition",
-            "id": "hallucinations"
-          }
-        ]
-      },
-      {
-        "type": "test",
-        "skill": "will",
-        "mod": 0,
-        "needed": 1,
-        "pass": [
-          {
-            "type": "text",
-            "text": "you subdue the creature and use it to return home; close this Gate."
-          },
-          {
-            "type": "close_gate"
-          }
-        ],
-        "fail": [
-          {
-            "type": "text",
-            "text": "lose 1 Health."
-          },
-          {
-            "type": "health",
-            "amount": -1
+            "type": "test",
+            "skill": "will",
+            "mod": 0,
+            "needed": 1,
+            "pass": [
+              {
+                "type": "text",
+                "text": "you subdue the creature and use it to return home; close this Gate."
+              },
+              {
+                "type": "close_gate"
+              }
+            ],
+            "fail": [
+              {
+                "type": "text",
+                "text": "lose 1 Health."
+              },
+              {
+                "type": "health",
+                "amount": -1
+              }
+            ]
           }
         ]
       }

@@ -247,11 +247,33 @@
     "text": "As he lie dying, the bleeding priest begs you to guard the sword. He tells you Brother Tristam and his Order will stop at nothing. If you make a solemn vow, he will give you his ancient blade. You may gain a Dark Pact Condition to gain this Clue and the Sword of Saint Jerome Artifact.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "dark_pact"
+        "type": "choice",
+        "prompt": "Make the solemn vow?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact: gain this Clue and the Sword of Saint Jerome",
+            "requires": {
+              "lacks_condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "claim_clue"
+              },
+              {
+                "type": "gain_asset",
+                "id": "sword_of_st_jerome"
+              }
+            ]
+          },
+          {
+            "label": "Refuse",
+            "effects": []
+          }
+        ]
       }
     ]
   },
@@ -313,15 +335,38 @@
     "text": "The faces of the robed figures are hidden behind wooden goat masks. Their chanting corrupts your thoughts. You may gain a Dark Pact to gain this Clue and improve Strength. If you do not gain the Condition, you find yourself alone, unsure if the cultist were really there; gain a Paranoia Condition.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
-        "type": "gain_condition",
-        "id": "paranoia"
-      },
-      {
-        "type": "improve_skill",
-        "skill": "strength"
+        "type": "choice",
+        "prompt": "Join the chant?",
+        "options": [
+          {
+            "label": "Gain a Dark Pact: gain this Clue and improve Strength",
+            "requires": {
+              "lacks_condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "dark_pact"
+              },
+              {
+                "type": "claim_clue"
+              },
+              {
+                "type": "improve_skill",
+                "skill": "strength"
+              }
+            ]
+          },
+          {
+            "label": "Refuse",
+            "effects": [
+              {
+                "type": "gain_condition",
+                "id": "paranoia"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -691,19 +736,45 @@
     "text": "One of the sailors tells you that you've been marked and must be purified by fire. He brands your skin. Lose 2 Health. You feel the pain break the dark influences that cling to you; gain this Clue and you may discard a Cursed or Dark Pact Condition.",
     "effects": [
       {
-        "type": "claim_clue"
-      },
-      {
         "type": "health",
         "amount": -2
       },
       {
-        "type": "gain_condition",
-        "id": "dark_pact"
+        "type": "claim_clue"
       },
       {
-        "type": "gain_condition",
-        "id": "cursed"
+        "type": "choice",
+        "prompt": "The brand burns away a dark influence.",
+        "options": [
+          {
+            "label": "Discard Cursed",
+            "requires": {
+              "condition": "cursed"
+            },
+            "effects": [
+              {
+                "type": "remove_condition",
+                "id": "cursed"
+              }
+            ]
+          },
+          {
+            "label": "Discard Dark Pact",
+            "requires": {
+              "condition": "dark_pact"
+            },
+            "effects": [
+              {
+                "type": "remove_condition",
+                "id": "dark_pact"
+              }
+            ]
+          },
+          {
+            "label": "Discard nothing",
+            "effects": []
+          }
+        ]
       }
     ]
   },
